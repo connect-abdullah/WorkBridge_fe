@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 type ProjectStatus = "in-progress" | "pending" | "completed" | "issue";
@@ -11,6 +12,7 @@ export function ProjectCard({
   milestoneStatus,
   projectDueDate,
   amount,
+  href,
 }: {
   title: string;
   clientName: string;
@@ -20,8 +22,9 @@ export function ProjectCard({
   milestoneStatus: ProjectStatus;
   projectDueDate: string;
   amount: string;
+  href?: string;
 }) {
-  return (
+  const cardContent = (
     <article className="cursor-pointer flex-col rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/30 hover:shadow-md">
       <div className="flex flex-col gap-4">
         {/* Top: project identity + progress */}
@@ -75,4 +78,10 @@ export function ProjectCard({
       </div>
     </article>
   );
+
+  if (href) {
+    return <Link href={href}>{cardContent}</Link>;
+  }
+
+  return cardContent;
 }

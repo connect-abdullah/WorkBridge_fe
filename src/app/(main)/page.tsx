@@ -31,9 +31,13 @@ export default function HomePage() {
             <h2 className="text-lg font-semibold text-foreground">Projects</h2>
             <p className="text-sm text-muted-foreground">3 active engagements</p>
           </div>
-          <div className="space-y-3">
-            {dashboardProjects.map((project) => (
-              <ProjectCard key={project.title} {...project} />
+          <div className="space-y-3 flex flex-col">
+            {dashboardProjects.map((project, index) => (
+              <ProjectCard
+                key={project.title}
+                {...project}
+                href={`/projects/${index + 1}`}
+              />
             ))}
           </div>
         </div>

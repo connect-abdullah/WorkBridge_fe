@@ -1,11 +1,12 @@
 import { cn } from "@/lib/utils";
 
-type StatusTone = "in-progress" | "pending" | "completed" | "issue";
+type StatusTone = "in-progress" | "pending" | "completed" | "paid" | "issue";
 
 const toneClasses: Record<StatusTone, string> = {
   "in-progress": "bg-sky-100 text-sky-700",
   pending: "bg-amber-100 text-amber-700",
   completed: "bg-emerald-100 text-emerald-700",
+  paid: "bg-emerald-100 text-emerald-700",
   issue: "bg-red-100 text-red-700",
 };
 
