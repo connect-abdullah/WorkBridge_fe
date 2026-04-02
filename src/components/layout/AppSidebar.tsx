@@ -30,11 +30,13 @@ export function AppSidebar({
   onNavigate,
   showCloseButton = false,
   onClose,
+  embedded = false,
 }: {
   className?: string;
   onNavigate?: () => void;
   showCloseButton?: boolean;
   onClose?: () => void;
+  embedded?: boolean;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -47,7 +49,9 @@ export function AppSidebar({
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 flex w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground",
+        embedded
+          ? "flex h-full w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground"
+          : "fixed inset-y-0 left-0 flex w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground",
         className,
       )}
     >
