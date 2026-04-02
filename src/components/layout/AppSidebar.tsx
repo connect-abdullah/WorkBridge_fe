@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Bell,
   BriefcaseBusiness,
@@ -10,14 +9,12 @@ import {
   LayoutGrid,
   UserRound,
   FolderKanban,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  applyTheme,
-  THEME_STORAGE_KEY,
-  type ThemeName,
-} from "@/components/theme/ThemeApplicator";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
+import { forceLogout } from "@/lib/forceLogout";
 
 const navItems = [
   { label: "Dashboard", href: "/", icon: LayoutGrid },
@@ -29,33 +26,11 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const [theme, setTheme] = useState<ThemeName>("dark");
+  const router = useRouter();
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(THEME_STORAGE_KEY);
-      if (stored === "light" || stored === "dark") {
-        setTheme(stored);
-        return;
-      }
-    } catch {
-      // Ignore persistence failures.
-    }
-
-    setTheme(document.documentElement.classList.contains("dark") ? "dark" : "light");
-  }, []);
-
-  const toggleTheme = () => {
-    const nextTheme: ThemeName = theme === "dark" ? "light" : "dark";
-    setTheme(nextTheme);
-
-    try {
-      localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
-    } catch {
-      // Ignore persistence failures.
-    }
-
-    applyTheme(nextTheme);
+  const handleLogout = () => {
+    forceLogout(false);
+    router.push("/auth/login");
   };
 
   return (
@@ -107,15 +82,19 @@ export function AppSidebar() {
           </div>
         </div>
 
-        <div className="mt-3">
+        <div className="mt-3 flex justify-center items-center gap-6">
+
+          <AnimatedThemeToggler className="flex-1 justify-center" />
+
           <Button
             type="button"
             variant="ghost"
-            size="sm"
-            className="w-full justify-start text-muted-foreground"
-            onClick={toggleTheme}
+            size="icon"
+            className="shrink-0 text-muted-foreground"
+            onClick={handleLogout}
+            aria-label="Log out"
           >
-            {theme === "dark" ? "Light mode" : "Dark mode"}
+            <LogOut className="h-4 w-4" />
           </Button>
         </div>
       </div>
