@@ -1,7 +1,7 @@
 "use client";
 
-import { BriefcaseBusiness } from "lucide-react";
 import { ReactNode } from "react";
+import Image from "next/image";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 
 export function AuthShell({
@@ -16,10 +16,15 @@ export function AuthShell({
   return (
     <div className="grid min-h-screen bg-muted/30 lg:grid-cols-2">
       <section className="hidden border-r border-border bg-card p-12 lg:flex lg:flex-col lg:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-primary p-2 text-primary-foreground">
-            <BriefcaseBusiness className="h-5 w-5" />
-          </div>
+        <div className="flex items-center gap-1">
+          <Image
+            src="/logo.png"
+            alt="WorkBridge logo"
+            width={136}
+            height={136}
+            className="h-34 w-34 object-contain"
+            priority
+          />
           <div>
             <p className="text-base font-semibold">WorkBridge</p>
             <p className="text-sm text-muted-foreground">Freelancer-Client Hub</p>

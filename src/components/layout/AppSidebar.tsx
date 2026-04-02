@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Bell,
-  BriefcaseBusiness,
   X,
   CreditCard,
   LayoutGrid,
@@ -55,14 +55,19 @@ export function AppSidebar({
         className,
       )}
     >
-      <div className="border-b border-border px-5 py-5">
+      <div className="border-b border-border px-3 py-5">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-primary p-2 text-primary-foreground">
-              <BriefcaseBusiness className="h-4 w-4" />
-            </div>
+          <div className="flex items-center">
+            <Image
+              src="/logo.png"
+              alt="WorkBridge logo"
+              width={100}
+              height={100}
+              className="h-22 w-22 object-contain"
+              priority
+            />
             <div>
-              <h1 className="text-base font-semibold">WorkBridge</h1>
+              <h1 className="text-lg font-semibold">WorkBridge</h1>
               <p className="text-xs text-muted-foreground">Freelancer</p>
             </div>
           </div>
