@@ -27,7 +27,7 @@ export default function HomePage() {
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-lg font-semibold text-foreground">Projects</h2>
             <p className="text-sm text-muted-foreground">3 active engagements</p>
           </div>

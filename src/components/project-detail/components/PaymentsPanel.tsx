@@ -16,7 +16,8 @@ export function PaymentsPanel({
 }) {
   return (
     <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-      <table className="w-full text-left text-sm">
+      <div className="overflow-x-auto">
+      <table className="min-w-[640px] w-full text-left text-sm">
         <thead className="border-b border-border bg-muted/40 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           <tr>
             <th className="px-4 py-3">Milestone</th>
@@ -73,6 +74,7 @@ export function PaymentsPanel({
           )}
         </tbody>
       </table>
+      </div>
     </section>
   );
 }

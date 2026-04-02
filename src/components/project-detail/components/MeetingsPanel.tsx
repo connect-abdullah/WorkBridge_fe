@@ -119,7 +119,7 @@ export function MeetingsPanel({
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-foreground">Meetings</h2>
             <Button className="h-10" onClick={() => onOpenMeetingForm("create")}>
               <Plus className="mr-1.5 h-4 w-4" /> Create Meeting

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Bell,
   BriefcaseBusiness,
+  X,
   CreditCard,
   LayoutGrid,
   UserRound,
@@ -24,7 +25,17 @@ const navItems = [
   { label: "Profile", href: "/profile", icon: UserRound },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({
+  className,
+  onNavigate,
+  showCloseButton = false,
+  onClose,
+}: {
+  className?: string;
+  onNavigate?: () => void;
+  showCloseButton?: boolean;
+  onClose?: () => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -34,16 +45,35 @@ export function AppSidebar() {
   };
 
   return (
-    <aside className="fixed inset-y-0 left-0 flex w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+    <aside
+      className={cn(
+        "fixed inset-y-0 left-0 flex w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground",
+        className,
+      )}
+    >
       <div className="border-b border-border px-5 py-5">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-primary p-2 text-primary-foreground">
-            <BriefcaseBusiness className="h-4 w-4" />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-primary p-2 text-primary-foreground">
+              <BriefcaseBusiness className="h-4 w-4" />
+            </div>
+            <div>
+              <h1 className="text-base font-semibold">WorkBridge</h1>
+              <p className="text-xs text-muted-foreground">Freelancer</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-base font-semibold">WorkBridge</h1>
-            <p className="text-xs text-muted-foreground">Freelancer</p>
-          </div>
+          {showCloseButton ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={onClose}
+              aria-label="Close menu"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          ) : null}
         </div>
       </div>
 
@@ -57,6 +87,7 @@ export function AppSidebar() {
             <Link
               key={item.label}
               href={item.href}
+              onClick={onNavigate}
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition",
                 isActive
@@ -82,9 +113,7 @@ export function AppSidebar() {
           </div>
         </div>
 
-        <div className="mt-3 flex justify-center items-center gap-6">
-
-          <AnimatedThemeToggler className="flex-1 justify-center" />
+        <div className="mt-3 flex items-center justify-center gap-3">
 
           <Button
             type="button"
@@ -96,6 +125,8 @@ export function AppSidebar() {
           >
             <LogOut className="h-4 w-4" />
           </Button>
+
+          <AnimatedThemeToggler className="flex-1 justify-center" />
         </div>
       </div>
     </aside>

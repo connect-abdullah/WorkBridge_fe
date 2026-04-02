@@ -48,7 +48,7 @@ export function LoginForm() {
       </div>
 
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <label htmlFor="login-password" className="text-sm font-medium">
             Password
           </label>

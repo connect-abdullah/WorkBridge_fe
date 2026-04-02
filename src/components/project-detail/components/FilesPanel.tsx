@@ -31,7 +31,7 @@ export function FilesPanel({
         <p className="mt-1 text-sm text-muted-foreground">
           Upload project assets, briefs, and deliverables
         </p>
-        <div className="mt-4 flex items-center justify-center gap-2">
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
           <Button variant="outline" className="h-9">
             Add via Link
           </Button>
@@ -45,7 +45,7 @@ export function FilesPanel({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
         {files.length === 0 ? (
           <p className="px-4 py-8 text-center text-sm text-muted-foreground">
             No files uploaded yet.
@@ -54,7 +54,7 @@ export function FilesPanel({
           files.map((file, i) => (
             <div
               key={file.id}
-              className={`grid items-center gap-3 px-4 py-3 text-sm md:grid-cols-[1.4fr_0.6fr_0.9fr_0.9fr_auto] ${
+              className={`grid min-w-[680px] items-center gap-3 px-4 py-3 text-sm md:grid-cols-[1.4fr_0.6fr_0.9fr_0.9fr_auto] ${
                 i !== files.length - 1 ? "border-b border-border" : ""
               }`}
             >

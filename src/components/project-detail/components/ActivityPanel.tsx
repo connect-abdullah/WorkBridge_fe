@@ -26,8 +26,8 @@ export function ActivityPanel({ logs }: { logs: ReadonlyArray<ActivityLog> }) {
                 <CalendarDays className="h-4 w-4 text-muted-foreground" />
               ) : null}
             </div>
-            <div>
-              <p className="text-sm text-foreground">{item.action}</p>
+            <div className="min-w-0 flex-1">
+              <p className="break-words text-sm text-foreground">{item.action}</p>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {item.timestamp}
               </p>

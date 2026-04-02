@@ -17,7 +17,8 @@ export function MilestoneStepTracker({
         Project Progress
       </p>
 
-      <div className="space-y-2.5">
+      <div className="overflow-x-auto">
+        <div className="min-w-[560px] space-y-2.5">
         {/* Row 1: dots + connectors */}
         <div className="flex items-center">
           {milestoneItems.map((milestone, index) => {
@@ -64,6 +65,7 @@ export function MilestoneStepTracker({
               ) : null}
             </div>
           ))}
+        </div>
         </div>
       </div>
     </section>
