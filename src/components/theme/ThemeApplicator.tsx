@@ -82,19 +82,16 @@ export function applyTheme(theme: ThemeName) {
 }
 
 export function getInitialTheme(): ThemeName {
-  if (typeof window === "undefined") return "dark";
+  if (typeof window === "undefined") return "light";
 
   try {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
     if (stored === "light" || stored === "dark") return stored;
   } catch {
-    // localStorage might be unavailable; fall back to system preference.
+    // localStorage might be unavailable; fall back to default.
   }
 
-  const prefersDark = window.matchMedia?.(
-    "(prefers-color-scheme: dark)",
-  ).matches;
-  return prefersDark ? "dark" : "light";
+  return "light";
 }
 
 export function ThemeApplicator() {

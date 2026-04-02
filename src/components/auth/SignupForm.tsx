@@ -1,38 +1,69 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 type Role = "freelancer" | "client";
 
 export function SignupForm() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<Role>("freelancer");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  const passwordInlineError = useMemo(() => {
+    if (!password) return "";
+    if (password.length < 8) return "Password must be at least 8 characters.";
+    return "";
+  }, [password]);
+
+  const confirmPasswordInlineError = useMemo(() => {
+    if (!confirmPassword) return "";
+    if (password.length > 0 && password.length < 8)
+      return "Password must be at least 8 characters.";
+    if (password !== confirmPassword) return "Passwords do not match.";
+    return "";
+  }, [password, confirmPassword]);
+
   const isValid = useMemo(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return name.trim().length >= 2 && emailRegex.test(email) && password.length >= 8;
-  }, [name, email, password]);
+    return (
+      name.trim().length >= 2 &&
+      emailRegex.test(email) &&
+      password.length >= 8 &&
+      password === confirmPassword
+    );
+  }, [name, email, password, confirmPassword]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
     if (!isValid) {
-      setError("Fill all fields correctly before continuing.");
+      if (password.length < 8) {
+        setError("Password must be at least 8 characters.");
+      } else if (password !== confirmPassword) {
+        setError("Passwords do not match.");
+      } else {
+        setError("Fill all fields correctly before continuing.");
+      }
       return;
     }
 
     setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 1100));
     setIsSubmitting(false);
+    toast.success("Account created.");
+    router.push("/");
   };
 
   return (
@@ -91,6 +122,40 @@ export function SignupForm() {
             )}
           </button>
         </div>
+        {passwordInlineError ? (
+          <p className="text-sm text-destructive">{passwordInlineError}</p>
+        ) : null}
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="signup-confirm-password" className="text-sm font-medium">
+          Confirm password
+        </label>
+        <div className="relative">
+          <input
+            id="signup-confirm-password"
+            type={showPassword ? "text" : "password"}
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            placeholder="Re-enter your password"
+            className="h-11 w-full rounded-md border border-input bg-background px-3 pr-11 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-2 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+        {confirmPasswordInlineError ? (
+          <p className="text-sm text-destructive">{confirmPasswordInlineError}</p>
+        ) : null}
       </div>
 
       <div className="space-y-2">

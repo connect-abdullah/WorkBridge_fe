@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 export function ForgotPasswordForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -30,6 +33,8 @@ export function ForgotPasswordForm() {
     await new Promise((resolve) => setTimeout(resolve, 900));
     setIsSubmitting(false);
     setMessage("If this email exists, reset instructions were sent.");
+    toast.success("Reset email sent.");
+    router.push("/");
   };
 
   return (

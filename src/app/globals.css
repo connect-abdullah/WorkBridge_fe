@@ -14,3 +14,24 @@ body {
     animation: none;
     mix-blend-mode: normal;
 }
+
+@keyframes wb-toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+.wb-toast::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  transform-origin: left;
+  background: hsl(var(--primary) / 0.55);
+  animation: wb-toast-progress 3000ms linear forwards;
+}

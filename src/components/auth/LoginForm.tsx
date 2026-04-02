@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 export function LoginForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -29,6 +32,8 @@ export function LoginForm() {
     setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 900));
     setIsSubmitting(false);
+    toast.success("Welcome back.");
+    router.push("/");
   };
 
   return (
@@ -48,7 +53,7 @@ export function LoginForm() {
       </div>
 
       <div className="space-y-2">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-row items-center justify-between">
           <label htmlFor="login-password" className="text-sm font-medium">
             Password
           </label>
