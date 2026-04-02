@@ -3,11 +3,13 @@ import { cn } from "@/lib/utils";
 type StatusTone = "in-progress" | "pending" | "completed" | "paid" | "issue";
 
 const toneClasses: Record<StatusTone, string> = {
-  "in-progress": "bg-sky-100 text-sky-700",
-  pending: "bg-amber-100 text-amber-700",
-  completed: "bg-emerald-100 text-emerald-700",
-  paid: "bg-emerald-100 text-emerald-700",
-  issue: "bg-red-100 text-red-700",
+  "in-progress":
+    "bg-[var(--status-in-progress-bg)] text-[var(--status-in-progress-fg)]",
+  pending: "bg-[var(--status-pending-bg)] text-[var(--status-pending-fg)]",
+  completed:
+    "bg-[var(--status-completed-bg)] text-[var(--status-completed-fg)]",
+  paid: "bg-[var(--status-paid-bg)] text-[var(--status-paid-fg)]",
+  issue: "bg-[var(--status-issue-bg)] text-[var(--status-issue-fg)]",
 };
 
 export function StatusBadge({

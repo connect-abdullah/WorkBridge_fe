@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   Bell,
   BriefcaseBusiness,
@@ -11,6 +12,12 @@ import {
   FolderKanban,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  applyTheme,
+  THEME_STORAGE_KEY,
+  type ThemeName,
+} from "@/components/theme/ThemeApplicator";
 
 const navItems = [
   { label: "Dashboard", href: "/", icon: LayoutGrid },
@@ -22,9 +29,37 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const [theme, setTheme] = useState<ThemeName>("dark");
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(THEME_STORAGE_KEY);
+      if (stored === "light" || stored === "dark") {
+        setTheme(stored);
+        return;
+      }
+    } catch {
+      // Ignore persistence failures.
+    }
+
+    setTheme(document.documentElement.classList.contains("dark") ? "dark" : "light");
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme: ThemeName = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+    } catch {
+      // Ignore persistence failures.
+    }
+
+    applyTheme(nextTheme);
+  };
 
   return (
-    <aside className="fixed inset-y-0 left-0 flex w-64 flex-col border-r border-border bg-card">
+    <aside className="fixed inset-y-0 left-0 flex w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
       <div className="border-b border-border px-5 py-5">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-primary p-2 text-primary-foreground">
@@ -70,6 +105,18 @@ export function AppSidebar() {
             <p className="truncate text-sm font-medium">Aisha Johnson</p>
             {/* <p className="text-xs text-muted-foreground">Freelancer</p> */}
           </div>
+        </div>
+
+        <div className="mt-3">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start text-muted-foreground"
+            onClick={toggleTheme}
+          >
+            {theme === "dark" ? "Light mode" : "Dark mode"}
+          </Button>
         </div>
       </div>
     </aside>
