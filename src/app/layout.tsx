@@ -4,8 +4,8 @@ import { ReactNode } from "react";
 import { QueryProvider } from "@/lib/providers/query-provider";
 
 export const metadata: Metadata = {
-  title: "Project Template",
-  description: "Starter template based on Date Shawarma",
+  title: "WorkBridge",
+  description: "Freelancer-Client collaboration platform UI",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
