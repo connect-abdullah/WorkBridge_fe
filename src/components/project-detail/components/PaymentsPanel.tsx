@@ -1,6 +1,6 @@
 "use client";
 
-import { Download } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
 import { type Milestone } from "@/constants/project-detail";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ export function PaymentsPanel({
             <th className="px-4 py-3">Milestone</th>
             <th className="px-4 py-3">Amount</th>
             <th className="px-4 py-3">Status</th>
+            <th className="px-4 py-3">Date</th>
             <th className="px-4 py-3">Action</th>
           </tr>
         </thead>
@@ -30,7 +31,7 @@ export function PaymentsPanel({
           {completedMilestones.length === 0 ? (
             <tr>
               <td
-                colSpan={4}
+                colSpan={5}
                 className="px-4 py-12 text-center text-sm text-muted-foreground"
               >
                 No completed milestones yet. Mark a milestone as completed to
@@ -49,6 +50,7 @@ export function PaymentsPanel({
                       status={action === "invoice" ? "paid" : "completed"}
                     />
                   </td>
+                  <td className="px-4 py-3 text-muted-foreground">{ms.dueDate}</td>
                   <td className="px-4 py-3">
                     {action === "pay" ? (
                       <Button
@@ -58,14 +60,20 @@ export function PaymentsPanel({
                         Pay
                       </Button>
                     ) : (
-                      <Button
-                        variant="outline"
-                        className="h-8 w-9 px-0"
-                        aria-label="Download Invoice"
-                        title="Download Invoice"
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" className="h-8 px-3">
+                          <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
+                          View Invoice
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="h-8 w-8 px-0"
+                          aria-label="Download Invoice"
+                          title="Download Invoice"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
                     )}
                   </td>
                 </tr>

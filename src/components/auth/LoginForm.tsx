@@ -2,10 +2,15 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  getEmailValidationError,
+  getPasswordValidationError,
+} from "@/lib/utils";
+import { FormField, inputCls } from "@/components/ui/form-field";
 
 export function LoginForm() {
   const router = useRouter();
@@ -13,57 +18,65 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
-
-  const isValid = useMemo(() => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email) && password.length >= 8;
-  }, [email, password]);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setError("");
+    if (isSubmitting) return;
+    setHasSubmitted(true);
 
-    if (!isValid) {
-      setError("Enter a valid email and password (8+ characters).");
+    const nextErrors: { email?: string; password?: string } = {};
+    const emailError = getEmailValidationError(email);
+    const passwordError = getPasswordValidationError(password);
+    if (emailError) nextErrors.email = emailError;
+    if (passwordError) nextErrors.password = passwordError;
+
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
       return;
     }
 
     setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 900));
     setIsSubmitting(false);
+    setErrors({});
+    setHasSubmitted(false);
     toast.success("Welcome back.");
     router.push("/");
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <label htmlFor="login-email" className="text-sm font-medium">
-          Email
-        </label>
+      <FormField
+        label="Email"
+        htmlFor="login-email"
+        error={hasSubmitted ? errors.email : undefined}
+      >
         <input
           id="login-email"
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@company.com"
-          className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+          className={inputCls}
         />
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
-        <div className="flex flex-row items-center justify-between">
-          <label htmlFor="login-password" className="text-sm font-medium">
-            Password
-          </label>
+      <FormField
+        label="Password"
+        htmlFor="login-password"
+        labelRight={
           <Link
             href="/auth/forgot-password"
             className="text-sm text-muted-foreground transition hover:text-foreground"
           >
             Forgot Password?
           </Link>
-        </div>
+        }
+        error={hasSubmitted ? errors.password : undefined}
+      >
         <div className="relative">
           <input
             id="login-password"
@@ -71,7 +84,7 @@ export function LoginForm() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder="Enter your password"
-            className="h-11 w-full rounded-md border border-input bg-background px-3 pr-11 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className={`${inputCls} pr-11`}
           />
           <button
             type="button"
@@ -86,14 +99,11 @@ export function LoginForm() {
             )}
           </button>
         </div>
-      </div>
-
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      </FormField>
 
       <Button
         type="submit"
         className="h-11 w-full"
-        disabled={!isValid || isSubmitting}
       >
         {isSubmitting ? (
           <>

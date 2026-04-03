@@ -57,7 +57,7 @@ export function AppSidebar({
     >
       <div className="border-b border-border px-3 py-5">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center">
+          <div className="flex items-center gap-1">
             <Image
               src="/logo.png"
               alt="WorkBridge logo"

@@ -6,6 +6,13 @@ import { FormEvent, useMemo, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  getConfirmPasswordValidationError,
+  getEmailValidationError,
+  getNameValidationError,
+  getPasswordValidationError,
+} from "@/lib/utils";
+import { FormField, inputCls } from "@/components/ui/form-field";
 
 type Role = "freelancer" | "client";
 
@@ -19,40 +26,48 @@ export function SignupForm() {
   const [role, setRole] = useState<Role>("freelancer");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
+  const nameInlineError = useMemo(() => {
+    return getNameValidationError(name);
+  }, [name]);
+
+  const emailInlineError = useMemo(() => {
+    return getEmailValidationError(email);
+  }, [email]);
 
   const passwordInlineError = useMemo(() => {
-    if (!password) return "";
-    if (password.length < 8) return "Password must be at least 8 characters.";
-    return "";
+    return getPasswordValidationError(password, { required: false });
   }, [password]);
 
   const confirmPasswordInlineError = useMemo(() => {
-    if (!confirmPassword) return "";
-    if (password.length > 0 && password.length < 8)
-      return "Password must be at least 8 characters.";
-    if (password !== confirmPassword) return "Passwords do not match.";
-    return "";
+    return getConfirmPasswordValidationError(password, confirmPassword);
   }, [password, confirmPassword]);
 
   const isValid = useMemo(() => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return (
-      name.trim().length >= 2 &&
-      emailRegex.test(email) &&
-      password.length >= 8 &&
-      password === confirmPassword
+      !getNameValidationError(name) &&
+      !getEmailValidationError(email) &&
+      !getPasswordValidationError(password) &&
+      !getConfirmPasswordValidationError(password, confirmPassword)
     );
   }, [name, email, password, confirmPassword]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isSubmitting) return;
+    setHasSubmitted(true);
     setError("");
 
     if (!isValid) {
-      if (password.length < 8) {
-        setError("Password must be at least 8 characters.");
-      } else if (password !== confirmPassword) {
-        setError("Passwords do not match.");
+      if (nameInlineError) {
+        setError(nameInlineError);
+      } else if (emailInlineError) {
+        setError(emailInlineError);
+      } else if (passwordInlineError) {
+        setError(passwordInlineError);
+      } else if (confirmPasswordInlineError) {
+        setError(confirmPasswordInlineError);
       } else {
         setError("Fill all fields correctly before continuing.");
       }
@@ -62,44 +77,48 @@ export function SignupForm() {
     setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 1100));
     setIsSubmitting(false);
+    setHasSubmitted(false);
     toast.success("Account created.");
     router.push("/");
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <label htmlFor="signup-name" className="text-sm font-medium">
-          Name
-        </label>
+      <FormField
+        label="Name"
+        htmlFor="signup-name"
+        error={hasSubmitted ? nameInlineError : undefined}
+      >
         <input
           id="signup-name"
           type="text"
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder="Your full name"
-          className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+          className={inputCls}
         />
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
-        <label htmlFor="signup-email" className="text-sm font-medium">
-          Email
-        </label>
+      <FormField
+        label="Email"
+        htmlFor="signup-email"
+        error={hasSubmitted ? emailInlineError : undefined}
+      >
         <input
           id="signup-email"
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@company.com"
-          className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+          className={inputCls}
         />
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
-        <label htmlFor="signup-password" className="text-sm font-medium">
-          Password
-        </label>
+      <FormField
+        label="Password"
+        htmlFor="signup-password"
+        error={hasSubmitted ? passwordInlineError : undefined}
+      >
         <div className="relative">
           <input
             id="signup-password"
@@ -107,7 +126,7 @@ export function SignupForm() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder="At least 8 characters"
-            className="h-11 w-full rounded-md border border-input bg-background px-3 pr-11 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className={`${inputCls} pr-11`}
           />
           <button
             type="button"
@@ -122,15 +141,13 @@ export function SignupForm() {
             )}
           </button>
         </div>
-        {passwordInlineError ? (
-          <p className="text-sm text-destructive">{passwordInlineError}</p>
-        ) : null}
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
-        <label htmlFor="signup-confirm-password" className="text-sm font-medium">
-          Confirm password
-        </label>
+      <FormField
+        label="Confirm password"
+        htmlFor="signup-confirm-password"
+        error={hasSubmitted ? confirmPasswordInlineError : undefined}
+      >
         <div className="relative">
           <input
             id="signup-confirm-password"
@@ -138,7 +155,7 @@ export function SignupForm() {
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
             placeholder="Re-enter your password"
-            className="h-11 w-full rounded-md border border-input bg-background px-3 pr-11 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className={`${inputCls} pr-11`}
           />
           <button
             type="button"
@@ -153,10 +170,7 @@ export function SignupForm() {
             )}
           </button>
         </div>
-        {confirmPasswordInlineError ? (
-          <p className="text-sm text-destructive">{confirmPasswordInlineError}</p>
-        ) : null}
-      </div>
+      </FormField>
 
       <div className="space-y-2">
         <span className="text-sm font-medium">Role</span>
@@ -191,7 +205,6 @@ export function SignupForm() {
       <Button
         type="submit"
         className="h-11 w-full"
-        disabled={!isValid || isSubmitting}
       >
         {isSubmitting ? (
           <>

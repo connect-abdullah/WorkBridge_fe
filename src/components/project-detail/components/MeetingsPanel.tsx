@@ -11,7 +11,7 @@ import {
 import { type Meeting } from "@/constants/project-detail";
 import { Button } from "@/components/ui/button";
 import { Modal } from "./Modal";
-import { Field, inputCls } from "@/components/project-detail/components/Field";
+import { FormField, inputCls } from "@/components/ui/form-field";
 
 export function MeetingsPanel({
   meetings,
@@ -192,41 +192,41 @@ export function MeetingsPanel({
           onSubmit={onMeetingSubmit}
           className="grid gap-4 md:grid-cols-2"
         >
-          <Field label="Meeting Title" wide>
+          <FormField label="Meeting Title" wide>
             <input
               value={mtTitle}
               onChange={(e) => setMtTitle(e.target.value)}
               placeholder="e.g. Weekly Project Sync"
               className={inputCls}
             />
-          </Field>
+          </FormField>
 
-          <Field label="Meeting Link" wide>
+          <FormField label="Meeting Link" wide>
             <input
               value={mtLink}
               onChange={(e) => setMtLink(e.target.value)}
               placeholder="https://meet.example.com/..."
               className={inputCls}
             />
-          </Field>
+          </FormField>
 
-          <Field label="Date & Time">
+          <FormField label="Date & Time">
             <input
               value={mtDateTime}
               onChange={(e) => setMtDateTime(e.target.value)}
               placeholder="Apr 06, 2026 – 3:00 PM"
               className={inputCls}
             />
-          </Field>
+          </FormField>
 
-          <Field label="Description">
+          <FormField label="Description">
             <input
               value={mtDescription}
               onChange={(e) => setMtDescription(e.target.value)}
               placeholder="Brief agenda or topic"
               className={inputCls}
             />
-          </Field>
+          </FormField>
 
           <div className="md:col-span-2 flex justify-end gap-2 pt-1">
             <Button

@@ -2,36 +2,41 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { getEmailValidationError } from "@/lib/utils";
+import { FormField, inputCls } from "@/components/ui/form-field";
 
 export function ForgotPasswordForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<{ email?: string }>({});
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const [message, setMessage] = useState("");
-
-  const isValid = useMemo(() => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }, [email]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setError("");
+    if (isSubmitting) return;
+    setHasSubmitted(true);
     setMessage("");
 
-    if (!isValid) {
-      setError("Enter a valid email address.");
+    const nextErrors: { email?: string } = {};
+    const emailError = getEmailValidationError(email);
+    if (emailError) nextErrors.email = emailError;
+
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
       return;
     }
 
     setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 900));
     setIsSubmitting(false);
+    setErrors({});
+    setHasSubmitted(false);
     setMessage("If this email exists, reset instructions were sent.");
     toast.success("Reset email sent.");
     router.push("/");
@@ -39,28 +44,24 @@ export function ForgotPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <label htmlFor="reset-email" className="text-sm font-medium">
-          Email
-        </label>
+      <FormField
+        label="Email"
+        htmlFor="reset-email"
+        error={hasSubmitted ? errors.email : undefined}
+      >
         <input
           id="reset-email"
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@company.com"
-          className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+          className={inputCls}
         />
-      </div>
+      </FormField>
 
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
       {message ? <p className="text-sm text-success">{message}</p> : null}
 
-      <Button
-        type="submit"
-        className="h-11 w-full"
-        disabled={!isValid || isSubmitting}
-      >
+      <Button type="submit" className="h-11 w-full">
         {isSubmitting ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
