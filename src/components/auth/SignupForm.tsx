@@ -79,8 +79,8 @@ export function SignupForm() {
     const response = await signup({ name, email, password, role });
     if (response.success) {
       toast.success("Account created successfully...");
-      localStorage.setItem("access_token", response.data?.access_token || "");
-      localStorage.setItem("user", JSON.stringify(response.data?.user || {}));
+      localStorage.setItem("auth:token", response.data?.access_token || "");
+      localStorage.setItem("auth:user", JSON.stringify(response.data?.user || {}));
       router.push("/");
     } else {
       toast.error(response.message);

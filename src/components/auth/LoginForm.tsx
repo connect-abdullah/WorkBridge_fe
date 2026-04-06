@@ -43,8 +43,8 @@ export function LoginForm() {
     const response = await login({ email, password });
     if (response.success) {
       toast.success("Welcome back...");
-      localStorage.setItem("access_token", response.data?.access_token || "");
-      localStorage.setItem("user", JSON.stringify(response.data?.user || {}));
+      localStorage.setItem("auth:token", response.data?.access_token || "");
+      localStorage.setItem("auth:user", JSON.stringify(response.data?.user || {}));
       router.push("/");
     } else {
       toast.error(
