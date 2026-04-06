@@ -1,9 +1,10 @@
 // A TypeScript interface for standard API responses
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export interface APIResponse<T = unknown> {
   success: boolean;
   message: string;
   data?: T | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   errors?: any | null;
 }
 
