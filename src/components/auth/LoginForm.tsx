@@ -12,7 +12,6 @@ import {
 } from "@/lib/utils";
 import { FormField, inputCls } from "@/components/ui/form-field";
 import { login } from "@/lib/apis/auth/auth";
-import { formatApiFailureMessage } from "@/lib/apis/apiResponse";
 
 export function LoginForm() {
   const router = useRouter();
@@ -49,7 +48,7 @@ export function LoginForm() {
       router.push("/");
     } else {
       toast.error(
-        formatApiFailureMessage(response.message, response.errors),
+        response.message
       );
     }
     setIsSubmitting(false);
