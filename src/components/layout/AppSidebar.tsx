@@ -132,7 +132,7 @@ export function AppSidebar({
             onClick={handleLogout}
             aria-label="Log out"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4" onClick={handleLogout}/>
           </Button>
 
           <AnimatedThemeToggler className="flex-1 justify-center" />
