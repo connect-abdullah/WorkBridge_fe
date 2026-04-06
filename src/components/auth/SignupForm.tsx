@@ -13,6 +13,7 @@ import {
   getPasswordValidationError,
 } from "@/lib/utils";
 import { FormField, inputCls } from "@/components/ui/form-field";
+import { signup } from "@/lib/apis/auth/auth";
 
 type Role = "freelancer" | "client";
 
@@ -75,11 +76,17 @@ export function SignupForm() {
     }
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1100));
+    const response = await signup({ name, email, password, role });
+    if (response.success) {
+      toast.success("Account created successfully...");
+      localStorage.setItem("access_token", response.data?.access_token || "");
+      localStorage.setItem("user", JSON.stringify(response.data?.user || {}));
+      router.push("/");
+    } else {
+      toast.error(response.message || response.errors);
+    }
     setIsSubmitting(false);
     setHasSubmitted(false);
-    toast.success("Account created.");
-    router.push("/");
   };
 
   return (

@@ -11,6 +11,7 @@ import {
   getPasswordValidationError,
 } from "@/lib/utils";
 import { FormField, inputCls } from "@/components/ui/form-field";
+import { login } from "@/lib/apis/auth/auth";
 
 export function LoginForm() {
   const router = useRouter();
@@ -39,12 +40,18 @@ export function LoginForm() {
     }
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 900));
+    const response = await login({ email, password });
+    if (response.success) {
+      toast.success("Welcome back...");
+      localStorage.setItem("access_token", response.data?.access_token || "");
+      localStorage.setItem("user", JSON.stringify(response.data?.user || {}));
+      router.push("/");
+    } else {
+      toast.error(response.message || response.errors);
+    }
     setIsSubmitting(false);
     setErrors({});
     setHasSubmitted(false);
-    toast.success("Welcome back.");
-    router.push("/");
   };
 
   return (

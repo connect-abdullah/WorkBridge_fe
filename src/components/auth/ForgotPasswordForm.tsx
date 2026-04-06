@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { getEmailValidationError } from "@/lib/utils";
 import { FormField, inputCls } from "@/components/ui/form-field";
+import { forgotPassword } from "@/lib/apis/auth/auth";
 
 export function ForgotPasswordForm() {
   const router = useRouter();
@@ -33,13 +34,17 @@ export function ForgotPasswordForm() {
     }
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 900));
+    const response = await forgotPassword({ email });
+    if (response.success) {
+      toast.success("Reset email sent successfully...");
+      router.push("/");
+    } else {
+      toast.error(response.message || response.errors);
+    }
     setIsSubmitting(false);
     setErrors({});
     setHasSubmitted(false);
     setMessage("If this email exists, reset instructions were sent.");
-    toast.success("Reset email sent.");
-    router.push("/");
   };
 
   return (
