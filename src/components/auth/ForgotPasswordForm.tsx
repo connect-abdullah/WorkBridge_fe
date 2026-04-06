@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { getEmailValidationError } from "@/lib/utils";
 import { FormField, inputCls } from "@/components/ui/form-field";
 import { forgotPassword } from "@/lib/apis/auth/auth";
+import { formatApiFailureMessage } from "@/lib/apis/apiResponse";
 
 export function ForgotPasswordForm() {
   const router = useRouter();
@@ -39,7 +40,9 @@ export function ForgotPasswordForm() {
       toast.success("Reset email sent successfully...");
       router.push("/");
     } else {
-      toast.error(response.message || response.errors);
+      toast.error(
+        formatApiFailureMessage(response.message, response.errors),
+      );
     }
     setIsSubmitting(false);
     setErrors({});

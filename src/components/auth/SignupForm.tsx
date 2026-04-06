@@ -14,6 +14,7 @@ import {
 } from "@/lib/utils";
 import { FormField, inputCls } from "@/components/ui/form-field";
 import { signup } from "@/lib/apis/auth/auth";
+import { formatApiFailureMessage } from "@/lib/apis/apiResponse";
 
 type Role = "freelancer" | "client";
 
@@ -83,7 +84,9 @@ export function SignupForm() {
       localStorage.setItem("user", JSON.stringify(response.data?.user || {}));
       router.push("/");
     } else {
-      toast.error(response.message || response.errors);
+      toast.error(
+        formatApiFailureMessage(response.message, response.errors),
+      );
     }
     setIsSubmitting(false);
     setHasSubmitted(false);

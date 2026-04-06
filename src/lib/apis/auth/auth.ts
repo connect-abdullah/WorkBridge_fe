@@ -31,12 +31,15 @@ export const updateProfile = async (data: UpdateProfileSchema) => {
 };
 
 export const deleteUser = async () => {
-  const response = await del<APIResponse>(authApi.deleteUser);
+  const response = await del<APIResponse<null>>(authApi.deleteUser);
   return response;
 };
 
 export const forgotPassword = async (data: ForgotPasswordSchema) => {
-  const response = await post<APIResponse>(authApi.forgotPassword, data);
+  const response = await post<APIResponse<null>>(
+    authApi.forgotPassword,
+    data,
+  );
   return response;
 };
 
