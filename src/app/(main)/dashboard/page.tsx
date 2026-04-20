@@ -7,7 +7,7 @@ import {
   dashboardStats,
 } from "@/constants/dashboard";
 
-export default function HomePage() {
+export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <header className="space-y-1">
@@ -31,7 +31,7 @@ export default function HomePage() {
             <h2 className="text-lg font-semibold text-foreground">Projects</h2>
             <p className="text-sm text-muted-foreground">3 active engagements</p>
           </div>
-          <div className="space-y-3 flex flex-col">
+          <div className="flex flex-col space-y-3">
             {dashboardProjects.map((project, index) => (
               <ProjectCard
                 key={project.title}

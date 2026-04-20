@@ -7,8 +7,17 @@ import axios, {
 
 import { forceLogout } from "@/lib/forceLogout";
 
+const devUrl = process.env.NEXT_PUBLIC_DEV_URL;
+const prodUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 const baseURL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000/";
+  process.env.NODE_ENV === "development" ? devUrl ?? prodUrl : prodUrl;
+
+if (!baseURL) {
+  throw new Error(
+    "Missing API base URL. Set NEXT_PUBLIC_BACKEND_URL (and optionally NEXT_PUBLIC_DEV_URL).",
+  );
+}
 
 export const API_PREFIX = "/api/v1";
 
