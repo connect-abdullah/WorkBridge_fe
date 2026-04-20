@@ -79,9 +79,11 @@ export function SignupForm() {
     const response = await signup({ name, email, password, role });
     if (response.success) {
       toast.success("Account created successfully...");
-      localStorage.setItem("auth:token", response.data?.access_token || "");
+      const token = response.data?.access_token || "";
+      localStorage.setItem("auth:token", token);
       localStorage.setItem("auth:user", JSON.stringify(response.data?.user || {}));
-      router.push("/");
+      document.cookie = `auth:token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+      router.push("/dashboard");
     } else {
       toast.error(response.message);
     }

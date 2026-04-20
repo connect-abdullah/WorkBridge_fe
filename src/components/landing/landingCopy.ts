@@ -1,7 +1,7 @@
 export const landingCopy = {
   brand: "WorkBridge",
   hero: {
-    headline: "Stop Chasing Clients for Updates and Payments",
+    headline: "Stop Managing Clients Manually. Start Running Projects Like a System.",
     subheadline:
       "WorkBridge gives freelancers a structured workspace where clients review work, approve milestones, and release payments — all in one place.",
     primaryCta: "Join Waitlist",
