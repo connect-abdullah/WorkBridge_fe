@@ -11,27 +11,14 @@ const PROTECTED = ["/dashboard", "/projects", "/payments", "/notifications", "/p
 const AUTH_ROUTES = ["/auth"];
 
 export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  const token = req.cookies.get("auth:token")?.value;
+  // In local dev (flag unset), allow navigation everywhere.
+  if (!LANDING_LOCK) return NextResponse.next();
 
+  const { pathname } = req.nextUrl;
   const isProtected = PROTECTED.some((p) => pathname === p || pathname.startsWith(`${p}/`));
   const isAuthRoute = AUTH_ROUTES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
-  if (LANDING_LOCK && (isProtected || isAuthRoute)) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/";
-    url.search = "";
-    return NextResponse.redirect(url);
-  }
-
-  if (isProtected && !token) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/";
-    url.search = "";
-    return NextResponse.redirect(url);
-  }
-
-  if (isAuthRoute && token) {
+  if (isProtected || isAuthRoute) {
     const url = req.nextUrl.clone();
     url.pathname = "/";
     url.search = "";

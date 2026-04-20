@@ -10,8 +10,9 @@ import { forceLogout } from "@/lib/forceLogout";
 const devUrl = process.env.NEXT_PUBLIC_DEV_URL;
 const prodUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-const baseURL =
-  process.env.NODE_ENV === "development" ? devUrl ?? prodUrl : prodUrl;
+const isDev = process.env.NEXT_PUBLIC_DEVELOPMENT === "true";
+
+const baseURL = isDev ? devUrl : prodUrl;
 
 if (!baseURL) {
   throw new Error(

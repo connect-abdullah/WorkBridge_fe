@@ -90,19 +90,42 @@ export function WaitlistModal({
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
 
+    const payload = {
+      name: values.name.trim(),
+      email: values.email.trim(),
+      city: values.city.trim(),
+    };
+
+    // If the API is slow, show the "Thanks" UI quickly (~3–4s) to keep UX snappy.
+    const THANKS_AFTER_MS = 2500;
+    let showedThanks = false;
+    let thanksTimer: number | undefined;
+
+    const showThanks = () => {
+      showedThanks = true;
+      setSubmitted(true);
+      setIsSubmitting(false);
+    };
+
     try {
       setIsSubmitting(true);
-      await waitlistService.create({
-        name: values.name.trim(),
-        email: values.email.trim(),
-        city: values.city.trim(),
-      });
-      setSubmitted(true);
+      thanksTimer = window.setTimeout(showThanks, THANKS_AFTER_MS);
+
+      await waitlistService.create(payload);
+
+      if (thanksTimer) window.clearTimeout(thanksTimer);
+      if (!showedThanks) setSubmitted(true);
     } catch (err) {
+      if (thanksTimer) window.clearTimeout(thanksTimer);
+
       const msg = err instanceof Error ? err.message : "Failed to join waitlist.";
       toast.error(msg);
+
+      // If we already showed the thank-you state (slow API), keep it to avoid
+      // jarring UI flips; the error toast is the signal something went wrong.
+      if (!showedThanks) setSubmitted(false);
     } finally {
-      setIsSubmitting(false);
+      if (!showedThanks) setIsSubmitting(false);
     }
   };
 
