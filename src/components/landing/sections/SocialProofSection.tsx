@@ -8,13 +8,13 @@ const testimonials = [
   {
     quote:
       "Finally a workflow my clients actually follow. No more digging through chats.",
-    name: "Aisha Khan",
+    name: "Emily Carter",
     title: "Product Designer, Northwind Studio",
   },
   {
     quote:
-      "Milestones + approvals in one place makes project management effortless.",
-    name: "Omar Riaz",
+      "Milestones and approvals in one place makes client work predictable and easy to manage.",
+    name: "Daniel Brooks",
     title: "Full-stack Developer, Freelance Collective",
   },
 ];
@@ -32,9 +32,6 @@ export function SocialProofSection() {
               <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                 Professional projects deserve a professional system.
               </h2>
-              <p className="text-sm text-muted-foreground sm:text-base">
-                This section is placeholder UI for future testimonials and stats.
-              </p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 {stats.map((s) => (

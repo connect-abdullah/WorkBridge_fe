@@ -28,9 +28,9 @@ export function LandingNavbar({
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 rounded-full border border-border/60 bg-background/60 px-4 py-2 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/45">
         <Link
           href="/"
-          className="flex items-center gap-2 rounded-full px-2 py-1 text-sm font-semibold text-foreground hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          className="flex items-center gap-2 rounded-full px-2 py-1 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
-          <span className="relative h-12 w-14 overflow-hidden bg-background p-1">
+          <span className="relative h-12 w-14 overflow-hidden bg-transparent p-1">
             <Image
               src="/logo.png"
               alt="WorkBridge logo"
@@ -118,11 +118,6 @@ export function LandingNavbar({
                 <SheetClose asChild>
                   <Button onClick={onJoinWaitlist} className="h-11 w-full">
                     {landingCopy.hero.primaryCta}
-                  </Button>
-                </SheetClose>
-                <SheetClose asChild>
-                  <Button variant="outline" className="h-11 w-full" asChild>
-                    <Link href="/dashboard">Go to dashboard</Link>
                   </Button>
                 </SheetClose>
               </div>

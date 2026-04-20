@@ -22,7 +22,7 @@ export function SolutionSection() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card/40 p-6">
+          <div className="rounded-2xl border border-border bg-card/40 p-6  shadow-md">
             <p className="text-sm font-medium text-foreground">
               The WorkBridge loop
             </p>

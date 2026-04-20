@@ -14,7 +14,7 @@ export function HeroSection({
   return (
     <section className="px-4 pt-10 sm:pt-14">
       <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1fr_1.25fr]">
-        <div className="space-y-6">
+        <div className="order-2 space-y-6 lg:order-1">
           <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-muted/30 px-3 py-1 text-xs font-medium text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             Freelancer-Client Collaboration Platform
@@ -25,9 +25,9 @@ export function HeroSection({
           </h1>
           <p className="text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
             WorkBridge gives freelancers a structured workspace where clients
-            review work, approve milestones, and release payments{" "}
-            <Highlighter action="underline" color="#FF9800">
-              - All In One Place
+            review work, approve milestones, and release payments{" - "}
+            <Highlighter action="underline" color="#FF9800" strokeWidth={2}>
+              All In One Place
             </Highlighter>
             .
           </p>
@@ -46,7 +46,7 @@ export function HeroSection({
             </Button>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
+          {/* <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-xl border border-border bg-card/40 p-4">
               <p className="text-sm font-medium text-foreground">
                 Faster approvals
@@ -71,10 +71,10 @@ export function HeroSection({
                 Know what’s approved and due.
               </p>
             </div>
-          </div>
+          </div> */}
         </div>
 
-        <div className="relative lg:-mr-8 xl:-mr-16">
+        <div className="order-1 relative lg:order-2 lg:-mr-8 xl:-mr-16">
           <div className="relative mx-auto max-w-[560px] sm:max-w-[720px] lg:max-w-none">
             <Image
               src="/laptop_image.png"

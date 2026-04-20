@@ -30,8 +30,8 @@ export default function LandingPage() {
         <ChannelUnificationSection />
         <HowItWorksSection />
         <SocialProofSection />
-        <FaqSection />
         <FinalCtaSection onJoinWaitlist={openWaitlist} />
+        <FaqSection />
       </main>
 
       <LandingFooter />

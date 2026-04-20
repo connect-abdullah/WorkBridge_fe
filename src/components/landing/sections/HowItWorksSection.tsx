@@ -4,22 +4,26 @@ const steps = [
   {
     step: "01",
     title: "Create project & milestones",
-    description: "Set scope, delivery checkpoints, and what ‘done’ means.",
+    description:
+      "Define scope, break work into clear deliverables, and set approval checkpoints from the start.",
   },
   {
     step: "02",
     title: "Upload deliverables",
-    description: "Keep files, links, and notes in one timeline.",
+    description:
+      "Submit files and updates directly within milestones so everything stays organized and traceable.",
   },
   {
     step: "03",
     title: "Client reviews & approves",
-    description: "Feedback stays tied to the milestone — no lost messages.",
+    description:
+      "Clients review work in context, request revisions, or approve — without scattered feedback.",
   },
   {
     step: "04",
     title: "Payment gets released",
-    description: "Approvals and payouts follow the same system.",
+    description:
+      "Once approved, payments follow automatically — no chasing, no ambiguity.",
   },
 ];
 
@@ -33,7 +37,7 @@ export function HowItWorksSection() {
               How it works
             </h2>
             <p className="text-sm text-muted-foreground sm:text-base">
-              A minimal workflow that clients understand instantly.
+            A simple, structured workflow that keeps projects, approvals, and payments aligned from start to finish.
             </p>
           </div>
 

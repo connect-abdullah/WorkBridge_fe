@@ -6,36 +6,41 @@ import {
   Milestone,
   Wallet,
 } from "lucide-react";
-
 const features = [
   {
     title: "Role-based dashboards",
-    description: "Freelancer and client views stay focused and clear.",
+    description:
+      "Freelancers manage everything, while clients see only what matters; progress, deliverables, and approvals.",
     Icon: LayoutDashboard,
   },
   {
     title: "Milestone tracking",
-    description: "Define scope, timelines, and approval checkpoints.",
+    description:
+      "Break projects into clear deliverables with defined scope, timelines, and approval checkpoints.",
     Icon: Milestone,
   },
   {
-    title: "File sharing",
-    description: "Upload deliverables and keep everything versioned.",
+    title: "Centralized file sharing",
+    description:
+      "Upload and manage all deliverables in one place with version control and easy client access.",
     Icon: Files,
   },
   {
     title: "Built-in approvals",
-    description: "Clients review, comment, and approve with one click.",
+    description:
+      "Clients can review work, request revisions, or approve instantly; no back-and-forth confusion.",
     Icon: BadgeCheck,
   },
   {
-    title: "Payment tracking",
-    description: "Match payments to milestones and status.",
+    title: "Milestone-based payments",
+    description:
+      "Track payments tied directly to completed work so you always know what’s pending and what’s paid.",
     Icon: Wallet,
   },
   {
     title: "Activity timeline",
-    description: "See progress, decisions, and next actions at a glance.",
+    description:
+      "A real-time log of updates, decisions, and progress so nothing gets missed or repeated.",
     Icon: Activity,
   },
 ];
@@ -58,7 +63,7 @@ export function FeaturesSection() {
           {features.map(({ title, description, Icon }) => (
             <div
               key={title}
-              className="group rounded-2xl border border-border bg-card/40 p-6 transition hover:bg-card/60"
+              className="group rounded-2xl border border-border bg-card/40 p-6 transition hover:bg-card/60 shadow-md"
             >
               <div className="flex items-center gap-3">
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-muted/40 text-foreground transition group-hover:bg-muted/60">

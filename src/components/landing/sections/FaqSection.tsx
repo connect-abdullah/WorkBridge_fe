@@ -8,23 +8,27 @@ import {
 const faqs = [
   {
     q: "Who is WorkBridge for?",
-    a: "Freelancers and independent studios who deliver client work in milestones and want a cleaner approval + payment workflow.",
+    a: "Freelancers and small teams who manage client work in milestones and want a structured way to deliver work, get approvals, and track payments without constant follow-ups.",
   },
   {
     q: "Is this a project management tool?",
-    a: "It’s focused on the freelancer-client loop: milestones, deliverables, client review/approval, and payment visibility — not internal team planning.",
+    a: "No — WorkBridge is built specifically for the freelancer-client workflow. It focuses on deliverables, approvals, and payments, not internal task or team management.",
   },
   {
     q: "How does payment tracking work?",
-    a: "WorkBridge ties approvals to milestones so you always know what’s approved, what’s pending, and what should be paid next.",
+    a: "Payments are tied directly to milestones. When work is approved, you can clearly see what’s due, what’s pending, and what’s already paid — all in one place.",
+  },
+  {
+    q: "Do clients need to learn a new system?",
+    a: "No — clients only see a simple interface to review work, give feedback, and approve milestones. No complexity, no onboarding friction.",
   },
   {
     q: "When will WorkBridge launch?",
-    a: "Join the waitlist and you’ll be notified as soon as early access opens.",
+    a: "We’re currently onboarding early users. Join the waitlist to get access as soon as spots open.",
   },
   {
     q: "Will there be pricing?",
-    a: "Yes — pricing will be announced at launch. For now, the waitlist is the best way to get early access.",
+    a: "Yes — pricing will be introduced at launch. Early users on the waitlist will get priority access and updates.",
   },
 ];
 
