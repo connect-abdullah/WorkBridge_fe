@@ -28,7 +28,7 @@ export function LandingNavbar({
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 rounded-full border border-border/60 bg-background/60 px-4 py-2 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/45">
         <Link
           href="/"
-          className="flex items-center gap-2 rounded-full px-2 py-1 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          className="flex min-w-0 flex-1 items-center gap-2 rounded-full px-2 py-1 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <span className="relative h-12 w-14 overflow-hidden bg-transparent p-1">
             <Image
@@ -40,7 +40,9 @@ export function LandingNavbar({
               priority
             />
           </span>
-          <span className="text-lg font-semibold">{landingCopy.brand}</span>
+          <span className="hidden truncate text-lg font-semibold min-[425px]:inline">
+            {landingCopy.brand}
+          </span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -64,7 +66,7 @@ export function LandingNavbar({
           </a>
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <AnimatedThemeToggler className="hidden sm:inline-flex" />
           <Sheet>
             <SheetTrigger asChild>
@@ -125,7 +127,7 @@ export function LandingNavbar({
           </Sheet>
           <Button
             onClick={onJoinWaitlist}
-            className="h-10 rounded-full px-4"
+            className="h-10 rounded-full px-4 min-[425px]:inline-flex"
           >
             {landingCopy.hero.primaryCta}
           </Button>
