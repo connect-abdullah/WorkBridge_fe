@@ -14,7 +14,7 @@ export function HeroSection({
   return (
     <section className="px-4 pt-10 sm:pt-14">
       <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1fr_1.25fr]">
-        <div className="order-2 space-y-6 lg:order-1">
+        <div className="order-1 space-y-6 ">
           <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-muted/30 px-3 py-1 text-xs font-medium text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             Freelancer-Client Collaboration Platform
@@ -74,7 +74,7 @@ export function HeroSection({
           </div> */}
         </div>
 
-        <div className="order-1 relative lg:order-2 lg:-mr-8 xl:-mr-16">
+        <div className="order-2 relative lg:-mr-8 xl:-mr-16">
           <div className="relative mx-auto max-w-[560px] sm:max-w-[720px] lg:max-w-none">
             <Image
               src="/laptop_image.png"
