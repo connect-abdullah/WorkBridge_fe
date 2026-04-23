@@ -27,7 +27,9 @@ export function ActivityPanel({ logs }: { logs: ReadonlyArray<ActivityLog> }) {
               ) : null}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="break-words text-sm text-foreground">{item.action}</p>
+              <p className="break-words text-sm text-foreground">
+                {item.action}
+              </p>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {item.timestamp}
               </p>

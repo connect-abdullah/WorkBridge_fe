@@ -15,7 +15,12 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         <p className="text-sm font-semibold">WorkBridge</p>
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
-            <Button type="button" variant="ghost" size="icon" aria-label="Open menu">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Open menu"
+            >
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>

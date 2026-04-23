@@ -90,7 +90,9 @@ export function AppSidebar({
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive =
-            item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
 
           return (
             <Link
@@ -123,7 +125,6 @@ export function AppSidebar({
         </div>
 
         <div className="mt-3 flex items-center justify-center gap-3">
-
           <Button
             type="button"
             variant="ghost"
@@ -132,7 +133,7 @@ export function AppSidebar({
             onClick={handleLogout}
             aria-label="Log out"
           >
-            <LogOut className="h-4 w-4" onClick={handleLogout}/>
+            <LogOut className="h-4 w-4" onClick={handleLogout} />
           </Button>
 
           <AnimatedThemeToggler className="flex-1 justify-center" />

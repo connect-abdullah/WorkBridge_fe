@@ -1,4 +1,3 @@
-
 import { LandingNavbar } from "@/components/landing/LandingNavbar";
 import { WaitlistModal } from "@/components/landing/WaitlistModal";
 import { HeroSection } from "@/components/landing/sections/HeroSection";
@@ -12,4 +11,17 @@ import { FaqSection } from "@/components/landing/sections/FaqSection";
 import { FinalCtaSection } from "@/components/landing/sections/FinalCtaSection";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 
-export { LandingNavbar, WaitlistModal, HeroSection, ProblemSection, SolutionSection, ChannelUnificationSection, FeaturesSection, HowItWorksSection, SocialProofSection, FaqSection, FinalCtaSection, LandingFooter };
+export {
+  LandingNavbar,
+  WaitlistModal,
+  HeroSection,
+  ProblemSection,
+  SolutionSection,
+  ChannelUnificationSection,
+  FeaturesSection,
+  HowItWorksSection,
+  SocialProofSection,
+  FaqSection,
+  FinalCtaSection,
+  LandingFooter,
+};

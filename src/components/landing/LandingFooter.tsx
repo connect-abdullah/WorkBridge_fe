@@ -24,7 +24,8 @@ export function LandingFooter() {
 
         <div className="mt-6 flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} {landingCopy.brand}. All rights reserved.
+            © {new Date().getFullYear()} {landingCopy.brand}. All rights
+            reserved.
           </p>
           <p>Built for freelancers.</p>
         </div>
@@ -56,4 +57,3 @@ export function LandingFooter() {
     </footer>
   );
 }
-

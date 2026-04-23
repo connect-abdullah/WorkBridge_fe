@@ -27,7 +27,9 @@ export function AuthShell({
           />
           <div>
             <p className="text-base font-semibold">WorkBridge</p>
-            <p className="text-sm text-muted-foreground">Freelancer-Client Hub</p>
+            <p className="text-sm text-muted-foreground">
+              Freelancer-Client Hub
+            </p>
           </div>
         </div>
 
@@ -41,7 +43,9 @@ export function AuthShell({
           </p>
         </div>
 
-        <p className="text-sm text-muted-foreground">WorkBridge SaaS Platform</p>
+        <p className="text-sm text-muted-foreground">
+          WorkBridge SaaS Platform
+        </p>
       </section>
 
       <section className="relative flex items-center justify-center px-4 py-10">

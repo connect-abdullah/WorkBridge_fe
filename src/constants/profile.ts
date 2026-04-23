@@ -13,4 +13,3 @@ export const profileUser: ProfileUser = {
   role: "freelancer",
   initials: "AJ",
 } as const;
-

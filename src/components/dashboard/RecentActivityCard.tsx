@@ -25,7 +25,9 @@ export function RecentActivityCard({
               </div>
               <div className="min-w-0">
                 <p className="text-sm text-foreground">{item.message}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{item.timestamp}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {item.timestamp}
+                </p>
               </div>
             </div>
           );

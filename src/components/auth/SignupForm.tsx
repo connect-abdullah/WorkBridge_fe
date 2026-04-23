@@ -81,7 +81,10 @@ export function SignupForm() {
       toast.success("Account created successfully...");
       const token = response.data?.access_token || "";
       localStorage.setItem("auth:token", token);
-      localStorage.setItem("auth:user", JSON.stringify(response.data?.user || {}));
+      localStorage.setItem(
+        "auth:user",
+        JSON.stringify(response.data?.user || {}),
+      );
       document.cookie = `auth:token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
       router.push("/dashboard");
     } else {
@@ -211,10 +214,7 @@ export function SignupForm() {
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
-      <Button
-        type="submit"
-        className="h-11 w-full"
-      >
+      <Button type="submit" className="h-11 w-full">
         {isSubmitting ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

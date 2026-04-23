@@ -32,11 +32,11 @@ export function ProblemSection() {
       <div className="mx-auto max-w-6xl">
         <div className="max-w-2xl space-y-2">
           <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-           A Project breaks down in the gaps.
+            A Project breaks down in the gaps.
           </h2>
           <p className="text-sm text-muted-foreground sm:text-base">
-            WorkBridge replaces the messy back-and-forth with a system your clients
-            can follow.
+            WorkBridge replaces the messy back-and-forth with a system your
+            clients can follow.
           </p>
         </div>
 
@@ -46,23 +46,33 @@ export function ProblemSection() {
               key={title}
               className="group rounded-2xl border border-border bg-card/40 p-6 transition hover:bg-card/60 shadow-sm"
               initial={
-                shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
+                shouldReduceMotion
+                  ? { opacity: 1, y: 0 }
+                  : { opacity: 0, y: 20 }
               }
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.35 }}
               transition={
                 shouldReduceMotion
                   ? { duration: 0 }
-                  : { duration: 0.90, ease: [0.16, 1, 0.3, 1], delay: index * 0.3 }
+                  : {
+                      duration: 0.9,
+                      ease: [0.16, 1, 0.3, 1],
+                      delay: index * 0.3,
+                    }
               }
             >
               <div className="flex items-center gap-3">
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-muted/40 text-foreground transition group-hover:bg-muted/60">
                   <Icon className="h-5 w-5" />
                 </span>
-                <p className="text-base font-semibold text-foreground">{title}</p>
+                <p className="text-base font-semibold text-foreground">
+                  {title}
+                </p>
               </div>
-              <p className="mt-3 text-sm text-muted-foreground">{description}</p>
+              <p className="mt-3 text-sm text-muted-foreground">
+                {description}
+              </p>
             </motion.div>
           ))}
         </div>
@@ -70,4 +80,3 @@ export function ProblemSection() {
     </section>
   );
 }
-

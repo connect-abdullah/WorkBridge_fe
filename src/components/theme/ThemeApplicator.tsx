@@ -119,4 +119,3 @@ html.dark { ${toCssVarRule(darkVars)} }
 
   return <style dangerouslySetInnerHTML={{ __html: css }} />;
 }
-

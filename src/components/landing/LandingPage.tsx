@@ -1,7 +1,20 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { LandingNavbar, WaitlistModal, HeroSection, ProblemSection, SolutionSection, ChannelUnificationSection, FeaturesSection, HowItWorksSection, SocialProofSection, FaqSection, FinalCtaSection, LandingFooter } from "@/components/landing/__init__";
+import {
+  LandingNavbar,
+  WaitlistModal,
+  HeroSection,
+  ProblemSection,
+  SolutionSection,
+  ChannelUnificationSection,
+  FeaturesSection,
+  HowItWorksSection,
+  SocialProofSection,
+  FaqSection,
+  FinalCtaSection,
+  LandingFooter,
+} from "@/components/landing/__init__";
 
 export default function LandingPage() {
   const [waitlistOpen, setWaitlistOpen] = useState(false);
@@ -29,4 +42,3 @@ export default function LandingPage() {
     </div>
   );
 }
-

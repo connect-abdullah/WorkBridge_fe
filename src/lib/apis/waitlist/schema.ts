@@ -9,4 +9,3 @@ export type WaitlistCreate = WaitlistBase;
 export interface WaitlistRead extends WaitlistBase {
   id: number;
 }
-

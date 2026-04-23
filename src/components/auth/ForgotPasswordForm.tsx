@@ -39,9 +39,7 @@ export function ForgotPasswordForm() {
       toast.success("Reset email sent successfully...");
       router.push("/");
     } else {
-      toast.error(
-        response.message
-      );
+      toast.error(response.message);
     }
     setIsSubmitting(false);
     setErrors({});

@@ -4,7 +4,11 @@ import { ProjectCard } from "@/components/dashboard/ProjectCard";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getStoredUserId, queryApi, queryKeys } from "@/lib/queryApi";
 import { Modal } from "@/components/project-detail/components/Modal";
-import { Field, inputCls, selectCls } from "@/components/project-detail/components/Field";
+import {
+  Field,
+  inputCls,
+  selectCls,
+} from "@/components/project-detail/components/Field";
 import { Button } from "@/components/ui/button";
 import { Calendar, Plus, Trash2 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
@@ -79,13 +83,17 @@ function toLocalDate(isoLike: string) {
 
 export default function ProjectsPage() {
   const userId = getStoredUserId() ?? 0;
-  const { data: res, isLoading, error } = useQuery(
-    queryApi.projects.listForUser(userId),
-  );
+  const {
+    data: res,
+    isLoading,
+    error,
+  } = useQuery(queryApi.projects.listForUser(userId));
   const data = res?.data ?? [];
   const queryClient = useQueryClient();
 
-  const createProjectMutation = useMutation(queryApi.mutations.projects.create());
+  const createProjectMutation = useMutation(
+    queryApi.mutations.projects.create(),
+  );
 
   // ── Create Project modal state
   const [createOpen, setCreateOpen] = useState(false);
@@ -155,7 +163,7 @@ export default function ProjectsPage() {
       prev.map((m, i) =>
         i !== msIndex
           ? m
-          : {
+          : ({
               ...m,
               tasks: [
                 ...(m.tasks ?? []),
@@ -165,7 +173,7 @@ export default function ProjectsPage() {
                   description: "",
                 } as DraftTask,
               ],
-            } as DraftMilestone,
+            } as DraftMilestone),
       ),
     );
   };
@@ -256,7 +264,9 @@ export default function ProjectsPage() {
             {res.message || "Failed to load projects."}
           </p>
         ) : (data?.length ?? 0) === 0 ? (
-          <p className="text-sm text-muted-foreground">{res?.message || "No projects found."}</p>
+          <p className="text-sm text-muted-foreground">
+            {res?.message || "No projects found."}
+          </p>
         ) : (
           data!.map((project) => {
             const ms = project.milestones ?? [];
@@ -266,9 +276,7 @@ export default function ProjectsPage() {
               total === 0 ? 0 : Math.round((completed / total) * 100);
             const allCompleted = total > 0 && completed === total;
             const next =
-              ms.find((m) => m.status !== "completed") ??
-              ms[0] ??
-              null;
+              ms.find((m) => m.status !== "completed") ?? ms[0] ?? null;
 
             return (
               <ProjectCard
@@ -279,9 +287,11 @@ export default function ProjectsPage() {
                 milestoneTitle={
                   allCompleted
                     ? "All milestones completed"
-                    : next?.title ?? "No milestones yet"
+                    : (next?.title ?? "No milestones yet")
                 }
-                milestoneDueDate={allCompleted ? "—" : formatShortDate(next?.due_date)}
+                milestoneDueDate={
+                  allCompleted ? "—" : formatShortDate(next?.due_date)
+                }
                 milestoneStatus={
                   allCompleted
                     ? ("completed" as never)
@@ -303,7 +313,10 @@ export default function ProjectsPage() {
         subtitle="Create a project with milestones and tasks in one go."
         maxWidth="max-w-4xl"
       >
-        <form onSubmit={handleCreateProject} className="grid gap-4 md:grid-cols-2">
+        <form
+          onSubmit={handleCreateProject}
+          className="grid gap-4 md:grid-cols-2"
+        >
           <Field label="Project title" wide>
             <input
               value={pTitle}
@@ -415,8 +428,15 @@ export default function ProjectsPage() {
 
           <div className="md:col-span-2 space-y-3 pt-1">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-foreground">Milestones</p>
-              <Button type="button" variant="outline" className="h-9" onClick={addMilestone}>
+              <p className="text-sm font-semibold text-foreground">
+                Milestones
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9"
+                onClick={addMilestone}
+              >
                 <Plus className="mr-1.5 h-4 w-4" /> Add milestone
               </Button>
             </div>
@@ -448,7 +468,9 @@ export default function ProjectsPage() {
                         onChange={(e) =>
                           setMilestones((prev) =>
                             prev.map((x, i) =>
-                              i === msIndex ? ({ ...x, title: e.target.value } as never) : x,
+                              i === msIndex
+                                ? ({ ...x, title: e.target.value } as never)
+                                : x,
                             ),
                           )
                         }
@@ -463,7 +485,10 @@ export default function ProjectsPage() {
                           setMilestones((prev) =>
                             prev.map((x, i) =>
                               i === msIndex
-                                ? ({ ...x, description: e.target.value } as never)
+                                ? ({
+                                    ...x,
+                                    description: e.target.value,
+                                  } as never)
                                 : x,
                             ),
                           )
@@ -478,7 +503,9 @@ export default function ProjectsPage() {
                         onChange={(e) =>
                           setMilestones((prev) =>
                             prev.map((x, i) =>
-                              i === msIndex ? ({ ...x, status: e.target.value } as never) : x,
+                              i === msIndex
+                                ? ({ ...x, status: e.target.value } as never)
+                                : x,
                             ),
                           )
                         }
@@ -499,7 +526,10 @@ export default function ProjectsPage() {
                           setMilestones((prev) =>
                             prev.map((x, i) =>
                               i === msIndex
-                                ? ({ ...x, price: Number(e.target.value) } as never)
+                                ? ({
+                                    ...x,
+                                    price: Number(e.target.value),
+                                  } as never)
                                 : x,
                             ),
                           )
@@ -519,7 +549,10 @@ export default function ProjectsPage() {
                             setMilestones((prev) =>
                               prev.map((x, i) =>
                                 i === msIndex
-                                  ? ({ ...x, due_date: d.toISOString() } as never)
+                                  ? ({
+                                      ...x,
+                                      due_date: d.toISOString(),
+                                    } as never)
                                   : x,
                               ),
                             );
@@ -529,7 +562,8 @@ export default function ProjectsPage() {
                         <button
                           type="button"
                           onClick={(e) => {
-                            const root = e.currentTarget.parentElement as HTMLElement | null;
+                            const root = e.currentTarget
+                              .parentElement as HTMLElement | null;
                             const input = root?.querySelector("input") as
                               | (HTMLInputElement & { showPicker?: () => void })
                               | null;
@@ -562,7 +596,9 @@ export default function ProjectsPage() {
                     </div>
 
                     {(m.tasks ?? []).length === 0 ? (
-                      <p className="text-sm text-muted-foreground">No tasks yet.</p>
+                      <p className="text-sm text-muted-foreground">
+                        No tasks yet.
+                      </p>
                     ) : (
                       <div className="space-y-2">
                         {(m.tasks ?? []).map((t, tIndex) => (
@@ -637,7 +673,11 @@ export default function ProjectsPage() {
             >
               Cancel
             </Button>
-            <Button type="submit" className="h-10" disabled={createProjectMutation.isPending}>
+            <Button
+              type="submit"
+              className="h-10"
+              disabled={createProjectMutation.isPending}
+            >
               {createProjectMutation.isPending ? "Creating…" : "Create Project"}
             </Button>
           </div>

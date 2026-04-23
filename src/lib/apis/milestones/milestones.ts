@@ -26,7 +26,10 @@ export async function getMilestoneById(milestoneId: number) {
   return res;
 }
 
-export async function updateMilestone(milestoneId: number, data: MilestoneUpdate) {
+export async function updateMilestone(
+  milestoneId: number,
+  data: MilestoneUpdate,
+) {
   const res = await put<APIResponse<MilestoneRead>, MilestoneUpdate>(
     `${milestones_api_endpoint}/${milestoneId}`,
     data,
@@ -40,4 +43,3 @@ export async function deleteMilestone(milestoneId: number) {
   );
   return res;
 }
-

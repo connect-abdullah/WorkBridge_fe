@@ -16,7 +16,6 @@ const Circle = forwardRef<
     onTop?: boolean;
   }
 >(({ className, children, label, hideLabelOnDesktop, onTop }, ref) => {
-
   const labelDiv = label ? (
     <p
       className={cn(
@@ -47,13 +46,7 @@ const Circle = forwardRef<
 
 Circle.displayName = "Circle";
 
-function BrandLogo({
-  src,
-  alt,
-}: {
-  src: string;
-  alt: string;
-}) {
+function BrandLogo({ src, alt }: { src: string; alt: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt={alt} className="h-6 w-6" />
@@ -87,10 +80,14 @@ export function ChannelUnificationSection() {
         <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
           <div className="space-y-2">
             <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-            Bring every client into one structured workflow.
+              Bring every client into one structured workflow.
             </h2>
             <p className="text-sm text-muted-foreground sm:text-base">
-            Clients come from everywhere; messages, referrals, platforms, and emails. WorkBridge centralizes everything into one structured system; so you can manage projects, handle approvals, deliver files, and track payments without scattered communication or constant follow-ups.
+              Clients come from everywhere; messages, referrals, platforms, and
+              emails. WorkBridge centralizes everything into one structured
+              system; so you can manage projects, handle approvals, deliver
+              files, and track payments without scattered communication or
+              constant follow-ups.
             </p>
           </div>
 
@@ -118,7 +115,10 @@ export function ChannelUnificationSection() {
 
                   <div className="h-8 w-px bg-border" />
 
-                  <Circle className="size-16 bg-background p-3" label="WorkBridge">
+                  <Circle
+                    className="size-16 bg-background p-3"
+                    label="WorkBridge"
+                  >
                     <div className="relative h-8 w-8">
                       <Image
                         src="/logo.png"
@@ -303,4 +303,3 @@ export function ChannelUnificationSection() {
     </section>
   );
 }
-

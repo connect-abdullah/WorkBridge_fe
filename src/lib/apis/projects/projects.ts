@@ -29,9 +29,12 @@ export async function createProject(data: ProjectCreate) {
 }
 
 export async function listProjectsForUser(userId: number) {
-  const res = await get<APIResponse<ProjectReadWithMilestones[]>>(projectsApi.all, {
-    params: { user_id: userId },
-  });
+  const res = await get<APIResponse<ProjectReadWithMilestones[]>>(
+    projectsApi.all,
+    {
+      params: { user_id: userId },
+    },
+  );
   return res;
 }
 
@@ -64,4 +67,3 @@ export async function deleteProject(projectId: number) {
   });
   return res;
 }
-

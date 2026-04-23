@@ -58,7 +58,9 @@ export function SocialProofSection() {
                     “{t.quote}”
                   </blockquote>
                   <figcaption className="mt-4 text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground">{t.name}</span>{" "}
+                    <span className="font-medium text-foreground">
+                      {t.name}
+                    </span>{" "}
                     — {t.title}
                   </figcaption>
                 </figure>
@@ -70,4 +72,3 @@ export function SocialProofSection() {
     </section>
   );
 }
-

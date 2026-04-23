@@ -18,7 +18,11 @@ import {
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/project-detail/components/Modal";
-import { Field, inputCls, selectCls } from "@/components/project-detail/components/Field";
+import {
+  Field,
+  inputCls,
+  selectCls,
+} from "@/components/project-detail/components/Field";
 
 export function MilestonesPanel({
   milestones,
@@ -99,10 +103,14 @@ export function MilestonesPanel({
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-end gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-muted-foreground">Sort</span>
+          <span className="text-xs font-medium text-muted-foreground">
+            Sort
+          </span>
           <select
             value={sortValue}
-            onChange={(e) => onSortChange(e.target.value as "dueDate" | "order")}
+            onChange={(e) =>
+              onSortChange(e.target.value as "dueDate" | "order")
+            }
             className={selectCls}
             aria-label="Sort milestones"
           >
@@ -293,7 +301,9 @@ export function MilestonesPanel({
       <Modal
         open={milestoneModalOpen}
         onClose={onCloseModal}
-        title={milestoneModalMode === "create" ? "Add Milestone" : "Edit Milestone"}
+        title={
+          milestoneModalMode === "create" ? "Add Milestone" : "Edit Milestone"
+        }
         subtitle="Fill in all fields to track this delivery milestone clearly."
       >
         <form
@@ -341,7 +351,8 @@ export function MilestonesPanel({
               <button
                 type="button"
                 onClick={(e) => {
-                  const root = (e.currentTarget.parentElement ?? null) as HTMLElement | null;
+                  const root = (e.currentTarget.parentElement ??
+                    null) as HTMLElement | null;
                   const input = root?.querySelector("input") as
                     | (HTMLInputElement & { showPicker?: () => void })
                     | null;
@@ -376,7 +387,9 @@ export function MilestonesPanel({
               Cancel
             </Button>
             <Button type="submit" className="h-10">
-              {milestoneModalMode === "create" ? "Create Milestone" : "Save Changes"}
+              {milestoneModalMode === "create"
+                ? "Create Milestone"
+                : "Save Changes"}
             </Button>
           </div>
         </form>

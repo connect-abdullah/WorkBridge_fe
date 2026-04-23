@@ -46,4 +46,3 @@ export interface MilestoneUpdate {
   tasks?: TaskUpdate[] | null;
   payment?: unknown | null;
 }
-

@@ -77,7 +77,9 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-5">
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold text-foreground">Notifications</h1>
+        <h1 className="text-2xl font-semibold text-foreground">
+          Notifications
+        </h1>
         <p className="text-sm text-muted-foreground">
           Stay on top of updates, comments, and payment events.
         </p>

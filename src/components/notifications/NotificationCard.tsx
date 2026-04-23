@@ -33,7 +33,9 @@ export function NotificationCard({
         <div
           className={cn(
             "mt-0.5 rounded-md p-2",
-            isRead ? "bg-muted/40 text-muted-foreground" : "bg-primary/10 text-primary",
+            isRead
+              ? "bg-muted/40 text-muted-foreground"
+              : "bg-primary/10 text-primary",
           )}
         >
           <Icon className="h-4 w-4" />
@@ -56,4 +58,3 @@ export function NotificationCard({
     </button>
   );
 }
-

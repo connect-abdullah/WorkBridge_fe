@@ -8,4 +8,3 @@ export default async function ProjectDetailRoute({
   const { projectId } = await params;
   return <ProjectDetailPage projectId={projectId} />;
 }
-

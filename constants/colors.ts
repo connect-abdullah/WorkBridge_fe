@@ -1,1 +1,6 @@
-export { colors, hexToHslChannels, hexToRgb, hexToRgba } from "@/constants/colors";
+export {
+  colors,
+  hexToHslChannels,
+  hexToRgb,
+  hexToRgba,
+} from "@/constants/colors";

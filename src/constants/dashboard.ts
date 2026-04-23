@@ -101,4 +101,3 @@ export const dashboardActivities = [
     timestamp: "Yesterday, 1:18 PM",
   },
 ] as const;
-

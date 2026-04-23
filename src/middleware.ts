@@ -7,7 +7,13 @@ import type { NextRequest } from "next/server";
 // When unset (local dev): standard auth-based routing applies.
 const LANDING_LOCK = process.env.NEXT_PUBLIC_LANDING_LOCK === "1";
 
-const PROTECTED = ["/dashboard", "/projects", "/payments", "/notifications", "/profile"];
+const PROTECTED = [
+  "/dashboard",
+  "/projects",
+  "/payments",
+  "/notifications",
+  "/profile",
+];
 const AUTH_ROUTES = ["/auth"];
 
 export function middleware(req: NextRequest) {
@@ -15,8 +21,12 @@ export function middleware(req: NextRequest) {
   if (!LANDING_LOCK) return NextResponse.next();
 
   const { pathname } = req.nextUrl;
-  const isProtected = PROTECTED.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-  const isAuthRoute = AUTH_ROUTES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  const isProtected = PROTECTED.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+  const isAuthRoute = AUTH_ROUTES.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
 
   if (isProtected || isAuthRoute) {
     const url = req.nextUrl.clone();

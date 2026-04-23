@@ -31,4 +31,3 @@ export const payments: PaymentItem[] = [
     date: "Apr 12, 2026",
   },
 ] as const;
-

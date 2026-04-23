@@ -23,7 +23,11 @@ import type { MilestoneRead } from "@/lib/apis/milestones/schema";
 import type { ProjectReadWithMilestones } from "@/lib/apis/projects/schema";
 import type { ProjectUpdate } from "@/lib/apis/projects/schema";
 import { Modal } from "@/components/project-detail/components/Modal";
-import { Field, inputCls, selectCls } from "@/components/project-detail/components/Field";
+import {
+  Field,
+  inputCls,
+  selectCls,
+} from "@/components/project-detail/components/Field";
 import { Button } from "@/components/ui/button";
 import { Calendar, Pencil } from "lucide-react";
 import { toLocalDateTime } from "@/lib/utils";
@@ -190,7 +194,10 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       const list = prev.data.milestones ?? [];
       return {
         ...prev,
-        data: { ...prev.data, milestones: list.filter((m) => m.id !== milestoneId) },
+        data: {
+          ...prev.data,
+          milestones: list.filter((m) => m.id !== milestoneId),
+        },
       };
     });
   }
@@ -217,19 +224,26 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       const milestones = prev.data.milestones ?? [];
       const nextMilestones = milestones.map((ms) => {
         if (ms.id !== milestoneId) return ms;
-        return { ...ms, tasks: (ms.tasks ?? []).filter((t) => t.id !== taskId) };
+        return {
+          ...ms,
+          tasks: (ms.tasks ?? []).filter((t) => t.id !== taskId),
+        };
       });
       return { ...prev, data: { ...prev.data, milestones: nextMilestones } };
     });
   }
 
-  const createMilestoneMutation = useMutation(queryApi.mutations.milestones.create());
+  const createMilestoneMutation = useMutation(
+    queryApi.mutations.milestones.create(),
+  );
   const updateMilestoneMutation = useMutation({
     mutationFn: async (vars: { milestoneId: number; data: unknown }) => {
       return updateMilestone(vars.milestoneId, vars.data as never);
     },
   });
-  const deleteMilestoneMutation = useMutation(queryApi.mutations.milestones.delete());
+  const deleteMilestoneMutation = useMutation(
+    queryApi.mutations.milestones.delete(),
+  );
 
   const createTaskMutation = useMutation(queryApi.mutations.tasks.create());
   const updateTaskMutation = useMutation({
@@ -244,7 +258,9 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       return updateProject(vars.projectId, vars.data as never);
     },
   });
-  const deleteProjectMutation = useMutation(queryApi.mutations.projects.delete());
+  const deleteProjectMutation = useMutation(
+    queryApi.mutations.projects.delete(),
+  );
 
   const [projectSummary, setProjectSummary] = useState<ProjectSummary>(() => ({
     id: projectId,
@@ -294,11 +310,15 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
   // ── Task modal (create / edit)
   const [taskModalOpen, setTaskModalOpen] = useState(false);
-  const [taskModalMode, setTaskModalMode] = useState<"create" | "edit">("create");
-  const [taskModalMilestoneId, setTaskModalMilestoneId] = useState<string | null>(
+  const [taskModalMode, setTaskModalMode] = useState<"create" | "edit">(
+    "create",
+  );
+  const [taskModalMilestoneId, setTaskModalMilestoneId] = useState<
+    string | null
+  >(null);
+  const [taskModalEditingId, setTaskModalEditingId] = useState<string | null>(
     null,
   );
-  const [taskModalEditingId, setTaskModalEditingId] = useState<string | null>(null);
   const [taskTitle, setTaskTitle] = useState("New task");
   const [taskDescription, setTaskDescription] = useState("");
 
@@ -329,9 +349,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
   const [meetingNotesId, setMeetingNotesId] = useState<string | null>(null);
 
   // ── Notes tab
-  const [privateNotes, setPrivateNotes] = useState(
-    "Internal project notes...",
-  );
+  const [privateNotes, setPrivateNotes] = useState("Internal project notes...");
   const [sharedNotes, setSharedNotes] = useState(
     "Notes visible to both freelancer and client.",
   );
@@ -395,10 +413,10 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     [sortedMilestones],
   );
 
-  const nextMilestone =
-    sortedMilestones.find((m) => m.status !== "completed") ??
-    sortedMilestones[0] ??
-    {
+  const nextMilestone = sortedMilestones.find(
+    (m) => m.status !== "completed",
+  ) ??
+    sortedMilestones[0] ?? {
       id: "0",
       title: "No milestones yet",
       description: "",
@@ -719,7 +737,8 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
             toast.error(res.message || "Failed to update task.");
             return;
           }
-          if (res.data) patchTaskInCache(Number(taskModalMilestoneId), res.data);
+          if (res.data)
+            patchTaskInCache(Number(taskModalMilestoneId), res.data);
           if (res.data) {
             const uiTask = toUiTask(res.data);
             setMilestoneState((prev) =>
@@ -833,7 +852,9 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
           queryClient.setQueriesData(
             { predicate: (q) => (q.queryKey?.[0] as string) === "projects" },
             (old) => {
-              const prev = old as APIResponse<ProjectReadWithMilestones[]> | undefined;
+              const prev = old as
+                | APIResponse<ProjectReadWithMilestones[]>
+                | undefined;
               if (!prev?.data) return old;
               return {
                 ...prev,
@@ -892,13 +913,20 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         queryClient.setQueriesData(
           { predicate: (q) => (q.queryKey?.[0] as string) === "projects" },
           (old) => {
-            const prev = old as APIResponse<ProjectReadWithMilestones[]> | undefined;
+            const prev = old as
+              | APIResponse<ProjectReadWithMilestones[]>
+              | undefined;
             if (!prev?.data) return old;
-            return { ...prev, data: prev.data.filter((p) => p.id !== projectDetail.id) };
+            return {
+              ...prev,
+              data: prev.data.filter((p) => p.id !== projectDetail.id),
+            };
           },
         );
         toast.success(res.message || "Project deleted.");
-        return queryClient.invalidateQueries({ queryKey: queryKeys.projects.all });
+        return queryClient.invalidateQueries({
+          queryKey: queryKeys.projects.all,
+        });
       })
       .then(() => router.push("/projects"))
       .catch(() => {});
@@ -908,7 +936,6 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 pb-10">
-
       {/* ── Project Header ─────────────────────────────── */}
       <header className="space-y-3 border-b border-border pb-5">
         {projectError ? (
@@ -958,7 +985,9 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
       {/* ── Milestone Step Tracker ─────────────────────── */}
       {isProjectLoading ? (
-        <p className="text-sm text-muted-foreground">Loading project details…</p>
+        <p className="text-sm text-muted-foreground">
+          Loading project details…
+        </p>
       ) : (
         <MilestoneStepTracker milestoneItems={sortedMilestones} />
       )}
@@ -1036,7 +1065,6 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
           msStatus={msStatus}
           setMsStatus={setMsStatus}
           onMilestoneSubmit={handleMilestoneSubmit}
-
           taskModalOpen={taskModalOpen}
           taskModalMode={taskModalMode}
           onCloseTaskModal={() => setTaskModalOpen(false)}
@@ -1054,9 +1082,16 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         title="Edit Project"
         subtitle="Update the project’s core details."
       >
-        <form onSubmit={handleProjectSubmit} className="grid gap-4 md:grid-cols-2">
+        <form
+          onSubmit={handleProjectSubmit}
+          className="grid gap-4 md:grid-cols-2"
+        >
           <Field label="Title" wide>
-            <input value={pTitle} onChange={(e) => setPTitle(e.target.value)} className={inputCls} />
+            <input
+              value={pTitle}
+              onChange={(e) => setPTitle(e.target.value)}
+              className={inputCls}
+            />
           </Field>
 
           <Field label="Description" wide>
@@ -1154,7 +1189,10 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
               onClick={handleProjectDelete}
               variant="outline"
               aria-label="Delete project"
-              style={{ borderColor: "var(--destructive)", color: "var(--destructive)" }}
+              style={{
+                borderColor: "var(--destructive)",
+                color: "var(--destructive)",
+              }}
             >
               Delete Project
             </Button>
@@ -1236,9 +1274,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         />
       ) : null}
 
-      {activeTab === "Activity" ? (
-        <ActivityPanel logs={activityLogs} />
-      ) : null}
+      {activeTab === "Activity" ? <ActivityPanel logs={activityLogs} /> : null}
     </div>
   );
 }

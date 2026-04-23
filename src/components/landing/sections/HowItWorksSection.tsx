@@ -37,7 +37,8 @@ export function HowItWorksSection() {
               How it works
             </h2>
             <p className="text-sm text-muted-foreground sm:text-base">
-            A simple, structured workflow that keeps projects, approvals, and payments aligned from start to finish.
+              A simple, structured workflow that keeps projects, approvals, and
+              payments aligned from start to finish.
             </p>
           </div>
 
@@ -75,4 +76,3 @@ export function HowItWorksSection() {
     </section>
   );
 }
-

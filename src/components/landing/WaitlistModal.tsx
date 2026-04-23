@@ -5,7 +5,11 @@ import { X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { FormField, inputCls } from "@/components/ui/form-field";
-import { cn, getEmailValidationError, getNameValidationError } from "@/lib/utils";
+import {
+  cn,
+  getEmailValidationError,
+  getNameValidationError,
+} from "@/lib/utils";
 import { landingCopy } from "@/components/landing/landingCopy";
 import { waitlistService } from "@/lib/apis/waitlist/waitlist";
 
@@ -31,9 +35,9 @@ export function WaitlistModal({
     email: "",
     city: "",
   });
-  const [errors, setErrors] = useState<Partial<Record<keyof WaitlistFormState, string>>>(
-    {},
-  );
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof WaitlistFormState, string>>
+  >({});
 
   const isMountedOpen = open;
 
@@ -118,7 +122,8 @@ export function WaitlistModal({
     } catch (err) {
       if (thanksTimer) window.clearTimeout(thanksTimer);
 
-      const msg = err instanceof Error ? err.message : "Failed to join waitlist.";
+      const msg =
+        err instanceof Error ? err.message : "Failed to join waitlist.";
       toast.error(msg);
 
       // If we already showed the thank-you state (slow API), keep it to avoid
@@ -148,7 +153,9 @@ export function WaitlistModal({
         <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
           <div className="space-y-1">
             <h2 id={titleId} className="text-lg font-semibold text-foreground">
-              {submitted ? landingCopy.waitlist.thanksTitle : landingCopy.waitlist.title}
+              {submitted
+                ? landingCopy.waitlist.thanksTitle
+                : landingCopy.waitlist.title}
             </h2>
             <p className="text-sm text-muted-foreground">
               {submitted
@@ -173,7 +180,8 @@ export function WaitlistModal({
             <div className="space-y-4">
               <div className="rounded-xl border border-border bg-muted/30 p-4">
                 <p className="text-sm text-muted-foreground">
-                  You can close this window. We’ll reach out when the product is live.
+                  You can close this window. We’ll reach out when the product is
+                  live.
                 </p>
               </div>
               <Button className="w-full" onClick={() => onOpenChange(false)}>
@@ -190,7 +198,10 @@ export function WaitlistModal({
                 <input
                   ref={inputRef}
                   id="waitlist-name"
-                  className={cn(inputCls, errors.name ? "border-destructive" : "")}
+                  className={cn(
+                    inputCls,
+                    errors.name ? "border-destructive" : "",
+                  )}
                   value={values.name}
                   onChange={(e) =>
                     setValues((v) => ({ ...v, name: e.target.value }))
@@ -207,7 +218,10 @@ export function WaitlistModal({
               >
                 <input
                   id="waitlist-email"
-                  className={cn(inputCls, errors.email ? "border-destructive" : "")}
+                  className={cn(
+                    inputCls,
+                    errors.email ? "border-destructive" : "",
+                  )}
                   value={values.email}
                   onChange={(e) =>
                     setValues((v) => ({ ...v, email: e.target.value }))
@@ -217,10 +231,17 @@ export function WaitlistModal({
                 />
               </FormField>
 
-              <FormField label="City" htmlFor="waitlist-city" error={errors.city}>
+              <FormField
+                label="City"
+                htmlFor="waitlist-city"
+                error={errors.city}
+              >
                 <input
                   id="waitlist-city"
-                  className={cn(inputCls, errors.city ? "border-destructive" : "")}
+                  className={cn(
+                    inputCls,
+                    errors.city ? "border-destructive" : "",
+                  )}
                   value={values.city}
                   onChange={(e) =>
                     setValues((v) => ({ ...v, city: e.target.value }))
@@ -258,4 +279,3 @@ export function WaitlistModal({
     </div>
   );
 }
-

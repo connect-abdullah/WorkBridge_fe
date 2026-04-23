@@ -142,4 +142,3 @@ export async function del<T = unknown>(
 
 export { http };
 export default http;
-

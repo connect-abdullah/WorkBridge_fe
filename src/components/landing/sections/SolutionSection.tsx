@@ -52,8 +52,8 @@ export function SolutionSection() {
 
             <div className="mt-6 rounded-xl border border-border bg-muted/20 p-4">
               <p className="text-sm text-muted-foreground">
-                Outcome: faster approvals + clearer expectations + payments tied to
-                milestones.
+                Outcome: faster approvals + clearer expectations + payments tied
+                to milestones.
               </p>
             </div>
           </div>
@@ -62,4 +62,3 @@ export function SolutionSection() {
     </section>
   );
 }
-

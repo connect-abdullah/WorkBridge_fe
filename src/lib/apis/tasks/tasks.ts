@@ -24,7 +24,8 @@ export async function updateTask(taskId: number, data: TaskUpdate) {
 }
 
 export async function deleteTask(taskId: number) {
-  const res = await del<APIResponse<boolean>>(`${tasks_api_endpoint}/${taskId}`);
+  const res = await del<APIResponse<boolean>>(
+    `${tasks_api_endpoint}/${taskId}`,
+  );
   return res;
 }
-

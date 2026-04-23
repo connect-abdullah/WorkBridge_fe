@@ -19,7 +19,9 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {},
+  );
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -45,13 +47,14 @@ export function LoginForm() {
       toast.success("Welcome back...");
       const token = response.data?.access_token || "";
       localStorage.setItem("auth:token", token);
-      localStorage.setItem("auth:user", JSON.stringify(response.data?.user || {}));
+      localStorage.setItem(
+        "auth:user",
+        JSON.stringify(response.data?.user || {}),
+      );
       document.cookie = `auth:token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
       router.push("/dashboard");
     } else {
-      toast.error(
-        response.message
-      );
+      toast.error(response.message);
     }
     setIsSubmitting(false);
     setErrors({});
@@ -112,10 +115,7 @@ export function LoginForm() {
         </div>
       </FormField>
 
-      <Button
-        type="submit"
-        className="h-11 w-full"
-      >
+      <Button type="submit" className="h-11 w-full">
         {isSubmitting ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

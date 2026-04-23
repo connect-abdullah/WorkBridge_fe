@@ -22,8 +22,10 @@ function unwrapWaitlistResponse(res: WaitlistCreateResponse): WaitlistRead {
 
 export const waitlistService = {
   create: async (data: WaitlistCreate) => {
-    const res = await post<WaitlistCreateResponse, WaitlistCreate>(ENDPOINT, data);
+    const res = await post<WaitlistCreateResponse, WaitlistCreate>(
+      ENDPOINT,
+      data,
+    );
     return unwrapWaitlistResponse(res);
   },
 };
-

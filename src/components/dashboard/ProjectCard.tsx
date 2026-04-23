@@ -59,7 +59,9 @@ export function ProjectCard({
             {milestoneTitle}
           </p>
           <div className="mt-2 flex items-center justify-between gap-2">
-            <p className="text-xs text-muted-foreground">Due {milestoneDueDate}</p>
+            <p className="text-xs text-muted-foreground">
+              Due {milestoneDueDate}
+            </p>
             <StatusBadge status={milestoneStatus} />
           </div>
         </section>

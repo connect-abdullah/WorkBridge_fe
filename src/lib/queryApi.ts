@@ -1,4 +1,7 @@
-import type { UseMutationOptions, UseQueryOptions } from "@tanstack/react-query";
+import type {
+  UseMutationOptions,
+  UseQueryOptions,
+} from "@tanstack/react-query";
 
 // =============================================================================
 // API layer imports (HTTP details live in src/lib/apis/**)
@@ -79,7 +82,8 @@ export function getStoredUserId(): number | null {
 export const queryKeys = {
   projects: {
     all: ["projects"] as const,
-    listForUser: (userId: number) => ["projects", "listForUser", userId] as const,
+    listForUser: (userId: number) =>
+      ["projects", "listForUser", userId] as const,
     detail: (projectId: number) => ["projects", "detail", projectId] as const,
   },
   milestones: {
@@ -131,7 +135,11 @@ export const queryApi = {
       }),
       update: (
         projectId: number,
-      ): UseMutationOptions<APIResponse<ProjectRead>, Error, ProjectUpdate> => ({
+      ): UseMutationOptions<
+        APIResponse<ProjectRead>,
+        Error,
+        ProjectUpdate
+      > => ({
         mutationFn: (data) => updateProject(projectId, data),
       }),
       delete: (): UseMutationOptions<
@@ -190,4 +198,3 @@ export const queryApi = {
     },
   },
 };
-

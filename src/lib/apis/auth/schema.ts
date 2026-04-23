@@ -14,10 +14,10 @@ interface LoginSchema {
 }
 
 interface RegisterSchema {
-    name: string;
-    email: string;
-    role: Role;
-    password: string;
+  name: string;
+  email: string;
+  role: Role;
+  password: string;
 }
 
 interface UpdateProfileSchema {
@@ -37,4 +37,11 @@ interface UserLoginResponse {
   user: UserRead;
 }
 
-export type { LoginSchema, RegisterSchema, ForgotPasswordSchema, UserLoginResponse, UserRead, UpdateProfileSchema };
+export type {
+  LoginSchema,
+  RegisterSchema,
+  ForgotPasswordSchema,
+  UserLoginResponse,
+  UserRead,
+  UpdateProfileSchema,
+};

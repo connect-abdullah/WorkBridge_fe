@@ -50,4 +50,3 @@ export async function uploadProductPhoto(
   } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path);
   return publicUrl;
 }
-

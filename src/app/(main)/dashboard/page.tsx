@@ -29,7 +29,9 @@ export default function DashboardPage() {
         <div className="space-y-4">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-lg font-semibold text-foreground">Projects</h2>
-            <p className="text-sm text-muted-foreground">3 active engagements</p>
+            <p className="text-sm text-muted-foreground">
+              3 active engagements
+            </p>
           </div>
           <div className="flex flex-col space-y-3">
             {dashboardProjects.map((project, index) => (
@@ -47,4 +49,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

@@ -57,8 +57,10 @@ export type ProjectTaskCreateInput = Omit<TaskCreate, "milestone_id"> & {
   milestone_id?: number;
 };
 
-export type ProjectMilestoneCreateInput = Omit<MilestoneCreate, "project_id" | "tasks"> & {
+export type ProjectMilestoneCreateInput = Omit<
+  MilestoneCreate,
+  "project_id" | "tasks"
+> & {
   project_id?: number;
   tasks?: ProjectTaskCreateInput[];
 };
-

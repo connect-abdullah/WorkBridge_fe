@@ -95,7 +95,8 @@ export const milestones: Milestone[] = [
       {
         id: "t-1",
         title: "Requirement workshop",
-        description: "Run a stakeholder session to capture constraints and goals.",
+        description:
+          "Run a stakeholder session to capture constraints and goals.",
       },
       {
         id: "t-2",
@@ -270,4 +271,3 @@ export const activityLogs: ActivityLog[] = [
     icon: "calendar",
   },
 ];
-

@@ -35,7 +35,11 @@ export function MeetingsPanel({
   meetings: Meeting[];
   meetingNotesId: string | null;
   setMeetingNotesId: (id: string | null) => void;
-  onMeetingNotesChange: (id: string, field: "privateNotes" | "sharedNotes", value: string) => void;
+  onMeetingNotesChange: (
+    id: string,
+    field: "privateNotes" | "sharedNotes",
+    value: string,
+  ) => void;
   meetingFormOpen: boolean;
   meetingFormMode: "create" | "edit";
   onOpenMeetingForm: (mode: "create" | "edit", meeting?: Meeting) => void;
@@ -86,7 +90,11 @@ export function MeetingsPanel({
               <textarea
                 value={selectedMeeting.privateNotes}
                 onChange={(e) =>
-                  onMeetingNotesChange(selectedMeeting.id, "privateNotes", e.target.value)
+                  onMeetingNotesChange(
+                    selectedMeeting.id,
+                    "privateNotes",
+                    e.target.value,
+                  )
                 }
                 className="h-44 w-full resize-none rounded-md border border-input bg-background p-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
                 placeholder="Your private notes for this meeting…"
@@ -106,7 +114,11 @@ export function MeetingsPanel({
               <textarea
                 value={selectedMeeting.sharedNotes}
                 onChange={(e) =>
-                  onMeetingNotesChange(selectedMeeting.id, "sharedNotes", e.target.value)
+                  onMeetingNotesChange(
+                    selectedMeeting.id,
+                    "sharedNotes",
+                    e.target.value,
+                  )
                 }
                 className="h-44 w-full resize-none rounded-md border border-input bg-background p-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
                 placeholder="Shared notes from this meeting…"
@@ -121,7 +133,10 @@ export function MeetingsPanel({
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-foreground">Meetings</h2>
-            <Button className="h-10" onClick={() => onOpenMeetingForm("create")}>
+            <Button
+              className="h-10"
+              onClick={() => onOpenMeetingForm("create")}
+            >
               <Plus className="mr-1.5 h-4 w-4" /> Create Meeting
             </Button>
           </div>
@@ -188,10 +203,7 @@ export function MeetingsPanel({
         title={meetingFormMode === "create" ? "Create Meeting" : "Edit Meeting"}
         subtitle="Schedule and track collaboration sessions with your client."
       >
-        <form
-          onSubmit={onMeetingSubmit}
-          className="grid gap-4 md:grid-cols-2"
-        >
+        <form onSubmit={onMeetingSubmit} className="grid gap-4 md:grid-cols-2">
           <FormField label="Meeting Title" wide>
             <input
               value={mtTitle}

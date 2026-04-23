@@ -29,7 +29,9 @@ export default function ProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof ProfileFormValues, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof ProfileFormValues, string>>
+  >({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isDirty = useMemo(() => {
@@ -121,7 +123,9 @@ export default function ProfilePage() {
                 profileUser.initials
               )}
             </button>
-            <p className="mt-2 text-xs text-muted-foreground">Click avatar to change</p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Click avatar to change
+            </p>
             <p className="mt-3 text-lg font-semibold text-foreground">
               {profileUser.name}
             </p>
@@ -136,50 +140,55 @@ export default function ProfilePage() {
           className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6"
         >
           <div className="space-y-4">
-          <FormField
-            label="Name"
-            htmlFor="profile-name"
-            error={hasSubmitted ? errors.name : undefined}
-          >
-            <input
-              id="profile-name"
-              value={form.name}
-              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-              className={inputCls}
-              placeholder="Your full name"
-            />
-          </FormField>
+            <FormField
+              label="Name"
+              htmlFor="profile-name"
+              error={hasSubmitted ? errors.name : undefined}
+            >
+              <input
+                id="profile-name"
+                value={form.name}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, name: e.target.value }))
+                }
+                className={inputCls}
+                placeholder="Your full name"
+              />
+            </FormField>
 
-          <FormField
-            label="Email"
-            htmlFor="profile-email"
-            error={hasSubmitted ? errors.email : undefined}
-          >
-            <input
-              id="profile-email"
-              value={form.email}
-              onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-              className={inputCls}
-              placeholder="you@company.com"
-            />
-          </FormField>
+            <FormField
+              label="Email"
+              htmlFor="profile-email"
+              error={hasSubmitted ? errors.email : undefined}
+            >
+              <input
+                id="profile-email"
+                value={form.email}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, email: e.target.value }))
+                }
+                className={inputCls}
+                placeholder="you@company.com"
+              />
+            </FormField>
 
-          <FormField
-            label="Password"
-            htmlFor="profile-password"
-            error={hasSubmitted ? errors.password : undefined}
-          >
-            <input
-              id="profile-password"
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-              className={inputCls}
-              placeholder="Leave blank to keep current password"
-            />
-          </FormField>
-
-        </div>
+            <FormField
+              label="Password"
+              htmlFor="profile-password"
+              error={hasSubmitted ? errors.password : undefined}
+            >
+              <input
+                id="profile-password"
+                type="password"
+                value={form.password}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, password: e.target.value }))
+                }
+                className={inputCls}
+                placeholder="Leave blank to keep current password"
+              />
+            </FormField>
+          </div>
 
           <div className="mt-6 flex justify-end">
             <Button

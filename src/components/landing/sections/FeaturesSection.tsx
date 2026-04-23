@@ -69,9 +69,13 @@ export function FeaturesSection() {
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-muted/40 text-foreground transition group-hover:bg-muted/60">
                   <Icon className="h-5 w-5" />
                 </span>
-                <p className="text-base font-semibold text-foreground">{title}</p>
+                <p className="text-base font-semibold text-foreground">
+                  {title}
+                </p>
               </div>
-              <p className="mt-3 text-sm text-muted-foreground">{description}</p>
+              <p className="mt-3 text-sm text-muted-foreground">
+                {description}
+              </p>
             </div>
           ))}
         </div>
@@ -79,4 +83,3 @@ export function FeaturesSection() {
     </section>
   );
 }
-

@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 import { Download, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { payments as initialPayments, type PaymentItem } from "@/constants/payments";
+import {
+  payments as initialPayments,
+  type PaymentItem,
+} from "@/constants/payments";
 
 type PaymentAction = "pay" | "invoice";
 
@@ -38,7 +41,9 @@ export default function PaymentsPage() {
 
       <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
-          <p className="text-sm font-medium text-foreground">Milestone payments</p>
+          <p className="text-sm font-medium text-foreground">
+            Milestone payments
+          </p>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as "latest" | "oldest")}
@@ -81,11 +86,15 @@ export default function PaymentsPage() {
                       <td className="px-4 py-3 font-medium text-foreground">
                         {item.milestone}
                       </td>
-                      <td className="px-4 py-3 text-foreground">{item.amount}</td>
+                      <td className="px-4 py-3 text-foreground">
+                        {item.amount}
+                      </td>
                       <td className="px-4 py-3">
                         <StatusBadge status={item.status} />
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">{item.date}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {item.date}
+                      </td>
                       <td className="px-4 py-3">
                         {action === "pay" ? (
                           <Button
@@ -93,10 +102,15 @@ export default function PaymentsPage() {
                             onClick={() => {
                               setPayments((prev) =>
                                 prev.map((p) =>
-                                  p.id === item.id ? { ...p, status: "completed" } : p,
+                                  p.id === item.id
+                                    ? { ...p, status: "completed" }
+                                    : p,
                                 ),
                               );
-                              setActions((prev) => ({ ...prev, [item.id]: "invoice" }));
+                              setActions((prev) => ({
+                                ...prev,
+                                [item.id]: "invoice",
+                              }));
                             }}
                           >
                             Pay
