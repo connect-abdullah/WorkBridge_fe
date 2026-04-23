@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import { useEffect } from "react";
 
 export function Modal({
   open,
@@ -15,10 +16,20 @@ export function Modal({
   children: React.ReactNode;
   maxWidth?: string;
 }) {
+  useEffect(() => {
+    if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open]);
+
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--overlay-color)] backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 !m-0 flex h-screen w-screen items-center justify-center bg-[var(--overlay-color)] backdrop-blur-sm !p-0"
+      style={{ margin: 0, padding: 0 }}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -26,7 +37,7 @@ export function Modal({
       aria-modal="true"
     >
       <div
-        className={`relative w-full ${maxWidth} rounded-2xl border border-border bg-card shadow-xl`}
+        className={`relative m-4 flex w-full flex-col ${maxWidth} max-h-[calc(100vh-2rem)] rounded-2xl border border-border bg-card shadow-xl`}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
@@ -45,7 +56,7 @@ export function Modal({
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="px-6 py-5">{children}</div>
+        <div className="min-h-0 overflow-y-auto px-6 py-5">{children}</div>
       </div>
     </div>
   );

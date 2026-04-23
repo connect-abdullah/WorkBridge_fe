@@ -18,7 +18,7 @@ import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { forceLogout } from "@/lib/forceLogout";
 
 const navItems = [
-  { label: "Dashboard", href: "/", icon: LayoutGrid },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
   { label: "Projects", href: "/projects", icon: FolderKanban },
   { label: "Payments", href: "/payments", icon: CreditCard },
   { label: "Notifications", href: "/notifications", icon: Bell },

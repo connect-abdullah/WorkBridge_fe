@@ -19,9 +19,16 @@ export type Milestone = {
   title: string;
   description: string;
   dueDate: string;
+  dueDateIso: string;
   amount: string;
   status: MilestoneStatus;
-  tasks: string[];
+  tasks: TaskItem[];
+};
+
+export type TaskItem = {
+  id: string;
+  title: string;
+  description: string;
 };
 
 export type ProjectFile = {
@@ -81,24 +88,59 @@ export const milestones: Milestone[] = [
     title: "Discovery and Scope Alignment",
     description: "Clarify requirements, priorities, and handoff expectations.",
     dueDate: "Mar 08, 2026",
+    dueDateIso: "2026-03-08T00:00:00Z",
     amount: "$900",
     status: "completed",
-    tasks: ["Requirement workshop", "User flow mapping", "Scope sign-off"],
+    tasks: [
+      {
+        id: "t-1",
+        title: "Requirement workshop",
+        description: "Run a stakeholder session to capture constraints and goals.",
+      },
+      {
+        id: "t-2",
+        title: "User flow mapping",
+        description: "Map key flows and identify friction points to fix.",
+      },
+      {
+        id: "t-3",
+        title: "Scope sign-off",
+        description: "Finalize deliverables and confirm timeline expectations.",
+      },
+    ],
   },
   {
     id: "ms-2",
     title: "Dashboard UX and UI System",
     description: "Design scalable dashboard layout and reusable components.",
     dueDate: "Mar 24, 2026",
+    dueDateIso: "2026-03-24T00:00:00Z",
     amount: "$1,300",
     status: "in-progress",
-    tasks: ["Layout system", "Card components", "Responsive refinements"],
+    tasks: [
+      {
+        id: "t-4",
+        title: "Layout system",
+        description: "Define the grid, spacing scale, and page scaffolding.",
+      },
+      {
+        id: "t-5",
+        title: "Card components",
+        description: "Build reusable cards for stats, lists, and summaries.",
+      },
+      {
+        id: "t-6",
+        title: "Responsive refinements",
+        description: "Polish layouts for tablet/mobile breakpoints.",
+      },
+    ],
   },
   {
     id: "ms-3",
     title: "Implementation and QA",
     description: "Build, polish, and verify project detail interactions.",
     dueDate: "Apr 12, 2026",
+    dueDateIso: "2026-04-12T00:00:00Z",
     amount: "$1,200",
     status: "pending",
     tasks: [],
@@ -108,6 +150,7 @@ export const milestones: Milestone[] = [
     title: "Final Handoff",
     description: "Final demo, documentation, and delivery support.",
     dueDate: "Apr 30, 2026",
+    dueDateIso: "2026-04-30T00:00:00Z",
     amount: "$1,100",
     status: "pending",
     tasks: [],
