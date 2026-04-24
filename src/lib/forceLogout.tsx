@@ -11,6 +11,6 @@ export function forceLogout(redirect = true) {
   document.cookie = "auth:user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 
   if (redirect) {
-    window.location.href = "/";
+    window.location.href = "/auth/login";
   }
 }

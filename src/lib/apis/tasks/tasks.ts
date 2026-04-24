@@ -9,7 +9,7 @@ const tasks_api_endpoint = `${API_PREFIX}${ENDPOINT}`;
 
 export async function createTask(data: TaskCreate) {
   const res = await post<APIResponse<TaskRead>, TaskCreate>(
-    `${tasks_api_endpoint}/`,
+    `${tasks_api_endpoint}`,
     data,
   );
   return res;

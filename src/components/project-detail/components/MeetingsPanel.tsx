@@ -12,8 +12,10 @@ import { type Meeting } from "@/constants/project-detail";
 import { Button } from "@/components/ui/button";
 import { Modal } from "./Modal";
 import { FormField, inputCls } from "@/components/ui/form-field";
+import { NotesEditor } from "./NotesEditor";
 
 export function MeetingsPanel({
+  projectId,
   meetings,
   meetingNotesId,
   setMeetingNotesId,
@@ -32,6 +34,7 @@ export function MeetingsPanel({
   setMtDescription,
   onMeetingSubmit,
 }: {
+  projectId: number;
   meetings: Meeting[];
   meetingNotesId: string | null;
   setMeetingNotesId: (id: string | null) => void;
@@ -79,55 +82,11 @@ export function MeetingsPanel({
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <article className="space-y-3 rounded-xl border border-border bg-card p-5 shadow-sm">
-              <div>
-                <h4 className="font-semibold text-foreground">Private Notes</h4>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Only visible to you
-                </p>
-              </div>
-              <textarea
-                value={selectedMeeting.privateNotes}
-                onChange={(e) =>
-                  onMeetingNotesChange(
-                    selectedMeeting.id,
-                    "privateNotes",
-                    e.target.value,
-                  )
-                }
-                className="h-44 w-full resize-none rounded-md border border-input bg-background p-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                placeholder="Your private notes for this meeting…"
-              />
-              <Button type="button" className="h-9">
-                Save Private Notes
-              </Button>
-            </article>
-
-            <article className="space-y-3 rounded-xl border border-border bg-card p-5 shadow-sm">
-              <div>
-                <h4 className="font-semibold text-foreground">Shared Notes</h4>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Visible to all project members
-                </p>
-              </div>
-              <textarea
-                value={selectedMeeting.sharedNotes}
-                onChange={(e) =>
-                  onMeetingNotesChange(
-                    selectedMeeting.id,
-                    "sharedNotes",
-                    e.target.value,
-                  )
-                }
-                className="h-44 w-full resize-none rounded-md border border-input bg-background p-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                placeholder="Shared notes from this meeting…"
-              />
-              <Button type="button" className="h-9">
-                Save Shared Notes
-              </Button>
-            </article>
-          </div>
+          <NotesEditor
+            projectId={projectId}
+            meetingId={Number(selectedMeeting.id)}
+            scope="meeting"
+          />
         </div>
       ) : (
         <>

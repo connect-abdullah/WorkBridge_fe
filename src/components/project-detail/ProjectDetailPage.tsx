@@ -5,9 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
-  activityLogs,
   initialComments,
-  initialMeetings,
   projectFiles,
   type CommentMessage,
   type Meeting,
@@ -18,7 +16,7 @@ import {
 } from "@/constants/project-detail";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { ProjectSummary, ProjectStatus } from "@/constants/project-detail";
-import { queryApi, queryKeys } from "@/lib/queryApi";
+import { getStoredUserId, queryApi, queryKeys } from "@/lib/queryApi";
 import type { MilestoneRead } from "@/lib/apis/milestones/schema";
 import type { ProjectReadWithMilestones } from "@/lib/apis/projects/schema";
 import type { ProjectUpdate } from "@/lib/apis/projects/schema";
@@ -36,6 +34,8 @@ import type { TaskRead } from "@/lib/apis/tasks/schema";
 import { updateMilestone } from "@/lib/apis/milestones/milestones";
 import { updateTask } from "@/lib/apis/tasks/tasks";
 import { updateProject } from "@/lib/apis/projects/projects";
+import type { MeetingRead } from "@/lib/apis/meetings/schema";
+// Notes are rendered via NotesPanel using queryApi (GET /api/v1/notes).
 
 import { MilestoneStepTracker } from "@/components/project-detail/components/MilestoneStepTracker";
 import { OverviewPanel } from "@/components/project-detail/components/OverviewPanel";
@@ -46,6 +46,7 @@ import { MeetingsPanel } from "@/components/project-detail/components/MeetingsPa
 import { NotesPanel } from "@/components/project-detail/components/NotesPanel";
 import { PaymentsPanel } from "@/components/project-detail/components/PaymentsPanel";
 import { ActivityPanel } from "@/components/project-detail/components/ActivityPanel";
+import type { ActivityLogRead } from "@/lib/apis/activityLogs/schema";
 
 function toUiProjectStatus(status?: string): ProjectStatus {
   const s = (status ?? "pending").toLowerCase();
@@ -64,7 +65,7 @@ function toUiMilestoneStatus(status?: string | null): MilestoneStatus {
 function formatMoney(amount?: number) {
   const value = typeof amount === "number" ? amount : 0;
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
       maximumFractionDigits: 0,
@@ -78,7 +79,7 @@ function formatLongDate(dateStr?: string) {
   if (!dateStr) return "—";
   const d = new Date(dateStr);
   if (Number.isNaN(d.getTime())) return dateStr;
-  return d.toLocaleDateString(undefined, {
+  return d.toLocaleDateString("en-US", {
     month: "short",
     day: "2-digit",
     year: "numeric",
@@ -119,6 +120,8 @@ function toUiTask(task: TaskRead): TaskItem {
     description: task.description,
   };
 }
+
+// Activity logs are rendered directly from API schema in ActivityPanel.
 
 function toUiProjectSummary(p: ProjectReadWithMilestones): ProjectSummary {
   return {
@@ -332,7 +335,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
   const [commentDraft, setCommentDraft] = useState("");
 
   // ── Meetings
-  const [meetings, setMeetings] = useState<Meeting[]>(initialMeetings);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [meetingFormOpen, setMeetingFormOpen] = useState(false);
   const [meetingFormMode, setMeetingFormMode] = useState<"create" | "edit">(
     "create",
@@ -348,11 +351,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
   // Meeting notes sub-view
   const [meetingNotesId, setMeetingNotesId] = useState<string | null>(null);
 
-  // ── Notes tab
-  const [privateNotes, setPrivateNotes] = useState("Internal project notes...");
-  const [sharedNotes, setSharedNotes] = useState(
-    "Notes visible to both freelancer and client.",
-  );
+  // ── Notes tab is rendered by NotesPanel (GET /api/v1/notes)
 
   // ── Payments
   const [paymentActions, setPaymentActions] = useState<
@@ -392,6 +391,64 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     }
   }, [projectDetail]);
 
+  function toUiMeeting(m: MeetingRead): Meeting {
+    const start = toLocalDateTime(m.start_time);
+    const end = toLocalDateTime(m.end_time);
+    return {
+      id: String(m.id),
+      title: m.title,
+      link: m.meeting_link,
+      dateTime: end ? `${start} – ${end}` : start,
+      description: m.description,
+      privateNotes: "",
+      sharedNotes: "",
+    };
+  }
+
+  const meetingsQuery = useQuery(
+    queryApi.meetings.listByProjectId(numericProjectId, {
+      staleTime: 15 * 60 * 1000, // 15 minutes
+      gcTime: 30 * 60 * 1000, // 30 minutes
+ 
+    }),
+  );
+
+  const activityLogsQuery = useQuery({
+    ...queryApi.activityLogs.listByProjectId(numericProjectId, {
+      staleTime: 1 * 60 * 1000, // 1 minute
+      gcTime: 2 * 60 * 1000, // 2 minutes
+    }),
+    refetchInterval: activeTab === "Activity" ? 15 * 1000 : false,
+  });
+
+  useEffect(() => {
+    const res = meetingsQuery.data;
+    if (!res || res.success === false || !res.data) return;
+    setMeetings((prev) => {
+      const incoming = (res.data ?? []).map(toUiMeeting);
+      if (prev.length === 0) return incoming;
+      const byId = new Map(incoming.map((m) => [m.id, m]));
+      const merged = prev.map((m) => {
+        const next = byId.get(m.id);
+        return next ? { ...next, privateNotes: m.privateNotes, sharedNotes: m.sharedNotes } : m;
+      });
+      const prevIds = new Set(prev.map((m) => m.id));
+      const appended = incoming.filter((m) => !prevIds.has(m.id));
+      return [...merged, ...appended];
+    });
+  }, [meetingsQuery.data]);
+
+  const createMeetingMutation = useMutation(queryApi.mutations.meetings.create());
+  const updateMeetingMutation = useMutation({
+    mutationFn: async (vars: { meetingId: number; data: unknown }) => {
+      const opts = queryApi.mutations.meetings.update(vars.meetingId);
+      return (opts.mutationFn as unknown as (d: unknown) => ReturnType<
+        NonNullable<typeof opts.mutationFn>
+      >)(vars.data);
+    },
+  });
+  const deleteMeetingMutation = useMutation(queryApi.mutations.meetings.delete());
+
   // ── Derived
   const sortedMilestones = useMemo(() => {
     const list = [...milestoneState];
@@ -427,7 +484,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       tasks: [],
     };
 
-  // ─────────────────────────────────────── Handlers ──
+  // ───────── Handlers ──────────
 
   const handleSendComment = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -449,7 +506,13 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     setMeetingFormEditingId(meeting?.id ?? null);
     setMtTitle(meeting?.title ?? "");
     setMtLink(meeting?.link ?? "");
-    setMtDateTime(meeting?.dateTime ?? "");
+    if (mode === "create") {
+      setMtDateTime(toLocalDateTime(new Date().toISOString()));
+    } else {
+      // take the start portion if we stored "start – end"
+      const dt = meeting?.dateTime?.split("–")[0]?.trim() ?? "";
+      setMtDateTime(dt);
+    }
     setMtDescription(meeting?.description ?? "");
     setMeetingFormOpen(true);
   };
@@ -457,36 +520,72 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
   const handleMeetingSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!mtTitle || !mtLink || !mtDateTime) return;
+    const userId = getStoredUserId() ?? 0;
+    const startIso = new Date(mtDateTime).toISOString();
+    const end = new Date(mtDateTime);
+    end.setMinutes(end.getMinutes() + 60);
+    const endIso = end.toISOString();
+
     if (meetingFormMode === "edit" && meetingFormEditingId) {
-      setMeetings((prev) =>
-        prev.map((m) =>
-          m.id === meetingFormEditingId
-            ? {
-                ...m,
-                title: mtTitle,
-                link: mtLink,
-                dateTime: mtDateTime,
-                description: mtDescription || "No description.",
-              }
-            : m,
-        ),
-      );
-    } else {
-      setMeetings((prev) => [
-        {
-          id: `m-${prev.length + 1}`,
-          title: mtTitle,
-          link: mtLink,
-          dateTime: mtDateTime,
-          description: mtDescription || "No description.",
-          privateNotes: "",
-          sharedNotes: "",
-        },
-        ...prev,
-      ]);
+      const idNum = Number(meetingFormEditingId);
+      updateMeetingMutation
+        .mutateAsync({
+          meetingId: idNum,
+          data: {
+            title: mtTitle,
+            meeting_link: mtLink,
+            start_time: startIso,
+            end_time: endIso,
+            description: mtDescription || "No description.",
+          },
+        })
+        .then((res) => {
+          if (!res.success) {
+            toast.error(res.message || "Failed to update meeting.");
+            return;
+          }
+          if (res.data) {
+            const ui = toUiMeeting(res.data);
+            setMeetings((prev) => prev.map((m) => (m.id === ui.id ? { ...ui, privateNotes: m.privateNotes, sharedNotes: m.sharedNotes } : m)));
+          }
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.meetings.listByProjectId(numericProjectId),
+          });
+        })
+        .finally(() => {
+          setMeetingFormOpen(false);
+          setMeetingFormEditingId(null);
+        });
+      return;
     }
-    setMeetingFormOpen(false);
-    setMeetingFormEditingId(null);
+
+    createMeetingMutation
+      .mutateAsync({
+        title: mtTitle,
+        description: mtDescription || "No description.",
+        meeting_link: mtLink,
+        start_time: startIso,
+        end_time: endIso,
+        project_id: numericProjectId,
+        user_id: userId,
+      })
+      .then((res) => {
+        if (!res.success) {
+          toast.error(res.message || "Failed to create meeting.");
+          return;
+        }
+        if (res.data) {
+          const ui = toUiMeeting(res.data);
+          setMeetings((prev) => [ui, ...prev]);
+        }
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.meetings.listByProjectId(numericProjectId),
+        });
+      })
+      .finally(() => {
+        setMeetingFormOpen(false);
+        setMeetingFormEditingId(null);
+      });
   };
 
   const handleMeetingNotesChange = (
@@ -932,6 +1031,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       .catch(() => {});
   };
 
+  // Notes are saved via the NotesPanel handlers below.
   // ─────────────────────────────────────── Render ──
 
   return (
@@ -1235,6 +1335,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
       {activeTab === "Meetings" ? (
         <MeetingsPanel
+          projectId={numericProjectId}
           meetings={meetings}
           meetingNotesId={meetingNotesId}
           setMeetingNotesId={setMeetingNotesId}
@@ -1257,10 +1358,8 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
       {activeTab === "Notes" ? (
         <NotesPanel
-          privateNotes={privateNotes}
-          setPrivateNotes={setPrivateNotes}
-          sharedNotes={sharedNotes}
-          setSharedNotes={setSharedNotes}
+          projectId={numericProjectId}
+          meetingId={meetingNotesId ? Number(meetingNotesId) : undefined}
         />
       ) : null}
 
@@ -1274,7 +1373,23 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         />
       ) : null}
 
-      {activeTab === "Activity" ? <ActivityPanel logs={activityLogs} /> : null}
+      {activeTab === "Activity" ? (
+        activityLogsQuery.isLoading ? (
+          <p className="text-sm text-muted-foreground">Loading activity…</p>
+        ) : activityLogsQuery.error ? (
+          <p className="text-sm text-destructive">
+            {activityLogsQuery.error.message || "Failed to load activity."}
+          </p>
+        ) : activityLogsQuery.data?.success === false ? (
+          <p className="text-sm text-destructive">
+            {activityLogsQuery.data.message || "Failed to load activity."}
+          </p>
+        ) : (
+          <ActivityPanel
+            logs={(activityLogsQuery.data?.data ?? []) as ActivityLogRead[]}
+          />
+        )
+      ) : null}
     </div>
   );
 }

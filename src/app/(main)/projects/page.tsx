@@ -11,7 +11,7 @@ import {
 } from "@/components/project-detail/components/Field";
 import { Button } from "@/components/ui/button";
 import { Calendar, Plus, Trash2 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { ProjectCreate } from "@/lib/apis/projects/schema";
 import type {
@@ -33,7 +33,7 @@ function makeCid() {
 
 function formatMoney(amount: number) {
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
       maximumFractionDigits: 0,
@@ -47,14 +47,14 @@ function formatShortDate(dateStr?: string) {
   if (!dateStr) return "—";
   const d = new Date(dateStr);
   if (Number.isNaN(d.getTime())) return dateStr;
-  return d.toLocaleDateString(undefined, { month: "short", day: "2-digit" });
+  return d.toLocaleDateString("en-US", { month: "short", day: "2-digit" });
 }
 
 function formatLongDate(dateStr?: string) {
   if (!dateStr) return "—";
   const d = new Date(dateStr);
   if (Number.isNaN(d.getTime())) return dateStr;
-  return d.toLocaleDateString(undefined, {
+  return d.toLocaleDateString("en-US", {
     month: "short",
     day: "2-digit",
     year: "numeric",
@@ -87,7 +87,10 @@ export default function ProjectsPage() {
     data: res,
     isLoading,
     error,
-  } = useQuery(queryApi.projects.listForUser(userId));
+  } = useQuery({
+    ...queryApi.projects.listForUser(userId),
+    enabled: userId > 0,
+  });
   const data = res?.data ?? [];
   const queryClient = useQueryClient();
 
@@ -97,6 +100,7 @@ export default function ProjectsPage() {
 
   // ── Create Project modal state
   const [createOpen, setCreateOpen] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const nowIso = useMemo(() => new Date().toISOString(), []);
   const twoWeeksIso = useMemo(() => {
     const d = new Date();
@@ -110,28 +114,35 @@ export default function ProjectsPage() {
   const [pClientId, setPClientId] = useState("");
   const [pTotalAmount, setPTotalAmount] = useState("0");
   const [pAmountPaid, setPAmountPaid] = useState("0");
-  const [pStartDate, setPStartDate] = useState(toLocalDateTime(nowIso));
-  const [pEndDate, setPEndDate] = useState(toLocalDateTime(twoWeeksIso));
+  const [pStartDate, setPStartDate] = useState("");
+  const [pEndDate, setPEndDate] = useState("");
   const startRef = useRef<HTMLInputElement | null>(null);
   const endRef = useRef<HTMLInputElement | null>(null);
 
-  const [milestones, setMilestones] = useState<DraftMilestone[]>([
-    {
-      _cid: makeCid(),
-      title: "Milestone 1",
-      description: "",
-      status: "pending",
-      price: 0,
-      due_date: twoWeeksIso,
-      tasks: [
-        {
-          _cid: makeCid(),
-          title: "Task 1",
-          description: "",
-        } as DraftTask,
-      ],
-    } as DraftMilestone,
-  ]);
+  const [milestones, setMilestones] = useState<DraftMilestone[]>([]);
+
+  useEffect(() => {
+    setHydrated(true);
+    setPStartDate(toLocalDateTime(nowIso));
+    setPEndDate(toLocalDateTime(twoWeeksIso));
+    setMilestones([
+      {
+        _cid: makeCid(),
+        title: "Milestone 1",
+        description: "",
+        status: "pending",
+        price: 0,
+        due_date: twoWeeksIso,
+        tasks: [
+          {
+            _cid: makeCid(),
+            title: "Task 1",
+            description: "",
+          } as DraftTask,
+        ],
+      } as DraftMilestone,
+    ]);
+  }, [nowIso, twoWeeksIso]);
 
   const openCreateModal = () => {
     setCreateOpen(true);
@@ -253,7 +264,11 @@ export default function ProjectsPage() {
       </header>
 
       <section className="space-y-3 flex flex-col">
-        {isLoading ? (
+        {userId <= 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Sign in to view your projects.
+          </p>
+        ) : isLoading ? (
           <p className="text-sm text-muted-foreground">Loading projects…</p>
         ) : error ? (
           <p className="text-sm text-destructive">

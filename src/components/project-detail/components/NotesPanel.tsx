@@ -1,49 +1,26 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { NotesEditor } from "./NotesEditor";
 
 export function NotesPanel({
-  privateNotes,
-  setPrivateNotes,
-  sharedNotes,
-  setSharedNotes,
+  projectId,
+  meetingId,
 }: {
-  privateNotes: string;
-  setPrivateNotes: (v: string) => void;
-  sharedNotes: string;
-  setSharedNotes: (v: string) => void;
+  projectId: number;
+  meetingId?: number | null;
 }) {
   return (
-    <section className="grid gap-4 md:grid-cols-2">
-      <article className="space-y-3 rounded-xl border border-border bg-card p-5 shadow-sm">
-        <div>
-          <h3 className="font-semibold text-foreground">Private Notes</h3>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Only visible to you
-          </p>
-        </div>
-        <textarea
-          value={privateNotes}
-          onChange={(e) => setPrivateNotes(e.target.value)}
-          className="h-52 w-full resize-none rounded-md border border-input bg-background p-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-        />
-        <Button className="h-9">Save Private Notes</Button>
-      </article>
+    <section className="space-y-6">
+      <div className="space-y-3">
+        <NotesEditor projectId={projectId} meetingId={undefined} scope="project" />
+      </div>
 
-      <article className="space-y-3 rounded-xl border border-border bg-card p-5 shadow-sm">
-        <div>
-          <h3 className="font-semibold text-foreground">Shared Notes</h3>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Visible to all project members
-          </p>
+      {meetingId ? (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-foreground">Meeting</h3>
+          <NotesEditor projectId={projectId} meetingId={meetingId} scope="meeting" />
         </div>
-        <textarea
-          value={sharedNotes}
-          onChange={(e) => setSharedNotes(e.target.value)}
-          className="h-52 w-full resize-none rounded-md border border-input bg-background p-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-        />
-        <Button className="h-9">Save Shared Notes</Button>
-      </article>
+      ) : null}
     </section>
   );
 }

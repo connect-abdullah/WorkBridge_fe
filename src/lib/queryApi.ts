@@ -36,6 +36,13 @@ import {
 
 import type { TaskCreate, TaskRead, TaskUpdate } from "@/lib/apis/tasks/schema";
 import { createTask, deleteTask, updateTask } from "@/lib/apis/tasks/tasks";
+import { createNote, updateNote, deleteNote, getNotes } from "@/lib/apis/notes/notes";
+import type { NoteListResponse } from "@/lib/apis/notes/schema";
+import type { NoteCreate, NoteRead, NoteUpdate } from "@/lib/apis/notes/schema";
+import { createMeeting, deleteMeeting, listMeetingsByProject, updateMeeting } from "@/lib/apis/meetings/meetings";
+import type { MeetingCreate, MeetingRead, MeetingUpdate } from "@/lib/apis/meetings/schema";
+import { listActivityLogsByProjectId } from "@/lib/apis/activityLogs/activityLogs";
+import type { ActivityLogRead } from "@/lib/apis/activityLogs/schema";
 
 // =============================================================================
 // Cache config helpers (dynamic per-query overrides)
@@ -90,6 +97,18 @@ export const queryKeys = {
     detail: (milestoneId: number) =>
       ["milestones", "detail", milestoneId] as const,
   },
+  notes: {
+    list: (projectId: number, meetingId?: number | null) =>
+      ["notes", "list", projectId, meetingId ?? null] as const,
+  },
+  meetings: {
+    listByProjectId: (projectId: number) =>
+      ["meetings", "listByProjectId", projectId] as const,
+  },
+  activityLogs: {
+    listByProjectId: (projectId: number) =>
+      ["activityLogs", "listByProjectId", projectId] as const,
+  },
 };
 
 // =============================================================================
@@ -116,6 +135,42 @@ export const queryApi = {
     ): UseQueryOptions<APIResponse<ProjectReadWithMilestones>, Error> => ({
       queryKey: queryKeys.projects.detail(projectId),
       queryFn: () => getProjectWithMilestones(projectId),
+      ...cache(cacheConfig),
+      enabled: Number.isFinite(projectId) && projectId > 0,
+    }),
+  },
+  notes: {
+    list: (
+      projectId: number,
+      meetingId?: number | null,
+      cacheConfig?: CacheConfig,
+    ): UseQueryOptions<APIResponse<NoteListResponse>, Error> => ({
+      queryKey: queryKeys.notes.list(projectId, meetingId),
+      queryFn: () => getNotes({ projectId, meetingId }),
+      ...cache(cacheConfig),
+      enabled: Number.isFinite(projectId) && projectId > 0,
+    }),
+  },
+
+  meetings: {
+    listByProjectId: (
+      projectId: number,
+      cacheConfig?: CacheConfig,
+    ): UseQueryOptions<APIResponse<MeetingRead[]>, Error> => ({
+      queryKey: queryKeys.meetings.listByProjectId(projectId),
+      queryFn: () => listMeetingsByProject(projectId),
+      ...cache(cacheConfig),
+      enabled: Number.isFinite(projectId) && projectId > 0,
+    }),
+  },
+
+  activityLogs: {
+    listByProjectId: (
+      projectId: number,
+      cacheConfig?: CacheConfig,
+    ): UseQueryOptions<APIResponse<ActivityLogRead[]>, Error> => ({
+      queryKey: queryKeys.activityLogs.listByProjectId(projectId),
+      queryFn: () => listActivityLogsByProjectId(projectId),
       ...cache(cacheConfig),
       enabled: Number.isFinite(projectId) && projectId > 0,
     }),
@@ -194,6 +249,44 @@ export const queryApi = {
         { taskId: number }
       > => ({
         mutationFn: ({ taskId }) => deleteTask(taskId),
+      }),
+    },
+    notes: {
+      create: (): UseMutationOptions<
+        APIResponse<NoteRead>,
+        Error,
+        NoteCreate
+      > => ({
+        mutationFn: (data) => createNote(data),
+      }),
+      update: (
+        noteId: number,
+      ): UseMutationOptions<APIResponse<NoteRead>, Error, NoteUpdate> => ({
+        mutationFn: (data) => updateNote(noteId, data),
+      }),
+      delete: (): UseMutationOptions<APIResponse<boolean>, Error, { noteId: number }> => ({
+        mutationFn: ({ noteId }) => deleteNote(noteId),
+      }),
+    },
+    meetings: {
+      create: (): UseMutationOptions<
+        APIResponse<MeetingRead>,
+        Error,
+        MeetingCreate
+      > => ({
+        mutationFn: (data) => createMeeting(data),
+      }),
+      update: (
+        meetingId: number,
+      ): UseMutationOptions<APIResponse<MeetingRead>, Error, MeetingUpdate> => ({
+        mutationFn: (data) => updateMeeting(meetingId, data),
+      }),
+      delete: (): UseMutationOptions<
+        APIResponse<boolean>,
+        Error,
+        { meetingId: number }
+      > => ({
+        mutationFn: ({ meetingId }) => deleteMeeting(meetingId),
       }),
     },
   },
