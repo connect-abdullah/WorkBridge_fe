@@ -51,6 +51,7 @@ export function MilestonesPanel({
   setMsAmount,
   msStatus,
   setMsStatus,
+  msApprovalStatus,
   onMilestoneSubmit,
 
   taskModalOpen,
@@ -88,6 +89,7 @@ export function MilestonesPanel({
   setMsAmount: (v: string) => void;
   msStatus: MilestoneStatus;
   setMsStatus: (v: MilestoneStatus) => void;
+  msApprovalStatus: Milestone["approvalStatus"];
   onMilestoneSubmit: (e: FormEvent<HTMLFormElement>) => void;
 
   taskModalOpen: boolean;
@@ -99,6 +101,33 @@ export function MilestonesPanel({
   setTaskDescription: (v: string) => void;
   onTaskSubmit: (e: FormEvent<HTMLFormElement>) => void;
 }) {
+  const approvalCapsule = (value?: Milestone["approvalStatus"]) => {
+    const v = value ?? "pending";
+    const label =
+      v === "revision-requested"
+        ? "Revision"
+        : v.charAt(0).toUpperCase() + v.slice(1).replace("-", " ");
+    const cls =
+      v === "approved"
+        ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+        : v === "rejected"
+          ? "border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
+          : v === "revision-requested"
+            ? "border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
+            : v === "pending"
+              ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
+              : "border-border bg-muted/60 text-muted-foreground";
+
+    return (
+      <span
+        className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${cls}`}
+        title={`Approval: ${label}`}
+      >
+        {label}
+      </span>
+    );
+  };
+
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-end gap-2">
@@ -128,6 +157,7 @@ export function MilestonesPanel({
           const hasTasks = milestone.tasks.length > 0;
           const isOpen = !!expandedMilestones[milestone.id];
           const isDropdownOpen = openStatusDropdown === milestone.id;
+          const isApproved = milestone.approvalStatus === "approved";
 
           return (
             <article
@@ -152,41 +182,44 @@ export function MilestonesPanel({
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => onStatusDropdownToggle(milestone.id)}
-                      className="cursor-pointer rounded-full focus:outline-none"
-                      aria-label="Change status"
-                    >
-                      <StatusBadge status={milestone.status} />
-                    </button>
+                  {approvalCapsule(milestone.approvalStatus)}
+                  {isApproved ? (
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => onStatusDropdownToggle(milestone.id)}
+                        className="cursor-pointer rounded-full focus:outline-none"
+                        aria-label="Change progress status"
+                      >
+                        <StatusBadge status={milestone.status} />
+                      </button>
 
-                    {isDropdownOpen ? (
-                      <div className="absolute right-0 top-full z-30 mt-1.5 w-40 overflow-hidden rounded-lg border border-border bg-card shadow-md">
-                        {(
-                          [
-                            "pending",
-                            "in-progress",
-                            "completed",
-                          ] as MilestoneStatus[]
-                        ).map((s) => (
-                          <button
-                            key={s}
-                            type="button"
-                            onClick={() => onStatusChange(milestone.id, s)}
-                            className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-muted ${
-                              milestone.status === s
-                                ? "font-medium text-primary"
-                                : "text-foreground"
-                            }`}
-                          >
-                            <StatusBadge status={s} />
-                          </button>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
+                      {isDropdownOpen ? (
+                        <div className="absolute right-0 top-full z-30 mt-1.5 w-40 overflow-hidden rounded-lg border border-border bg-card shadow-md">
+                          {(
+                            [
+                              "pending",
+                              "in-progress",
+                              "completed",
+                            ] as MilestoneStatus[]
+                          ).map((s) => (
+                            <button
+                              key={s}
+                              type="button"
+                              onClick={() => onStatusChange(milestone.id, s)}
+                              className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-muted ${
+                                milestone.status === s
+                                  ? "font-medium text-primary"
+                                  : "text-foreground"
+                              }`}
+                            >
+                              <StatusBadge status={s} />
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
 
                   <button
                     type="button"
@@ -329,15 +362,23 @@ export function MilestonesPanel({
           </Field>
 
           <Field label="Status">
+            <div className="space-y-1.5">
             <select
               value={msStatus}
               onChange={(e) => setMsStatus(e.target.value as MilestoneStatus)}
               className={selectCls}
+              disabled={milestoneModalMode === "edit" && msApprovalStatus !== "approved"}
             >
               <option value="pending">Pending</option>
               <option value="in-progress">In Progress</option>
               <option value="completed">Completed</option>
             </select>
+            {milestoneModalMode === "edit" && msApprovalStatus !== "approved" ? (
+              <p className="text-xs text-muted-foreground">
+                Available once approved.
+              </p>
+            ) : null}
+            </div>
           </Field>
 
           <Field label="Due Date">

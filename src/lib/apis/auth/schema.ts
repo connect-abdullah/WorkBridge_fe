@@ -5,7 +5,9 @@ interface UserRead {
   name: string;
   email: string;
   role: Role;
-  avatar?: string;
+  avatar?: string | null;
+  paid_user?: boolean | null;
+  paid_date?: string | null;
 }
 
 interface LoginSchema {

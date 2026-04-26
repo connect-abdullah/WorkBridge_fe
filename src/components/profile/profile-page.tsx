@@ -1,6 +1,7 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,9 @@ import {
   getNameValidationError,
   getPasswordValidationError,
 } from "@/lib/utils";
-import { profileUser } from "@/constants/profile";
+import type { UserRead } from "@/lib/apis/auth/schema";
+import { getProfile, updateProfile } from "@/lib/apis/auth/auth";
+import { handleUpload } from "@/lib/supabase";
 
 type ProfileFormValues = {
   name: string;
@@ -18,21 +21,75 @@ type ProfileFormValues = {
   password: string;
 };
 
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const first = parts[0]?.[0] ?? "";
+  const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? "" : "";
+  const initials = `${first}${last}`.toUpperCase();
+  return initials || "U";
+}
+
+function readStoredUser(): UserRead | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("auth:user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object") return null;
+    return parsed as UserRead;
+  } catch {
+    return null;
+  }
+}
+
 export default function ProfilePage() {
+  const storedUser = readStoredUser();
+  const [user, setUser] = useState<UserRead | null>(storedUser);
+
   const initialValues = useRef<ProfileFormValues>({
-    name: profileUser.name,
-    email: profileUser.email,
+    name: storedUser?.name ?? "",
+    email: storedUser?.email ?? "",
     password: "",
   });
 
   const [form, setForm] = useState<ProfileFormValues>(initialValues.current);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [errors, setErrors] = useState<
     Partial<Record<keyof ProfileFormValues, string>>
   >({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const profileQuery = useQuery({
+    queryKey: ["profile", "me"],
+    queryFn: () => getProfile(),
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    enabled: typeof window !== "undefined" && !!localStorage.getItem("auth:token"),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (payload: Parameters<typeof updateProfile>[0]) =>
+      updateProfile(payload),
+  });
+
+  useEffect(() => {
+    const res = profileQuery.data;
+    if (!res || res.success === false || !res.data) return;
+    const me = res.data;
+    setUser(me);
+    try {
+      localStorage.setItem("auth:user", JSON.stringify(me));
+    } catch {}
+    initialValues.current = { name: me.name, email: me.email, password: "" };
+    setForm((prev) => ({
+      ...prev,
+      name: me.name,
+      email: me.email,
+    }));
+  }, [profileQuery.data]);
 
   const isDirty = useMemo(() => {
     return (
@@ -63,6 +120,7 @@ export default function ProfilePage() {
     const file = event.target.files?.[0];
     if (!file) return;
     setAvatarPreview(URL.createObjectURL(file));
+    setAvatarFile(file);
   };
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -72,17 +130,51 @@ export default function ProfilePage() {
     if (!validate()) return;
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setIsSubmitting(false);
+    try {
+      let avatarUrl: string | undefined;
+      if (avatarFile && avatarPreview) {
+        avatarUrl = await handleUpload(avatarFile);
+      }
 
-    initialValues.current = { ...form, password: "" };
-    setForm((prev) => ({ ...prev, password: "" }));
-    setAvatarPreview(null);
-    setHasSubmitted(false);
-    setErrors({});
-    if (fileInputRef.current) fileInputRef.current.value = "";
+      const payload: Parameters<typeof updateProfile>[0] = {
+        name: form.name !== initialValues.current.name ? form.name : undefined,
+        email:
+          form.email !== initialValues.current.email ? form.email : undefined,
+        password: form.password.trim() ? form.password : undefined,
+        avatar: avatarUrl,
+      };
 
-    toast.success("Profile updated.");
+      const res = await updateMutation.mutateAsync(payload);
+      if (!res.success) {
+        toast.error(res.message || "Failed to update profile.");
+        return;
+      }
+      if (res.data) {
+        setUser(res.data);
+        try {
+          localStorage.setItem("auth:user", JSON.stringify(res.data));
+        } catch {}
+        try {
+          window.dispatchEvent(new Event("auth:user-updated"));
+        } catch {}
+      }
+
+      initialValues.current = { ...form, password: "" };
+      setForm((prev) => ({ ...prev, password: "" }));
+      setAvatarPreview(null);
+      setAvatarFile(null);
+      setHasSubmitted(false);
+      setErrors({});
+      if (fileInputRef.current) fileInputRef.current.value = "";
+
+      toast.success(res.message || "Profile updated.");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update profile.";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -119,18 +211,25 @@ export default function ProfilePage() {
                   alt="Avatar preview"
                   className="h-full w-full object-cover"
                 />
+              ) : user?.avatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={user.avatar}
+                  alt="Avatar"
+                  className="h-full w-full object-cover"
+                />
               ) : (
-                profileUser.initials
+                getInitials(user?.name ?? form.name ?? "")
               )}
             </button>
             <p className="mt-2 text-xs text-muted-foreground">
               Click avatar to change
             </p>
             <p className="mt-3 text-lg font-semibold text-foreground">
-              {profileUser.name}
+              {user?.name ?? form.name ?? "—"}
             </p>
             <span className="mt-1 inline-flex rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-              {profileUser.role === "freelancer" ? "Freelancer" : "Client"}
+              {user?.role === "freelancer" ? "Freelancer" : "Client"}
             </span>
           </div>
         </section>

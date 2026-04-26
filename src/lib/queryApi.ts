@@ -108,8 +108,8 @@ export const queryKeys = {
       ["meetings", "listByProjectId", projectId] as const,
   },
   activityLogs: {
-    listByProjectId: (projectId: number) =>
-      ["activityLogs", "listByProjectId", projectId] as const,
+    listByProjectId: (projectId: number, limit: number, offset: number) =>
+      ["activityLogs", "listByProjectId", projectId, limit, offset] as const,
   },
   files: {
     listByProjectId: (projectId: number) =>
@@ -173,10 +173,19 @@ export const queryApi = {
   activityLogs: {
     listByProjectId: (
       projectId: number,
+      params?: { limit?: number; offset?: number },
       cacheConfig?: CacheConfig,
     ): UseQueryOptions<APIResponse<ActivityLogRead[]>, Error> => ({
-      queryKey: queryKeys.activityLogs.listByProjectId(projectId),
-      queryFn: () => listActivityLogsByProjectId(projectId),
+      queryKey: queryKeys.activityLogs.listByProjectId(
+        projectId,
+        params?.limit ?? 10,
+        params?.offset ?? 0,
+      ),
+      queryFn: () =>
+        listActivityLogsByProjectId(projectId, {
+          limit: params?.limit ?? 10,
+          offset: params?.offset ?? 0,
+        }),
       ...cache(cacheConfig),
       enabled: Number.isFinite(projectId) && projectId > 0,
     }),

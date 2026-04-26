@@ -16,7 +16,8 @@ export type MilestoneApproval =
 export interface MilestoneBase {
   title: string;
   description: string;
-  status?: MilestoneStatus | null;
+  // renamed in backend: milestone progress status
+  progress_status?: MilestoneStatus | null;
   price: number;
   due_date: string; // datetime
   project_id: number;
@@ -29,7 +30,9 @@ export interface MilestoneCreate extends MilestoneBase {
 
 export interface MilestoneRead extends MilestoneBase {
   id: number;
-  approved: MilestoneApproval;
+  // renamed in backend: milestone approval status
+  status: MilestoneApproval;
+  is_approved?: boolean | null;
   tasks?: TaskRead[];
   payment?: unknown | null;
 }
@@ -38,11 +41,11 @@ export interface MilestoneUpdate {
   id?: number;
   title?: string;
   description?: string;
-  status?: MilestoneStatus | null;
+  progress_status?: MilestoneStatus | null;
   price?: number;
   due_date?: string;
   project_id?: number;
-  approved?: MilestoneApproval;
+  status?: MilestoneApproval;
   tasks?: TaskUpdate[] | null;
   payment?: unknown | null;
 }

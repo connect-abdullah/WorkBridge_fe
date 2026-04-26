@@ -1,5 +1,10 @@
 export type ProjectStatus = "pending" | "in-progress" | "completed";
 export type MilestoneStatus = "pending" | "in-progress" | "completed";
+export type MilestoneApprovalStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "revision-requested";
 export type PaymentStatus = "pending" | "in-progress" | "completed" | "paid";
 export type MessageRole = "freelancer" | "client";
 
@@ -22,6 +27,7 @@ export type Milestone = {
   dueDateIso: string;
   amount: string;
   status: MilestoneStatus;
+  approvalStatus?: MilestoneApprovalStatus;
   tasks: TaskItem[];
 };
 

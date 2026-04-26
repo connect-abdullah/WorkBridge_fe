@@ -19,6 +19,7 @@ import type {
   ProjectTaskCreateInput,
   ProjectStatus,
 } from "@/lib/apis/projects/schema";
+import type { MilestoneStatus } from "@/lib/apis/milestones/schema";
 import { toLocalDateTime } from "@/lib/utils";
 
 type DraftTask = ProjectTaskCreateInput & { _cid: string };
@@ -130,7 +131,7 @@ export default function ProjectsPage() {
         _cid: makeCid(),
         title: "Milestone 1",
         description: "",
-        status: "pending",
+        progress_status: "pending",
         price: 0,
         due_date: twoWeeksIso,
         tasks: [
@@ -157,7 +158,7 @@ export default function ProjectsPage() {
         _cid: makeCid(),
         title: `Milestone ${prev.length + 1}`,
         description: "",
-        status: "pending",
+        progress_status: "pending",
         price: 0,
         due_date: d.toISOString(),
         tasks: [],
@@ -224,7 +225,8 @@ export default function ProjectsPage() {
       milestones: (milestones ?? []).map((m) => ({
         title: String(m.title ?? "").trim(),
         description: String(m.description ?? "").trim(),
-        status: m.status ?? "pending",
+        progress_status: (((m as { progress_status?: string | null })
+          .progress_status ?? "pending") as MilestoneStatus),
         price: Number(m.price) || 0,
         due_date: m.due_date || new Date().toISOString(),
         tasks: (m.tasks ?? []).map((t) => ({
@@ -286,12 +288,12 @@ export default function ProjectsPage() {
           data!.map((project) => {
             const ms = project.milestones ?? [];
             const total = ms.length || 0;
-            const completed = ms.filter((m) => m.status === "completed").length;
+            const completed = ms.filter((m) => m.progress_status === "completed").length;
             const progress =
               total === 0 ? 0 : Math.round((completed / total) * 100);
             const allCompleted = total > 0 && completed === total;
             const next =
-              ms.find((m) => m.status !== "completed") ?? ms[0] ?? null;
+              ms.find((m) => m.progress_status !== "completed") ?? ms[0] ?? null;
 
             return (
               <ProjectCard
@@ -310,7 +312,7 @@ export default function ProjectsPage() {
                 milestoneStatus={
                   allCompleted
                     ? ("completed" as never)
-                    : (milestoneStatusToBadge(next?.status) as never)
+                    : (milestoneStatusToBadge(next?.progress_status) as never)
                 }
                 projectDueDate={formatLongDate(project.end_date)}
                 amount={formatMoney(project.total_amount)}
@@ -514,12 +516,12 @@ export default function ProjectsPage() {
 
                     <Field label="Status">
                       <select
-                        value={(m.status ?? "pending") as string}
+                        value={((m as { progress_status?: string | null }).progress_status ?? "pending") as string}
                         onChange={(e) =>
                           setMilestones((prev) =>
                             prev.map((x, i) =>
                               i === msIndex
-                                ? ({ ...x, status: e.target.value } as never)
+                                ? ({ ...x, progress_status: e.target.value } as never)
                                 : x,
                             ),
                           )

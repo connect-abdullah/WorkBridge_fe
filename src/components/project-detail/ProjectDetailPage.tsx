@@ -10,6 +10,7 @@ import {
   type Meeting,
   type Milestone,
   type MilestoneStatus,
+  type MilestoneApprovalStatus,
   type TaskItem,
 } from "@/constants/project-detail";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -103,7 +104,8 @@ function toUiMilestone(ms: MilestoneRead): Milestone {
     dueDate: formatLongDate(ms.due_date),
     dueDateIso: ms.due_date,
     amount: formatMoney(ms.price),
-    status: toUiMilestoneStatus(ms.status),
+    status: toUiMilestoneStatus(ms.progress_status),
+    approvalStatus: (ms.status ?? "pending").replaceAll("_", "-") as never,
     tasks: (ms.tasks ?? []).map((t) => ({
       id: String(t.id),
       title: t.title,
@@ -159,6 +161,8 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
   // ── Tab state
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
+  const ACTIVITY_LIMIT = 10;
+  const [activityOffset, setActivityOffset] = useState(0);
 
   // ── Alert modal (replaces window.confirm)
   const [alertOpen, setAlertOpen] = useState(false);
@@ -331,6 +335,8 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
   const [msDueDate, setMsDueDate] = useState("");
   const [msAmount, setMsAmount] = useState("");
   const [msStatus, setMsStatus] = useState<MilestoneStatus>("pending");
+  const [msApprovalStatus, setMsApprovalStatus] =
+    useState<MilestoneApprovalStatus>("pending");
 
   // ── Task modal (create / edit)
   const [taskModalOpen, setTaskModalOpen] = useState(false);
@@ -431,10 +437,14 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
   );
 
   const activityLogsQuery = useQuery({
-    ...queryApi.activityLogs.listByProjectId(numericProjectId, {
-      staleTime: 1 * 60 * 1000, // 1 minute
-      gcTime: 2 * 60 * 1000, // 2 minutes
-    }),
+    ...queryApi.activityLogs.listByProjectId(
+      numericProjectId,
+      { limit: ACTIVITY_LIMIT, offset: activityOffset },
+      {
+        staleTime: 1 * 60 * 1000, // 1 minute
+        gcTime: 2 * 60 * 1000, // 2 minutes
+      },
+    ),
     refetchInterval: activeTab === "Activity" ? 15 * 1000 : false,
   });
 
@@ -628,12 +638,14 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       setMsDueDate(toLocalDate(twoWeeks.toISOString()));
       setMsAmount("$0");
       setMsStatus("pending");
+      setMsApprovalStatus("pending");
     } else {
       setMsTitle(ms?.title ?? "");
       setMsDescription(ms?.description ?? "");
       setMsDueDate(ms?.dueDateIso ? toLocalDate(ms.dueDateIso) : "");
       setMsAmount(ms?.amount ?? "");
       setMsStatus(ms?.status ?? "pending");
+      setMsApprovalStatus(ms?.approvalStatus ?? "pending");
     }
     setMilestoneModalOpen(true);
   };
@@ -684,7 +696,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     const payload = {
       title,
       description: msDescription.trim(),
-      status: uiMilestoneStatusToApi(msStatus),
+      progress_status: uiMilestoneStatusToApi(msStatus),
       price: parseMoneyToNumber(amount),
       due_date: parseDateToIso(dueDate),
       project_id: projectDetail.id,
@@ -754,7 +766,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     updateMilestoneMutation
       .mutateAsync({
         milestoneId: milestoneIdNum,
-        data: { status: uiMilestoneStatusToApi(status) },
+        data: { progress_status: uiMilestoneStatusToApi(status) },
       })
       .then((res) => {
         if (!res.success) {
@@ -1199,6 +1211,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
           setMsAmount={setMsAmount}
           msStatus={msStatus}
           setMsStatus={setMsStatus}
+          msApprovalStatus={msApprovalStatus}
           onMilestoneSubmit={handleMilestoneSubmit}
           taskModalOpen={taskModalOpen}
           taskModalMode={taskModalMode}
@@ -1354,6 +1367,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
       {activeTab === "Comments" ? (
         <CommentsPanel
+          projectId={numericProjectId}
           comments={comments}
           commentDraft={commentDraft}
           setCommentDraft={setCommentDraft}
@@ -1415,6 +1429,10 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         ) : (
           <ActivityPanel
             logs={(activityLogsQuery.data?.data ?? []) as ActivityLogRead[]}
+            limit={ACTIVITY_LIMIT}
+            offset={activityOffset}
+            isLoading={activityLogsQuery.isFetching}
+            onOffsetChange={(next) => setActivityOffset(next)}
           />
         )
       ) : null}

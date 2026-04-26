@@ -1,16 +1,35 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { Download, Trash2, X, EyeIcon, Pencil, ExternalLink } from "lucide-react";
+import {
+  Download,
+  Trash2,
+  X,
+  Pencil,
+  ExternalLink,
+  FileText,
+  Image as ImageIcon,
+  Video,
+  Music,
+  Link2,
+  FileArchive,
+  Sheet,
+  File as FileIcon,
+} from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { inputCls } from "@/components/ui/form-field";
 import { AlertModal } from "@/components/ui/alert-modal";
-import { handleUpload } from "@/lib/supabase";
 import { queryApi, queryKeys } from "@/lib/queryApi";
 import type { FileCreate, FileRead, FileUpdate } from "@/lib/apis/files/schema";
-import { inferFileType, getUploadedUserType } from "@/lib/apis/files/upload";
+import {
+  appendProjectFileToCache,
+  fetchAndCacheProjectFiles,
+  getUploadedUserType,
+  inferFileType,
+  uploadProjectFile,
+} from "@/lib/apis/files/upload";
 import { updateFile } from "@/lib/apis/files/files";
 import { Modal } from "@/components/project-detail/components/Modal";
 
@@ -20,6 +39,27 @@ function splitFileName(value: string): { base: string; ext: string } {
   const lastDot = v.lastIndexOf(".");
   if (lastDot <= 0 || lastDot === v.length - 1) return { base: v, ext: "" };
   return { base: v.slice(0, lastDot), ext: v.slice(lastDot) };
+}
+
+function getFileRowIcon(file: FileRead) {
+  const type = (file.file_type || "").toLowerCase();
+  if (type === "link") return Link2;
+  if (type === "image") return ImageIcon;
+  if (type === "video") return Video;
+  if (type === "audio") return Music;
+  if (type === "document") return FileText;
+
+  const ext = splitFileName(file.file_name || "").ext.toLowerCase();
+  if (ext === ".pdf" || ext === ".doc" || ext === ".docx" || ext === ".txt")
+    return FileText;
+  if (ext === ".xls" || ext === ".xlsx" || ext === ".csv") return Sheet;
+  if (ext === ".zip" || ext === ".rar" || ext === ".7z") return FileArchive;
+  if (ext === ".png" || ext === ".jpg" || ext === ".jpeg" || ext === ".webp")
+    return ImageIcon;
+  if (ext === ".mp4" || ext === ".mov" || ext === ".mkv") return Video;
+  if (ext === ".mp3" || ext === ".wav" || ext === ".m4a") return Music;
+
+  return FileIcon;
 }
 
 function toValidUrl(value: string): string | null {
@@ -76,6 +116,9 @@ export function FilesPanel({
   );
 
   const createFileMutation = useMutation(queryApi.mutations.files.create());
+  const uploadFileMutation = useMutation({
+    mutationFn: (file: File) => uploadProjectFile(file, projectId),
+  });
   const deleteFileMutation = useMutation(queryApi.mutations.files.delete());
   const updateFileMutation = useMutation({
     mutationFn: async (payload: { fileId: number; data: FileUpdate }) =>
@@ -317,21 +360,15 @@ export function FilesPanel({
   const uploadPending = async () => {
     if (!pendingFile) return;
     try {
-      const publicUrl = await handleUpload(pendingFile);
-      const payload: FileCreate = {
-        file_name: pendingFile.name,
-        file_path: publicUrl,
-        file_type: inferFileType(pendingFile.type),
-        uploaded_user: getUploadedUserType(),
-        project_id: projectId,
-      };
-
-      const res = await createFileMutation.mutateAsync(payload);
+      const res = await uploadFileMutation.mutateAsync(pendingFile);
       if (!res.success) {
         toast.error(res.message || "Failed to save file.");
         return;
       }
 
+      if (res.data) {
+        appendProjectFileToCache(queryClient, projectId, res.data);
+      }
       toast.success(res.message || "File uploaded.");
       setPendingFile(null);
       queryClient.invalidateQueries({
@@ -541,7 +578,7 @@ export function FilesPanel({
                 onClick={cancelPending}
                 className="rounded-md p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
                 aria-label="Remove selected file"
-                disabled={createFileMutation.isPending}
+                disabled={uploadFileMutation.isPending}
               >
                 <X className="h-4 w-4" />
               </button>
@@ -552,9 +589,9 @@ export function FilesPanel({
                 type="button"
                 className="h-9"
                 onClick={uploadPending}
-                disabled={createFileMutation.isPending}
+                disabled={uploadFileMutation.isPending}
               >
-                {createFileMutation.isPending ? "Uploading…" : "Upload"}
+                {uploadFileMutation.isPending ? "Uploading…" : "Upload"}
               </Button>
             </div>
           </div>
@@ -575,20 +612,51 @@ export function FilesPanel({
             No files uploaded yet.
           </p>
         ) : (
-          rows.map((file, i) => (
-            <div
-              key={String(file.id)}
-              className={`grid min-w-[680px] items-center gap-3 px-4 py-3 text-sm md:grid-cols-[1.4fr_0.6fr_0.9fr_0.9fr_auto] ${
-                i !== rows.length - 1 ? "border-b border-border" : ""
-              }`}
-            >
-              <p className="font-medium text-foreground truncate">
-                {file.file_name}
-              </p>
-              <p className="text-muted-foreground capitalize">{file.file_type}</p>
-              <p className="text-muted-foreground">{formatDate((file as any).created_at)}</p>
-              <p className="text-muted-foreground capitalize">{file.uploaded_user}</p>
-              <div className="flex items-center gap-1.5">
+          <>
+            <div className="grid min-w-[680px] items-center gap-3 border-b border-border bg-muted/30 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground md:grid-cols-[1.4fr_0.6fr_0.9fr_0.9fr_auto]">
+              <div className="flex min-w-0 items-center gap-2">
+                <span
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm border border-border bg-muted/40 opacity-0"
+                  aria-hidden="true"
+                />
+                <span className="min-w-0 truncate">Name</span>
+              </div>
+              <span>Type</span>
+              <span>Uploaded Date</span>
+              <span>Uploaded By</span>
+              <div className="flex justify-end">
+                <span>Actions</span>
+              </div>
+            </div>
+
+            {rows.map((file, i) => (
+              <div
+                key={String(file.id)}
+                className={`grid min-w-[680px] items-center gap-3 px-4 py-3 text-sm md:grid-cols-[1.4fr_0.6fr_0.9fr_0.9fr_auto] ${
+                  i !== rows.length - 1 ? "border-b border-border" : ""
+                }`}
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  {(() => {
+                    const Icon = getFileRowIcon(file);
+                    return (
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm border border-border bg-muted/40 text-muted-foreground">
+                        <Icon className="h-4 w-4" />
+                      </span>
+                    );
+                  })()}
+                  <p className="min-w-0 truncate font-medium text-foreground">
+                    {file.file_name}
+                  </p>
+                </div>
+                <p className="text-muted-foreground capitalize">{file.file_type}</p>
+                <p className="text-muted-foreground">
+                  {formatDate((file as any).created_at)}
+                </p>
+                <p className="text-muted-foreground capitalize">
+                  {file.uploaded_user}
+                </p>
+                <div className="flex items-center justify-end gap-1.5">
                 {/* {file.file_type === "image" && (
                   <button
                     type="button"
@@ -644,8 +712,9 @@ export function FilesPanel({
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
-            </div>
-          ))
+              </div>
+            ))}
+          </>
         )}
       </div>
     </section>

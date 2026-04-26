@@ -1,4 +1,14 @@
-import { UploadedUserType, FileType } from "@/lib/apis/files/schema";
+import type { QueryClient } from "@tanstack/react-query";
+import { handleUpload } from "@/lib/supabase";
+import type { APIResponse } from "@/lib/apis/apiResponse";
+import { createFile, listFilesByProjectId } from "@/lib/apis/files/files";
+import { queryKeys } from "@/lib/queryApi";
+import type {
+  UploadedUserType,
+  FileType,
+  FileCreate,
+  FileRead,
+} from "@/lib/apis/files/schema";
 
 
 export function inferFileType(mimeType: string): FileType {
@@ -35,4 +45,54 @@ export function getUploadedUserType(): UploadedUserType {
   } catch {
     return "client";
   }
+}
+
+export async function uploadProjectFile(file: File, projectId: number) {
+  const publicUrl = await handleUpload(file);
+  const payload: FileCreate = {
+    file_name: file.name,
+    file_path: publicUrl,
+    file_type: inferFileType(file.type),
+    uploaded_user: getUploadedUserType(),
+    project_id: projectId,
+  };
+
+  return createFile(payload);
+}
+
+export function appendProjectFileToCache(
+  queryClient: QueryClient,
+  projectId: number,
+  file: FileRead,
+) {
+  queryClient.setQueryData<APIResponse<FileRead[]> | undefined>(
+    queryKeys.files.listByProjectId(projectId),
+    (prev) =>
+      prev
+        ? { ...prev, data: [...(prev.data ?? []), file] }
+        : { success: true, message: "Files loaded.", data: [file] },
+  );
+}
+
+/**
+ * If the files cache for this project is empty (not yet fetched), fetches
+ * from the API and writes it into the React Query cache.
+ * Returns the resulting file list (from cache or freshly fetched).
+ */
+export async function fetchAndCacheProjectFiles(
+  queryClient: QueryClient,
+  projectId: number,
+): Promise<FileRead[]> {
+  const key = queryKeys.files.listByProjectId(projectId);
+  const cached = queryClient.getQueryData<APIResponse<FileRead[]>>(key);
+
+  if (cached?.success !== false && (cached?.data?.length ?? 0) > 0) {
+    return cached?.data ?? [];
+  }
+
+  const res = await listFilesByProjectId(projectId);
+  if (res.success !== false) {
+    queryClient.setQueryData<APIResponse<FileRead[]>>(key, res);
+  }
+  return res.data ?? [];
 }
