@@ -7,14 +7,9 @@ export const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUr
 
 // Define a more accurate TypeScript type for responses if needed
 type SupabaseUploadResult = {
-  path: string;
-  fullPath: string;
-  [key: string]: any;
-};
-
-type SupabaseUploadError = {
-  message: string;
-  [key: string]: any;
+  path?: string;
+  fullPath?: string;
+  Key?: string;
 };
 
 function normalizeStoragePath(bucket: string, keyOrPath: string): string {
@@ -68,8 +63,7 @@ export const handleUpload = async (
     // supabase-js
     (uploadData as SupabaseUploadResult | null)?.path ??
     // storage REST response sometimes includes Key
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (uploadData as any)?.Key;
+    (uploadData as SupabaseUploadResult | null)?.Key;
 
   if (!rawPath) {
     throw new Error("File upload did not return a path.");

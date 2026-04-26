@@ -25,13 +25,27 @@ import { queryApi, queryKeys } from "@/lib/queryApi";
 import type { FileCreate, FileRead, FileUpdate } from "@/lib/apis/files/schema";
 import {
   appendProjectFileToCache,
-  fetchAndCacheProjectFiles,
   getUploadedUserType,
   inferFileType,
   uploadProjectFile,
 } from "@/lib/apis/files/upload";
 import { updateFile } from "@/lib/apis/files/files";
 import { Modal } from "@/components/project-detail/components/Modal";
+
+type ApiErrorShape = {
+  response?: {
+    data?: {
+      detail?: unknown;
+      message?: unknown;
+    };
+  };
+};
+
+function getApiErrorDetail(err: unknown): unknown {
+  if (!err || typeof err !== "object") return undefined;
+  const e = err as ApiErrorShape;
+  return e.response?.data?.detail ?? e.response?.data?.message;
+}
 
 function splitFileName(value: string): { base: string; ext: string } {
   const v = (value || "").trim();
@@ -98,6 +112,7 @@ export function FilesPanel({
   const queryClient = useQueryClient();
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const previewUrlRef = useRef<string | null>(null);
   const [updateOpen, setUpdateOpen] = useState(false);
   const [updateTarget, setUpdateTarget] = useState<FileRead | null>(null);
   const [updateValue, setUpdateValue] = useState("");
@@ -137,11 +152,7 @@ export function FilesPanel({
         queryKey: queryKeys.files.listByProjectId(projectId),
       });
     } catch (err) {
-      const maybeDetail =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (err as any)?.response?.data?.detail ??
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (err as any)?.response?.data?.message;
+      const maybeDetail = getApiErrorDetail(err);
       if (Array.isArray(maybeDetail) && maybeDetail[0]?.msg) {
         toast.error(String(maybeDetail[0].msg));
       } else if (typeof maybeDetail === "string") {
@@ -159,17 +170,21 @@ export function FilesPanel({
   }, [filesQuery.data]);
 
   useEffect(() => {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
+    }
+
     if (!pendingFile) {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
       return;
     }
     if (pendingFile.type?.toLowerCase().startsWith("image/")) {
       const url = URL.createObjectURL(pendingFile);
       setPreviewUrl(url);
-      return () => URL.revokeObjectURL(url);
+      previewUrlRef.current = url;
+      return;
     }
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
   }, [pendingFile]);
 
@@ -232,11 +247,7 @@ export function FilesPanel({
         queryKey: queryKeys.files.listByProjectId(projectId),
       });
     } catch (err) {
-      const maybeDetail =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (err as any)?.response?.data?.detail ??
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (err as any)?.response?.data?.message;
+      const maybeDetail = getApiErrorDetail(err);
       if (Array.isArray(maybeDetail) && maybeDetail[0]?.msg) {
         toast.error(String(maybeDetail[0].msg));
       } else if (typeof maybeDetail === "string") {
@@ -286,11 +297,7 @@ export function FilesPanel({
         queryKey: queryKeys.files.listByProjectId(projectId),
       });
     } catch (err) {
-      const maybeDetail =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (err as any)?.response?.data?.detail ??
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (err as any)?.response?.data?.message;
+      const maybeDetail = getApiErrorDetail(err);
       if (Array.isArray(maybeDetail) && maybeDetail[0]?.msg) {
         toast.error(String(maybeDetail[0].msg));
       } else if (typeof maybeDetail === "string") {
@@ -336,11 +343,7 @@ export function FilesPanel({
       if (!file) return;
       setPendingFile(file);
     } catch (err) {
-      const maybeDetail =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (err as any)?.response?.data?.detail ??
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (err as any)?.response?.data?.message;
+      const maybeDetail = getApiErrorDetail(err);
       if (Array.isArray(maybeDetail) && maybeDetail[0]?.msg) {
         toast.error(String(maybeDetail[0].msg));
       } else if (typeof maybeDetail === "string") {
@@ -375,11 +378,7 @@ export function FilesPanel({
         queryKey: queryKeys.files.listByProjectId(projectId),
       });
     } catch (err) {
-      const maybeDetail =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (err as any)?.response?.data?.detail ??
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (err as any)?.response?.data?.message;
+      const maybeDetail = getApiErrorDetail(err);
       if (Array.isArray(maybeDetail) && maybeDetail[0]?.msg) {
         toast.error(String(maybeDetail[0].msg));
       } else if (typeof maybeDetail === "string") {
@@ -651,7 +650,7 @@ export function FilesPanel({
                 </div>
                 <p className="text-muted-foreground capitalize">{file.file_type}</p>
                 <p className="text-muted-foreground">
-                  {formatDate((file as any).created_at)}
+                  {formatDate(file.created_at)}
                 </p>
                 <p className="text-muted-foreground capitalize">
                   {file.uploaded_user}

@@ -19,7 +19,6 @@ export function MeetingsPanel({
   meetings,
   meetingNotesId,
   setMeetingNotesId,
-  onMeetingNotesChange,
   meetingFormOpen,
   meetingFormMode,
   onOpenMeetingForm,
@@ -38,11 +37,6 @@ export function MeetingsPanel({
   meetings: Meeting[];
   meetingNotesId: string | null;
   setMeetingNotesId: (id: string | null) => void;
-  onMeetingNotesChange: (
-    id: string,
-    field: "privateNotes" | "sharedNotes",
-    value: string,
-  ) => void;
   meetingFormOpen: boolean;
   meetingFormMode: "create" | "edit";
   onOpenMeetingForm: (mode: "create" | "edit", meeting?: Meeting) => void;

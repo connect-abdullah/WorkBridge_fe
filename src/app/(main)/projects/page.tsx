@@ -101,7 +101,6 @@ export default function ProjectsPage() {
 
   // ── Create Project modal state
   const [createOpen, setCreateOpen] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
   const nowIso = useMemo(() => new Date().toISOString(), []);
   const twoWeeksIso = useMemo(() => {
     const d = new Date();
@@ -123,7 +122,6 @@ export default function ProjectsPage() {
   const [milestones, setMilestones] = useState<DraftMilestone[]>([]);
 
   useEffect(() => {
-    setHydrated(true);
     setPStartDate(toLocalDateTime(nowIso));
     setPEndDate(toLocalDateTime(twoWeeksIso));
     setMilestones([

@@ -474,7 +474,6 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       >)(vars.data);
     },
   });
-  const deleteMeetingMutation = useMutation(queryApi.mutations.meetings.delete());
 
   // ── Derived
   const sortedMilestones = useMemo(() => {
@@ -1381,7 +1380,6 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
           meetings={meetings}
           meetingNotesId={meetingNotesId}
           setMeetingNotesId={setMeetingNotesId}
-          onMeetingNotesChange={handleMeetingNotesChange}
           meetingFormOpen={meetingFormOpen}
           meetingFormMode={meetingFormMode}
           onOpenMeetingForm={openMeetingForm}
