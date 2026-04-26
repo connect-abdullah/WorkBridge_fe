@@ -6,12 +6,10 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   initialComments,
-  projectFiles,
   type CommentMessage,
   type Meeting,
   type Milestone,
   type MilestoneStatus,
-  type ProjectFile,
   type TaskItem,
 } from "@/constants/project-detail";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -21,6 +19,7 @@ import type { MilestoneRead } from "@/lib/apis/milestones/schema";
 import type { ProjectReadWithMilestones } from "@/lib/apis/projects/schema";
 import type { ProjectUpdate } from "@/lib/apis/projects/schema";
 import { Modal } from "@/components/project-detail/components/Modal";
+import { AlertModal } from "@/components/ui/alert-modal";
 import {
   Field,
   inputCls,
@@ -160,6 +159,28 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
   // ── Tab state
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
+
+  // ── Alert modal (replaces window.confirm)
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("Confirm");
+  const [alertDescription, setAlertDescription] = useState<string | undefined>(
+    undefined,
+  );
+  const [alertActionLabel, setAlertActionLabel] = useState("Delete");
+  const alertActionRef = useRef<null | (() => void | Promise<void>)>(null);
+
+  const openAlert = (args: {
+    title: string;
+    description?: string;
+    actionLabel: string;
+    onAction: () => void | Promise<void>;
+  }) => {
+    setAlertTitle(args.title);
+    setAlertDescription(args.description);
+    setAlertActionLabel(args.actionLabel);
+    alertActionRef.current = args.onAction;
+    setAlertOpen(true);
+  };
 
   const numericProjectId = Number(projectId);
   const {
@@ -358,11 +379,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     Record<string, "pay" | "invoice">
   >({});
 
-  // ── Files
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [files, setFiles] = useState<ProjectFile[]>(() =>
-    projectFiles.map((f) => ({ ...f })),
-  );
+  // ── Files are handled inside FilesPanel via /api/v1/files
 
   useEffect(() => {
     if (!projectDetail) return;
@@ -598,24 +615,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     );
   };
 
-  const handleFilesSelected = (fileList: FileList | null) => {
-    if (!fileList || fileList.length === 0) return;
-    const now = new Date();
-    const uploadedDate = now.toLocaleDateString(undefined, {
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-    });
-    const picked: ProjectFile[] = Array.from(fileList).map((file) => ({
-      id: `uf-${Math.random().toString(16).slice(2)}`,
-      fileName: file.name,
-      fileType: (file.name.split(".").pop() ?? "file").toUpperCase(),
-      uploadedDate,
-      uploadedBy: "You",
-    }));
-    setFiles((prev) => [...picked, ...prev]);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+  // (no local file handlers)
 
   const openMilestoneModal = (mode: "create" | "edit", ms?: Milestone) => {
     setMilestoneModalMode(mode);
@@ -777,8 +777,15 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
   };
 
   const handleMilestoneDelete = (milestoneId: string) => {
-    const ok = window.confirm("Delete this milestone? This cannot be undone.");
-    if (!ok) return;
+    openAlert({
+      title: "Delete milestone?",
+      description: "Delete this milestone? This cannot be undone.",
+      actionLabel: "Delete",
+      onAction: () => handleMilestoneDeleteConfirmed(milestoneId),
+    });
+  };
+
+  const handleMilestoneDeleteConfirmed = (milestoneId: string) => {
     setMilestoneState((prev) => prev.filter((m) => m.id !== milestoneId));
     setExpandedMilestones((prev) => {
       const next = { ...prev };
@@ -893,8 +900,15 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
   };
 
   const deleteTaskForMilestone = (milestoneId: string, taskId: string) => {
-    const ok = window.confirm("Delete this task? This cannot be undone.");
-    if (!ok) return;
+    openAlert({
+      title: "Delete task?",
+      description: "Delete this task? This cannot be undone.",
+      actionLabel: "Delete",
+      onAction: () => deleteTaskForMilestoneConfirmed(milestoneId, taskId),
+    });
+  };
+
+  const deleteTaskForMilestoneConfirmed = (milestoneId: string, taskId: string) => {
     setMilestoneState((prev) =>
       prev.map((m) =>
         m.id === milestoneId
@@ -999,8 +1013,16 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
   const handleProjectDelete = () => {
     if (!projectDetail) return;
-    const ok = window.confirm("Delete this project? This cannot be undone.");
-    if (!ok) return;
+    openAlert({
+      title: "Delete project?",
+      description: "Delete this project? This cannot be undone.",
+      actionLabel: "Delete",
+      onAction: () => handleProjectDeleteConfirmed(),
+    });
+  };
+
+  const handleProjectDeleteConfirmed = () => {
+    if (!projectDetail) return;
 
     deleteProjectMutation
       .mutateAsync({ projectId: projectDetail.id } as never)
@@ -1036,6 +1058,19 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 pb-10">
+      <AlertModal
+        open={alertOpen}
+        onClose={() => setAlertOpen(false)}
+        title={alertTitle}
+        description={alertDescription}
+        actionLabel={alertActionLabel}
+        onAction={async () => {
+          const fn = alertActionRef.current;
+          setAlertOpen(false);
+          alertActionRef.current = null;
+          if (fn) await fn();
+        }}
+      />
       {/* ── Project Header ─────────────────────────────── */}
       <header className="space-y-3 border-b border-border pb-5">
         {projectError ? (
@@ -1314,14 +1349,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       </Modal>
 
       {activeTab === "Files" ? (
-        <FilesPanel
-          files={files}
-          fileInputRef={fileInputRef}
-          onFilesSelected={handleFilesSelected}
-          onDeleteFile={(id) =>
-            setFiles((prev) => prev.filter((f) => f.id !== id))
-          }
-        />
+        <FilesPanel projectId={numericProjectId} />
       ) : null}
 
       {activeTab === "Comments" ? (

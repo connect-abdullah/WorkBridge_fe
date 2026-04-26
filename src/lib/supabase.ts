@@ -1,52 +1,88 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
-export const supabase =
-  supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey)
-    : null;
+export const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
 
-const STORAGE_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_MENU_BUCKET ?? "public";
+// Define a more accurate TypeScript type for responses if needed
+type SupabaseUploadResult = {
+  path: string;
+  fullPath: string;
+  [key: string]: any;
+};
 
-export function slugifyCategory(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
+type SupabaseUploadError = {
+  message: string;
+  [key: string]: any;
+};
+
+function normalizeStoragePath(bucket: string, keyOrPath: string): string {
+  const v = (keyOrPath || "").replace(/^\/+/, "");
+  // Supabase sometimes returns "Bucket/path..." as Key; getPublicUrl expects "path..."
+  if (v.startsWith(`${bucket}/`)) return v.slice(bucket.length + 1);
+  return v;
 }
 
-export async function uploadProductPhoto(
-  file: File,
-  categorySlug: string,
-): Promise<string> {
+// Uploads the selected file to Supabase and returns a public URL.
+export const handleUpload = async (
+  input: React.ChangeEvent<HTMLInputElement> | File,
+): Promise<string> => {
   if (!supabase) {
     throw new Error(
-      "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local",
+      "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local"
     );
   }
 
-  const slug = slugifyCategory(categorySlug) || "other";
-  const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-  const fileName = `${Date.now()}-${safeName}`;
-  const path =
-    STORAGE_BUCKET === "menu"
-      ? `${slug}/${fileName}`
-      : `menu/${slug}/${fileName}`;
+  const file =
+    input instanceof File ? input : (input.target.files && input.target.files[0]);
+  if (!file) throw new Error("No file selected.");
 
-  const { error } = await supabase.storage
-    .from(STORAGE_BUCKET)
-    .upload(path, file, {
-      cacheControl: "3600",
-      upsert: false,
+  // Parse user from localStorage (assuming a JSON string in 'auth:user')
+  const userStr = localStorage.getItem("auth:user");
+  if (!userStr) throw new Error("User is not authenticated.");
+  let userId: string | undefined;
+  try {
+    const userObj = JSON.parse(userStr);
+    userId = userObj?.id;
+  } catch {
+    throw new Error("Invalid user data in localStorage.");
+  }
+  if (!userId) throw new Error("User ID not found.");
+
+  // Create a unique file path
+  const filePath = `${userId}/${Date.now()}-${file.name}`;
+
+  // Upload the file
+  const { data: uploadData, error } = await supabase.storage
+    .from("WorkBridge")
+    .upload(filePath, file,{
+      cacheControl: '3600', // 1 hour
+      upsert: false, // Don't overwrite existing files,
+      contentType: file.type,
     });
 
   if (error) throw new Error(error.message);
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+  const rawPath: string | undefined =
+    // supabase-js
+    (uploadData as SupabaseUploadResult | null)?.path ??
+    // storage REST response sometimes includes Key
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (uploadData as any)?.Key;
+
+  if (!rawPath) {
+    throw new Error("File upload did not return a path.");
+  }
+
+  // Get the public URL
+  const { data: {publicUrl} } = supabase.storage
+    .from("WorkBridge")
+    .getPublicUrl(normalizeStoragePath("WorkBridge", rawPath));
+
+  if (!publicUrl) {
+    throw new Error("Failed to get public URL for uploaded file.");
+  }
+
   return publicUrl;
-}
+};

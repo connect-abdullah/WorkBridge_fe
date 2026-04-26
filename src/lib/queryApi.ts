@@ -43,6 +43,8 @@ import { createMeeting, deleteMeeting, listMeetingsByProject, updateMeeting } fr
 import type { MeetingCreate, MeetingRead, MeetingUpdate } from "@/lib/apis/meetings/schema";
 import { listActivityLogsByProjectId } from "@/lib/apis/activityLogs/activityLogs";
 import type { ActivityLogRead } from "@/lib/apis/activityLogs/schema";
+import { createFile, listFilesByProjectId, updateFile, deleteFile } from "@/lib/apis/files/files";
+import type { FileCreate, FileRead, FileUpdate } from "@/lib/apis/files/schema";
 
 // =============================================================================
 // Cache config helpers (dynamic per-query overrides)
@@ -109,6 +111,10 @@ export const queryKeys = {
     listByProjectId: (projectId: number) =>
       ["activityLogs", "listByProjectId", projectId] as const,
   },
+  files: {
+    listByProjectId: (projectId: number) =>
+      ["files", "listByProjectId", projectId] as const,
+  },
 };
 
 // =============================================================================
@@ -171,6 +177,18 @@ export const queryApi = {
     ): UseQueryOptions<APIResponse<ActivityLogRead[]>, Error> => ({
       queryKey: queryKeys.activityLogs.listByProjectId(projectId),
       queryFn: () => listActivityLogsByProjectId(projectId),
+      ...cache(cacheConfig),
+      enabled: Number.isFinite(projectId) && projectId > 0,
+    }),
+  },
+
+  files: {
+    listByProjectId: (
+      projectId: number,
+      cacheConfig?: CacheConfig,
+    ): UseQueryOptions<APIResponse<FileRead[]>, Error> => ({
+      queryKey: queryKeys.files.listByProjectId(projectId),
+      queryFn: () => listFilesByProjectId(projectId),
       ...cache(cacheConfig),
       enabled: Number.isFinite(projectId) && projectId > 0,
     }),
@@ -287,6 +305,28 @@ export const queryApi = {
         { meetingId: number }
       > => ({
         mutationFn: ({ meetingId }) => deleteMeeting(meetingId),
+      }),
+    },
+
+    files: {
+      create: (): UseMutationOptions<
+        APIResponse<FileRead>,
+        Error,
+        FileCreate
+      > => ({
+        mutationFn: (data) => createFile(data),
+      }),
+      update: (
+        fileId: number,
+      ): UseMutationOptions<APIResponse<FileRead>, Error, FileUpdate> => ({
+        mutationFn: (data) => updateFile(fileId, data),
+      }),
+      delete: (): UseMutationOptions<
+        APIResponse<boolean>,
+        Error,
+        { fileId: number }
+      > => ({
+        mutationFn: ({ fileId }) => deleteFile(fileId),
       }),
     },
   },

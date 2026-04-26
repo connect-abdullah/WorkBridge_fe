@@ -8,6 +8,7 @@ export function Modal({
   subtitle,
   children,
   maxWidth = "max-w-2xl",
+  titleId,
 }: {
   open: boolean;
   onClose: () => void;
@@ -15,15 +16,21 @@ export function Modal({
   subtitle?: string;
   children: React.ReactNode;
   maxWidth?: string;
+  titleId?: string;
 }) {
   useEffect(() => {
     if (!open) return;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
     return () => {
       document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKeyDown);
     };
-  }, [open]);
+  }, [open, onClose]);
 
   if (!open) return null;
   return (
@@ -35,6 +42,7 @@ export function Modal({
       }}
       role="dialog"
       aria-modal="true"
+      aria-labelledby={titleId}
     >
       <div
         className={`relative m-4 flex w-full flex-col ${maxWidth} max-h-[calc(100vh-2rem)] rounded-2xl border border-border bg-card shadow-xl`}
@@ -42,7 +50,12 @@ export function Modal({
       >
         <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
           <div>
-            <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+            <h3
+              id={titleId}
+              className="text-lg font-semibold text-foreground"
+            >
+              {title}
+            </h3>
             {subtitle ? (
               <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>
             ) : null}
