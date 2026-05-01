@@ -128,24 +128,24 @@ Helper functions `ok(data=..., message=...)` and `fail(message=..., errors=...)`
 
 ---
 
-## Comments — `/api/v1/comments`
+## Messages — `/api/v1/messages`
 
 | Method   | Path              | Description                                                                                       |
 | -------- | ----------------- | ------------------------------------------------------------------------------------------------- |
-| `POST`   | `/create-comment` | **Body:** `CommentCreate`. **Response `data`:** `CommentRead`.                                    |
-| `PUT`    | `/update-comment` | **Body:** `CommentUpdate`. **Query:** `comment_id`. **Response `data`:** `CommentRead`.           |
-| `DELETE` | `/delete-comment` | **Query:** `comment_id`. **Response `data`:** `bool`.                                             |
-| `GET`    | `/`               | **Query:** `project_id`, `user_id` (handler requires both). **Response `data`:** `CommentRead[]`. |
+| `POST`   | `/create-message` | **Body:** `MessageCreate`. **Response `data`:** `MessageRead`.                                    |
+| `PUT`    | `/update-message` | **Body:** `MessageUpdate`. **Query:** `message_id`. **Response `data`:** `MessageRead`.           |
+| `DELETE` | `/delete-message` | **Query:** `message_id`. **Response `data`:** `bool`.                                             |
+| `GET`    | `/`               | **Query:** `project_id` and/or `user_id` (at least one required). **Response `data`:** `MessageRead[]`. |
 
-### Comment schemas (`app/entities/comment/schema.py`)
+### Message schemas (`app/entities/message/schema.py`)
 
-**`CommentBase`** — `comment`, `user_id`, `project_id`
+**`MessageBase`** — `content`, `user_id`, `project_id`
 
-**`CommentCreate`** — `CommentBase`
+**`MessageCreate`** — `MessageBase`
 
-**`CommentRead`** — `CommentBase` + `id`
+**`MessageRead`** — `MessageBase` + `id`
 
-**`CommentUpdate`** — optional `comment`
+**`MessageUpdate`** — optional `content`
 
 ---
 
@@ -329,7 +329,7 @@ Several routers declare **two `GET` routes with the same path pattern** (e.g. `G
 | Project      | [`app/entities/project/schema.py`](app/entities/project/schema.py)           |
 | Milestone    | [`app/entities/milestone/schema.py`](app/entities/milestone/schema.py)       |
 | Task         | [`app/entities/task/schema.py`](app/entities/task/schema.py)                 |
-| Comment      | [`app/entities/comment/schema.py`](app/entities/comment/schema.py)           |
+| Message      | [`app/entities/message/schema.py`](app/entities/message/schema.py)           |
 | Activity log | [`app/entities/activity_log/schema.py`](app/entities/activity_log/schema.py) |
 | Meeting      | [`app/entities/meetings/schema.py`](app/entities/meetings/schema.py)         |
 | File         | [`app/entities/file/schema.py`](app/entities/file/schema.py)                 |

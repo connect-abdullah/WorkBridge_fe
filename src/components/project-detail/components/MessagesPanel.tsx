@@ -4,7 +4,7 @@ import { ChangeEvent, FormEvent, useCallback, useMemo, useRef, useState } from "
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileText, Link2, Loader2, Paperclip, Send, Upload } from "lucide-react";
 import { toast } from "sonner";
-import { type CommentMessage } from "@/constants/project-detail";
+import { type ProjectMessage } from "@/constants/project-detail";
 import { Button } from "@/components/ui/button";
 import {
   appendProjectFileToCache,
@@ -80,17 +80,17 @@ function MessageWithFileTokens({
   );
 }
 
-export function CommentsPanel({
+export function MessagesPanel({
   projectId,
-  comments,
-  commentDraft,
-  setCommentDraft,
+  messages,
+  messageDraft,
+  setMessageDraft,
   onSend,
 }: {
   projectId: number;
-  comments: CommentMessage[];
-  commentDraft: string;
-  setCommentDraft: (v: string) => void;
+  messages: ProjectMessage[];
+  messageDraft: string;
+  setMessageDraft: (v: string) => void;
   onSend: (e: FormEvent<HTMLFormElement>) => void;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -113,7 +113,7 @@ export function CommentsPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, queryClient, uploadFileMutation.isSuccess, fileListVersion]);
 
-  const slashState = getSlashQuery(commentDraft);
+  const slashState = getSlashQuery(messageDraft);
   const matchingFiles = useMemo(() => {
     const query = slashState?.query.toLowerCase().trim() ?? "";
     return cachedFiles
@@ -125,11 +125,11 @@ export function CommentsPanel({
 
   const insertFileToken = (file: FileRead) => {
     const token = fileToken(file);
-    const slash = getSlashQuery(commentDraft);
+    const slash = getSlashQuery(messageDraft);
     const next = slash
-      ? `${commentDraft.slice(0, slash.slashIndex)}${token} `
-      : `${commentDraft}${commentDraft ? " " : ""}${token} `;
-    setCommentDraft(next);
+      ? `${messageDraft.slice(0, slash.slashIndex)}${token} `
+      : `${messageDraft}${messageDraft ? " " : ""}${token} `;
+    setMessageDraft(next);
     setFileMenuOpen(false);
     requestAnimationFrame(() => inputRef.current?.focus());
   };
@@ -149,7 +149,7 @@ export function CommentsPanel({
   }, [cachedFiles.length, projectId, queryClient]);
 
   const onDraftChange = (value: string) => {
-    setCommentDraft(value);
+    setMessageDraft(value);
     const hasSlash = Boolean(getSlashQuery(value));
     if (hasSlash && !fileMenuOpen) {
       openFileMenu();
@@ -186,14 +186,14 @@ export function CommentsPanel({
     <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
       <div className="flex h-[500px] flex-col">
         <div className="border-b border-border px-4 py-3">
-          <h3 className="text-sm font-semibold text-foreground">Project chat</h3>
+          <h3 className="text-sm font-semibold text-foreground">Messages</h3>
           <p className="text-xs text-muted-foreground">
             Type / to tag a project file, or attach a new one.
           </p>
         </div>
 
         <div className="flex-1 space-y-2.5 overflow-y-auto bg-muted/20 p-4">
-          {comments.map((item) => (
+          {messages.map((item) => (
             <div
               key={item.id}
               className={`flex ${
@@ -209,7 +209,7 @@ export function CommentsPanel({
               >
                 <p className="whitespace-pre-wrap break-words">
                   <MessageWithFileTokens
-                    message={item.message}
+                    message={item.content}
                     files={cachedFiles}
                   />
                 </p>
@@ -287,9 +287,9 @@ export function CommentsPanel({
             </Button>
             <input
               ref={inputRef}
-              value={commentDraft}
+              value={messageDraft}
               onChange={(e) => onDraftChange(e.target.value)}
-              onFocus={() => { if (getSlashQuery(commentDraft)) openFileMenu(); }}
+              onFocus={() => { if (getSlashQuery(messageDraft)) openFileMenu(); }}
               placeholder="Message… type / to tag a file"
               className="h-10 flex-1 rounded-full border border-input bg-background px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
             />

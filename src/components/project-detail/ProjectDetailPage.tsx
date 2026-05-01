@@ -5,8 +5,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
-  initialComments,
-  type CommentMessage,
+  initialMessages,
+  type ProjectMessage,
   type Meeting,
   type Milestone,
   type MilestoneStatus,
@@ -41,7 +41,7 @@ import { MilestoneStepTracker } from "@/components/project-detail/components/Mil
 import { OverviewPanel } from "@/components/project-detail/components/OverviewPanel";
 import { MilestonesPanel } from "@/components/project-detail/components/MilestonesPanel";
 import { FilesPanel } from "@/components/project-detail/components/FilesPanel";
-import { CommentsPanel } from "@/components/project-detail/components/CommentsPanel";
+import { MessagesPanel } from "@/components/project-detail/components/MessagesPanel";
 import { MeetingsPanel } from "@/components/project-detail/components/MeetingsPanel";
 import { NotesPanel } from "@/components/project-detail/components/NotesPanel";
 import { PaymentsPanel } from "@/components/project-detail/components/PaymentsPanel";
@@ -143,7 +143,7 @@ const tabs = [
   "Overview",
   "Milestones",
   "Files",
-  "Comments",
+  "Messages",
   "Meetings",
   "Notes",
   "Payments",
@@ -357,9 +357,9 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     null,
   );
 
-  // ── Comments
-  const [comments, setComments] = useState<CommentMessage[]>(initialComments);
-  const [commentDraft, setCommentDraft] = useState("");
+  // ── Messages
+  const [messages, setMessages] = useState<ProjectMessage[]>(initialMessages);
+  const [messageDraft, setMessageDraft] = useState("");
 
   // ── Meetings
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -512,19 +512,19 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
   // ───────── Handlers ──────────
 
-  const handleSendComment = (e: FormEvent<HTMLFormElement>) => {
+  const handleSendMessage = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!commentDraft.trim()) return;
-    setComments((prev) => [
+    if (!messageDraft.trim()) return;
+    setMessages((prev) => [
       ...prev,
       {
-        id: `c-${prev.length + 1}`,
+        id: `m-${prev.length + 1}`,
         role: "freelancer",
-        message: commentDraft.trim(),
+        content: messageDraft.trim(),
         timestamp: "Now",
       },
     ]);
-    setCommentDraft("");
+    setMessageDraft("");
   };
 
   const openMeetingForm = (mode: "create" | "edit", meeting?: Meeting) => {
@@ -1364,13 +1364,13 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         <FilesPanel projectId={numericProjectId} />
       ) : null}
 
-      {activeTab === "Comments" ? (
-        <CommentsPanel
+      {activeTab === "Messages" ? (
+        <MessagesPanel
           projectId={numericProjectId}
-          comments={comments}
-          commentDraft={commentDraft}
-          setCommentDraft={setCommentDraft}
-          onSend={handleSendComment}
+          messages={messages}
+          messageDraft={messageDraft}
+          setMessageDraft={setMessageDraft}
+          onSend={handleSendMessage}
         />
       ) : null}
 

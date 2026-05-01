@@ -45,10 +45,10 @@ export type ProjectFile = {
   uploadedBy: string;
 };
 
-export type CommentMessage = {
+export type ProjectMessage = {
   id: string;
   role: MessageRole;
-  message: string;
+  content: string;
   timestamp: string;
 };
 
@@ -188,23 +188,23 @@ export const projectFiles: ProjectFile[] = [
   },
 ];
 
-export const initialComments: CommentMessage[] = [
+export const initialMessages: ProjectMessage[] = [
   {
-    id: "c-1",
+    id: "m-1",
     role: "client",
-    message: "Can we prioritize the milestone tracker in this sprint?",
+    content: "Can we prioritize the milestone tracker in this sprint?",
     timestamp: "10:20 AM",
   },
   {
-    id: "c-2",
+    id: "m-2",
     role: "freelancer",
-    message: "Yes, I moved it into the current milestone and shared updates.",
+    content: "Yes, I moved it into the current milestone and shared updates.",
     timestamp: "10:33 AM",
   },
   {
-    id: "c-3",
+    id: "m-3",
     role: "client",
-    message: "Perfect. Please keep the file naming consistent for handoff.",
+    content: "Perfect. Please keep the file naming consistent for handoff.",
     timestamp: "11:02 AM",
   },
 ];
@@ -260,7 +260,7 @@ export const activityLogs: ActivityLog[] = [
   },
   {
     id: "a-2",
-    action: "Client commented on project detail structure.",
+    action: "Client sent a message on project detail structure.",
     timestamp: "Today, 8:43 AM",
     icon: "message",
   },
