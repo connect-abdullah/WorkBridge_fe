@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -15,6 +15,8 @@ import { login } from "@/lib/apis/auth/auth";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get("invite")?.trim() ?? "";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -52,7 +54,11 @@ export function LoginForm() {
         JSON.stringify(response.data?.user || {}),
       );
       document.cookie = `auth:token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
-      router.push("/dashboard");
+      if (inviteToken) {
+        router.push(`/join-project?token=${encodeURIComponent(inviteToken)}`);
+      } else {
+        router.push("/dashboard");
+      }
     } else {
       toast.error(response.message);
     }
@@ -129,7 +135,11 @@ export function LoginForm() {
       <p className="text-sm text-muted-foreground">
         New to WorkBridge?{" "}
         <Link
-          href="/auth/signup"
+          href={
+            inviteToken
+              ? `/auth/signup?invite=${encodeURIComponent(inviteToken)}`
+              : "/auth/signup"
+          }
           className="font-medium text-foreground hover:underline"
         >
           Create account

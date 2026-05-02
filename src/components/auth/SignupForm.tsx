@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -19,12 +19,20 @@ type Role = "freelancer" | "client";
 
 export function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get("invite")?.trim() ?? "";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<Role>("freelancer");
+
+  useEffect(() => {
+    if (inviteToken) {
+      setRole("client");
+    }
+  }, [inviteToken]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -86,7 +94,11 @@ export function SignupForm() {
         JSON.stringify(response.data?.user || {}),
       );
       document.cookie = `auth:token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
-      router.push("/dashboard");
+      if (inviteToken) {
+        router.push(`/join-project?token=${encodeURIComponent(inviteToken)}`);
+      } else {
+        router.push("/dashboard");
+      }
     } else {
       toast.error(response.message);
     }
@@ -184,33 +196,40 @@ export function SignupForm() {
         </div>
       </FormField>
 
-      <div className="space-y-2">
-        <span className="text-sm font-medium">Role</span>
-        <div className="grid grid-cols-2 gap-2 rounded-md border border-input p-1">
-          <button
-            type="button"
-            onClick={() => setRole("freelancer")}
-            className={`h-9 rounded-sm text-sm transition ${
-              role === "freelancer"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Freelancer
-          </button>
-          <button
-            type="button"
-            onClick={() => setRole("client")}
-            className={`h-9 rounded-sm text-sm transition ${
-              role === "client"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Client
-          </button>
+      {inviteToken ? (
+        <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+          You are signing up as a <span className="font-medium text-foreground">client</span> to
+          accept a project invitation.
+        </p>
+      ) : (
+        <div className="space-y-2">
+          <span className="text-sm font-medium">Role</span>
+          <div className="grid grid-cols-2 gap-2 rounded-md border border-input p-1">
+            <button
+              type="button"
+              onClick={() => setRole("freelancer")}
+              className={`h-9 rounded-sm text-sm transition ${
+                role === "freelancer"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Freelancer
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole("client")}
+              className={`h-9 rounded-sm text-sm transition ${
+                role === "client"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Client
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
@@ -228,7 +247,11 @@ export function SignupForm() {
       <p className="text-sm text-muted-foreground">
         Already have an account?{" "}
         <Link
-          href="/auth/login"
+          href={
+            inviteToken
+              ? `/auth/login?invite=${encodeURIComponent(inviteToken)}`
+              : "/auth/login"
+          }
           className="font-medium text-foreground hover:underline"
         >
           Login
