@@ -130,20 +130,25 @@ Helper functions `ok(data=..., message=...)` and `fail(message=..., errors=...)`
 
 ## Messages — `/api/v1/messages`
 
-| Method   | Path              | Description                                                                                       |
-| -------- | ----------------- | ------------------------------------------------------------------------------------------------- |
-| `POST`   | `/create-message` | **Body:** `MessageCreate`. **Response `data`:** `MessageRead`.                                    |
-| `PUT`    | `/update-message` | **Body:** `MessageUpdate`. **Query:** `message_id`. **Response `data`:** `MessageRead`.           |
-| `DELETE` | `/delete-message` | **Query:** `message_id`. **Response `data`:** `bool`.                                             |
-| `GET`    | `/`               | **Query:** `project_id` and/or `user_id` (at least one required). **Response `data`:** `MessageRead[]`. |
+| Method   | Path              | Description |
+| -------- | ----------------- | ----------- |
+| `POST`   | `/send`           | **Body:** `MessageSend` (`project_id`, `content`, optional `idempotency_key`). **Response `data`:** `MessageRead`. |
+| `GET`    | `/`               | **Query:** `project_id`, optional `cursor`, `limit`. **Response `data`:** `MessageListResponse`. |
+| `POST`   | `/mark-read`      | **Body:** `MessageMarkRead`. **Response `data`:** `int`. |
+| `PUT`    | `/update-message` | **Body:** `MessageUpdate`. **Query:** `message_id`. **Response `data`:** `MessageRead`. |
+| `DELETE` | `/delete-message` | **Query:** `message_id`. **Response `data`:** `bool`. |
+
+**WebSocket:** `GET /api/v1/ws/chat?token=<JWT>` — `{ "type": "message", "data": <MessageRead> }`.
 
 ### Message schemas (`app/entities/message/schema.py`)
 
-**`MessageBase`** — `content`, `user_id`, `project_id`
+**`MessageSend`** — `project_id`, `content`, optional `idempotency_key`
 
-**`MessageCreate`** — `MessageBase`
+**`MessageRead`** — `id`, `content`, `sender_id`, `receiver_id`, `project_id`, `status`, `created_at`
 
-**`MessageRead`** — `MessageBase` + `id`
+**`MessageListResponse`** — `items`, `next_cursor`
+
+**`MessageMarkRead`** — `project_id`, `up_to_message_id`
 
 **`MessageUpdate`** — optional `content`
 

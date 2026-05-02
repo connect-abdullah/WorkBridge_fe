@@ -17,7 +17,8 @@ export interface ProjectBase {
   description: string;
   status: ProjectStatus;
   freelancer_id: number;
-  client_id: number;
+  /** Null until the freelancer assigns a client to the project. */
+  client_id: number | null;
   total_amount: number;
   amount_paid: number;
   start_date: string; // datetime

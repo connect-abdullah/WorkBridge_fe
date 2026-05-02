@@ -6,7 +6,6 @@ export type MilestoneApprovalStatus =
   | "rejected"
   | "revision-requested";
 export type PaymentStatus = "pending" | "in-progress" | "completed" | "paid";
-export type MessageRole = "freelancer" | "client";
 
 export type ProjectSummary = {
   id: string;
@@ -43,13 +42,6 @@ export type ProjectFile = {
   fileType: string;
   uploadedDate: string;
   uploadedBy: string;
-};
-
-export type ProjectMessage = {
-  id: string;
-  role: MessageRole;
-  content: string;
-  timestamp: string;
 };
 
 export type Meeting = {
@@ -185,27 +177,6 @@ export const projectFiles: ProjectFile[] = [
     fileType: "Spreadsheet",
     uploadedDate: "Mar 26, 2026",
     uploadedBy: "Aisha Johnson",
-  },
-];
-
-export const initialMessages: ProjectMessage[] = [
-  {
-    id: "m-1",
-    role: "client",
-    content: "Can we prioritize the milestone tracker in this sprint?",
-    timestamp: "10:20 AM",
-  },
-  {
-    id: "m-2",
-    role: "freelancer",
-    content: "Yes, I moved it into the current milestone and shared updates.",
-    timestamp: "10:33 AM",
-  },
-  {
-    id: "m-3",
-    role: "client",
-    content: "Perfect. Please keep the file naming consistent for handoff.",
-    timestamp: "11:02 AM",
   },
 ];
 

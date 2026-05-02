@@ -5,8 +5,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
-  initialMessages,
-  type ProjectMessage,
   type Meeting,
   type Milestone,
   type MilestoneStatus,
@@ -41,7 +39,10 @@ import { MilestoneStepTracker } from "@/components/project-detail/components/Mil
 import { OverviewPanel } from "@/components/project-detail/components/OverviewPanel";
 import { MilestonesPanel } from "@/components/project-detail/components/MilestonesPanel";
 import { FilesPanel } from "@/components/project-detail/components/FilesPanel";
-import { MessagesPanel } from "@/components/project-detail/components/MessagesPanel";
+import {
+  MessagesPanel,
+  type MessagesPanelAccess,
+} from "@/components/project-detail/components/MessagesPanel";
 import { MeetingsPanel } from "@/components/project-detail/components/MeetingsPanel";
 import { NotesPanel } from "@/components/project-detail/components/NotesPanel";
 import { PaymentsPanel } from "@/components/project-detail/components/PaymentsPanel";
@@ -194,6 +195,22 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
   } = useQuery(queryApi.projects.detailWithMilestones(numericProjectId));
 
   const projectDetail = projectRes?.data ?? null;
+
+  const messagesAccess: MessagesPanelAccess = useMemo(() => {
+    if (projectError || (projectRes && projectRes.success === false)) {
+      return "error";
+    }
+    if (isProjectLoading && !projectDetail) {
+      return "loading";
+    }
+    if (!projectDetail) {
+      return "error";
+    }
+    if (projectDetail.client_id == null || projectDetail.client_id === 0) {
+      return "no_client";
+    }
+    return "ready";
+  }, [projectError, projectRes, isProjectLoading, projectDetail]);
 
   const projectDetailQueryKey = queryKeys.projects.detail(numericProjectId);
 
@@ -357,9 +374,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     null,
   );
 
-  // ── Messages
-  const [messages, setMessages] = useState<ProjectMessage[]>(initialMessages);
-  const [messageDraft, setMessageDraft] = useState("");
+  // ── Messages handled inside MessagesPanel via /api/v1/messages + WebSocket
 
   // ── Meetings
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -511,21 +526,6 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     };
 
   // ───────── Handlers ──────────
-
-  const handleSendMessage = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!messageDraft.trim()) return;
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `m-${prev.length + 1}`,
-        role: "freelancer",
-        content: messageDraft.trim(),
-        timestamp: "Now",
-      },
-    ]);
-    setMessageDraft("");
-  };
 
   const openMeetingForm = (mode: "create" | "edit", meeting?: Meeting) => {
     setMeetingFormMode(mode);
@@ -1365,13 +1365,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       ) : null}
 
       {activeTab === "Messages" ? (
-        <MessagesPanel
-          projectId={numericProjectId}
-          messages={messages}
-          messageDraft={messageDraft}
-          setMessageDraft={setMessageDraft}
-          onSend={handleSendMessage}
-        />
+        <MessagesPanel projectId={numericProjectId} access={messagesAccess} />
       ) : null}
 
       {activeTab === "Meetings" ? (

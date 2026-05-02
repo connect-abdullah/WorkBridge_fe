@@ -297,7 +297,11 @@ export default function ProjectsPage() {
               <ProjectCard
                 key={project.id}
                 title={project.title}
-                clientName={`Client #${project.client_id}`}
+                clientName={
+                  project.client_id != null && project.client_id > 0
+                    ? `Client #${project.client_id}`
+                    : "No client yet"
+                }
                 progress={progress}
                 milestoneTitle={
                   allCompleted
