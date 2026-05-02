@@ -46,7 +46,8 @@ export interface ProjectUpdate {
   description?: string;
   status?: ProjectStatus;
   freelancer_id?: number;
-  client_id?: number;
+  /** Set to `null` to unassign the client (freelancer only). */
+  client_id?: number | null;
   total_amount?: number;
   amount_paid?: number;
   start_date?: string;

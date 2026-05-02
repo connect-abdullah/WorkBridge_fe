@@ -19,6 +19,8 @@ type AlertModalProps = {
   onClose: () => void;
   title: string;
   description?: string;
+  /** Stack above other dialogs (e.g. nested modals). */
+  zIndexClass?: string;
 };
 
 export function AlertModal({
@@ -34,6 +36,7 @@ export function AlertModal({
   actionTextClass,
   actionClassName,
   isPending,
+  zIndexClass = "z-[110]",
 }: AlertModalProps) {
   const customActionClasses = [
     actionBgClass,
@@ -51,6 +54,7 @@ export function AlertModal({
       title={title}
       subtitle={description}
       maxWidth="max-w-md"
+      zIndexClass={zIndexClass}
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
         <Button

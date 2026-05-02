@@ -1,5 +1,6 @@
 "use client";
 
+import type { ComponentProps } from "react";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -15,8 +16,9 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import type { ProjectSummary, ProjectStatus } from "@/constants/project-detail";
 import { getStoredUserId, queryApi, queryKeys } from "@/lib/queryApi";
 import type { MilestoneRead } from "@/lib/apis/milestones/schema";
-import type { ProjectReadWithMilestones } from "@/lib/apis/projects/schema";
+import type { ProjectRead, ProjectReadWithMilestones } from "@/lib/apis/projects/schema";
 import type { ProjectUpdate } from "@/lib/apis/projects/schema";
+import { FreelancerClientInviteCard } from "@/components/project-detail/components/FreelancerClientInviteCard";
 import { Modal } from "@/components/project-detail/components/Modal";
 import { AlertModal } from "@/components/ui/alert-modal";
 import {
@@ -25,15 +27,15 @@ import {
   selectCls,
 } from "@/components/project-detail/components/Field";
 import { Button } from "@/components/ui/button";
-import { Calendar, Loader2, Pencil } from "lucide-react";
+import { Calendar, Loader2, Pencil, UserSearch } from "lucide-react";
 import { toLocalDateTime } from "@/lib/utils";
 import type { APIResponse } from "@/lib/apis/apiResponse";
 import type { TaskRead } from "@/lib/apis/tasks/schema";
 import { updateMilestone } from "@/lib/apis/milestones/milestones";
 import { updateTask } from "@/lib/apis/tasks/tasks";
-import { lookupClientByEmail } from "@/lib/apis/projectInvites/projectInvites";
 import type { UserRead } from "@/lib/apis/auth/schema";
 import { createProjectClientInvite } from "@/lib/apis/projectInvites/projectInvites";
+import { getUserById } from "@/lib/apis/auth/auth";
 import { updateProject } from "@/lib/apis/projects/projects";
 import type { MeetingRead } from "@/lib/apis/meetings/schema";
 // Notes are rendered via NotesPanel using queryApi (GET /api/v1/notes).
@@ -175,17 +177,23 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     undefined,
   );
   const [alertActionLabel, setAlertActionLabel] = useState("Delete");
+  type AlertButtonVariant = NonNullable<ComponentProps<typeof Button>["variant"]>;
+  const [alertActionVariant, setAlertActionVariant] = useState<
+    AlertButtonVariant | undefined
+  >(undefined);
   const alertActionRef = useRef<null | (() => void | Promise<void>)>(null);
 
   const openAlert = (args: {
     title: string;
     description?: string;
     actionLabel: string;
+    actionVariant?: AlertButtonVariant;
     onAction: () => void | Promise<void>;
   }) => {
     setAlertTitle(args.title);
     setAlertDescription(args.description);
     setAlertActionLabel(args.actionLabel);
+    setAlertActionVariant(args.actionVariant);
     alertActionRef.current = args.onAction;
     setAlertOpen(true);
   };
@@ -338,16 +346,14 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
   const [pEndDate, setPEndDate] = useState("");
   const startDateInputRef = useRef<HTMLInputElement | null>(null);
   const endDateInputRef = useRef<HTMLInputElement | null>(null);
-  const [clientInviteEmail, setClientInviteEmail] = useState("");
   const [clientInviteBusy, setClientInviteBusy] = useState(false);
-  const [clientSearchFocused, setClientSearchFocused] = useState(false);
-  const [clientLookupStatus, setClientLookupStatus] = useState<
-    "idle" | "loading" | "found" | "not_found"
-  >("idle");
-  const [clientLookupHits, setClientLookupHits] = useState<UserRead[]>([]);
+  const [inviteLookupResetKey, setInviteLookupResetKey] = useState(0);
   const [selectedInviteClient, setSelectedInviteClient] = useState<UserRead | null>(null);
-  const clientLookupSeqRef = useRef(0);
-  const clientSearchBlurTimerRef = useRef<number | null>(null);
+
+  const [assignedClientModalOpen, setAssignedClientModalOpen] = useState(false);
+  const [assignedClientLoading, setAssignedClientLoading] = useState(false);
+  const [assignedClientError, setAssignedClientError] = useState<string | null>(null);
+  const [assignedClientDetails, setAssignedClientDetails] = useState<UserRead | null>(null);
 
   // ── Milestone state (populated from API)
   const [milestoneState, setMilestoneState] = useState<Milestone[]>([]);
@@ -677,68 +683,10 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     setPAmountPaid(String(projectDetail.amount_paid ?? ""));
     setPStartDate(toLocalDateTime(projectDetail.start_date ?? ""));
     setPEndDate(toLocalDateTime(projectDetail.end_date ?? ""));
-    setClientInviteEmail("");
+    setInviteLookupResetKey((k) => k + 1);
     setClientInviteBusy(false);
-    setClientSearchFocused(false);
-    setClientLookupStatus("idle");
-    setClientLookupHits([]);
-    setSelectedInviteClient(null);
     setProjectModalOpen(true);
   };
-
-  const clearClientSearchBlurTimer = () => {
-    if (clientSearchBlurTimerRef.current != null) {
-      window.clearTimeout(clientSearchBlurTimerRef.current);
-      clientSearchBlurTimerRef.current = null;
-    }
-  };
-
-  const CLIENT_LOOKUP_DEBOUNCE_MS = 400;
-
-  useEffect(() => {
-    const email = clientInviteEmail.trim();
-    if (!email.includes("@") || email.length < 2) {
-      clientLookupSeqRef.current += 1;
-      setClientLookupStatus("idle");
-      setClientLookupHits([]);
-      return;
-    }
-    const seq = ++clientLookupSeqRef.current;
-    setClientLookupStatus("loading");
-    setClientLookupHits([]);
-    const t = window.setTimeout(async () => {
-      if (seq !== clientLookupSeqRef.current) return;
-      try {
-        const res = await lookupClientByEmail({ email });
-        if (seq !== clientLookupSeqRef.current) return;
-        if (!res.success || !res.data) {
-          setClientLookupHits([]);
-          setClientLookupStatus("not_found");
-          return;
-        }
-        const hits = res.data;
-        setClientLookupHits(hits);
-        setClientLookupStatus(hits.length > 0 ? "found" : "not_found");
-      } catch {
-        if (seq !== clientLookupSeqRef.current) return;
-        setClientLookupHits([]);
-        setClientLookupStatus("not_found");
-      }
-    }, CLIENT_LOOKUP_DEBOUNCE_MS);
-    return () => window.clearTimeout(t);
-  }, [clientInviteEmail]);
-
-  useEffect(() => {
-    if (!selectedInviteClient) return;
-    const q = clientInviteEmail.trim().toLowerCase();
-    if (!q) {
-      setSelectedInviteClient(null);
-      return;
-    }
-    const sel = selectedInviteClient.email.toLowerCase();
-    if (sel.startsWith(q) || q.startsWith(sel)) return;
-    setSelectedInviteClient(null);
-  }, [clientInviteEmail, selectedInviteClient]);
 
   const absoluteInviteUrl = (inviteUrl: string) => {
     if (inviteUrl.startsWith("http")) return inviteUrl;
@@ -762,10 +710,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       await queryClient.invalidateQueries({
         queryKey: projectDetailQueryKey,
       });
-      setSelectedInviteClient(null);
-      setClientInviteEmail("");
-      setClientLookupHits([]);
-      setClientLookupStatus("idle");
+      setInviteLookupResetKey((k) => k + 1);
     } finally {
       setClientInviteBusy(false);
     }
@@ -1071,6 +1016,97 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       .catch(() => {});
   };
 
+  const applyProjectUpdateCaches = (data: ProjectRead) => {
+    setProjectDetailCache((prev) => {
+      if (!prev?.data) return prev;
+      return { ...prev, data: { ...prev.data, ...data } };
+    });
+    queryClient.setQueriesData(
+      { predicate: (q) => (q.queryKey?.[0] as string) === "projects" },
+      (old) => {
+        const prev = old as
+          | APIResponse<ProjectReadWithMilestones[]>
+          | undefined;
+        if (!prev?.data) return old;
+        return {
+          ...prev,
+          data: prev.data.map((p) =>
+            p.id === data.id ? ({ ...p, ...data } as never) : p,
+          ),
+        };
+      },
+    );
+    setProjectSummary((prev) => ({
+      ...prev,
+      title: data.title ?? prev.title,
+      description: data.description ?? prev.description,
+      status: toUiProjectStatus(data.status),
+      startDate: data.start_date ? formatLongDate(data.start_date) : prev.startDate,
+      endDate: data.end_date ? formatLongDate(data.end_date) : prev.endDate,
+      totalAmount:
+        typeof data.total_amount === "number"
+          ? formatMoney(data.total_amount)
+          : prev.totalAmount,
+      paidAmount:
+        typeof data.amount_paid === "number"
+          ? formatMoney(data.amount_paid)
+          : prev.paidAmount,
+    }));
+  };
+
+  const closeAssignedClientModal = () => {
+    setAssignedClientModalOpen(false);
+    setAssignedClientLoading(false);
+    setAssignedClientError(null);
+    setAssignedClientDetails(null);
+  };
+
+  const openAssignedClientDetails = () => {
+    const cid = projectDetail?.client_id;
+    if (cid == null || cid <= 0) return;
+    setAssignedClientModalOpen(true);
+    setAssignedClientDetails(null);
+    setAssignedClientError(null);
+    setAssignedClientLoading(true);
+    void getUserById(cid).then((res) => {
+      setAssignedClientLoading(false);
+      if (!res.success || !res.data) {
+        setAssignedClientError(res.message || "Could not load client.");
+        return;
+      }
+      setAssignedClientDetails(res.data);
+    });
+  };
+
+  const promptRemoveAssignedClient = () => {
+    if (!projectDetail) return;
+    openAlert({
+      title: "Remove client from project?",
+      description:
+        "They will lose access to this project until you assign or invite them again.",
+      actionLabel: "Remove client",
+      actionVariant: "destructive",
+      onAction: async () => {
+        const res = await updateProjectMutation.mutateAsync({
+          projectId: projectDetail.id,
+          data: { client_id: null },
+        });
+        if (!res.success || !res.data) {
+          toast.error(res.message || "Could not remove client.");
+          return;
+        }
+        applyProjectUpdateCaches(res.data);
+        toast.success(res.message || "Client removed from project.");
+        closeAssignedClientModal();
+        setInviteLookupResetKey((k) => k + 1);
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: projectDetailQueryKey }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.projects.all }),
+        ]);
+      },
+    });
+  };
+
   const handleProjectSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!projectDetail) return;
@@ -1093,52 +1129,9 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
           return;
         }
         if (res.data) {
-          // Patch the project detail cache immediately
-          setProjectDetailCache((prev) => {
-            if (!prev?.data) return prev;
-            return { ...prev, data: { ...prev.data, ...res.data } };
-          });
-
-          // Patch any cached project lists immediately
-          queryClient.setQueriesData(
-            { predicate: (q) => (q.queryKey?.[0] as string) === "projects" },
-            (old) => {
-              const prev = old as
-                | APIResponse<ProjectReadWithMilestones[]>
-                | undefined;
-              if (!prev?.data) return old;
-              return {
-                ...prev,
-                data: prev.data.map((p) =>
-                  p.id === res.data!.id ? ({ ...p, ...res.data } as never) : p,
-                ),
-              };
-            },
-          );
+          applyProjectUpdateCaches(res.data);
         }
         toast.success(res.message || "Project updated.");
-        if (res.data) {
-          setProjectSummary((prev) => ({
-            ...prev,
-            title: res.data?.title ?? prev.title,
-            description: res.data?.description ?? prev.description,
-            status: toUiProjectStatus(res.data?.status),
-            startDate: res.data?.start_date
-              ? formatLongDate(res.data.start_date)
-              : prev.startDate,
-            endDate: res.data?.end_date
-              ? formatLongDate(res.data.end_date)
-              : prev.endDate,
-            totalAmount:
-              typeof res.data?.total_amount === "number"
-                ? formatMoney(res.data.total_amount)
-                : prev.totalAmount,
-            paidAmount:
-              typeof res.data?.amount_paid === "number"
-                ? formatMoney(res.data.amount_paid)
-                : prev.paidAmount,
-          }));
-        }
         return Promise.all([
           queryClient.invalidateQueries({
             queryKey: projectDetailQueryKey,
@@ -1196,19 +1189,6 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 pb-10">
-      <AlertModal
-        open={alertOpen}
-        onClose={() => setAlertOpen(false)}
-        title={alertTitle}
-        description={alertDescription}
-        actionLabel={alertActionLabel}
-        onAction={async () => {
-          const fn = alertActionRef.current;
-          setAlertOpen(false);
-          alertActionRef.current = null;
-          if (fn) await fn();
-        }}
-      />
       {/* ── Project Header ─────────────────────────────── */}
       <header className="space-y-3 border-b border-border pb-5">
         {projectError ? (
@@ -1377,117 +1357,50 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
           </Field>
 
           {isProjectFreelancer && projectDetail ? (
-            <div className="md:col-span-2 space-y-3 rounded-lg border border-border bg-muted/20 p-4">
-              <p className="text-sm font-semibold text-foreground">Client</p>
-              {projectDetail.client_id != null && projectDetail.client_id > 0 ? (
-                <p className="text-xs text-muted-foreground">
-                  A client is already assigned to this project (ID {projectDetail.client_id}).
-                </p>
-              ) : (
-                <>
-                  <p className="text-xs text-muted-foreground">
-                    Invite someone who already has a client account (they get a notification), or
-                    copy a link for anyone to sign up or log in and join.
+            projectDetail.client_id != null && projectDetail.client_id > 0 ? (
+              <div className="md:col-span-2 space-y-3 rounded-lg border border-border bg-muted/20 p-4">
+                <p className="text-sm font-semibold text-foreground">Client</p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                    aria-label="View client details"
+                    title="View client details"
+                    disabled={clientInviteBusy}
+                    onClick={() => openAssignedClientDetails()}
+                  >
+                    <UserSearch className="h-4 w-4" aria-hidden />
+                  </button>
+                  <p className="min-w-0 flex-1 text-sm text-muted-foreground">
+                    A client is already assigned.
                   </p>
-                  <div className="relative min-w-0">
-                    <Field label="Client email (registered)">
-                      <input
-                        value={clientInviteEmail}
-                        onChange={(e) => setClientInviteEmail(e.target.value)}
-                        onFocus={() => {
-                          clearClientSearchBlurTimer();
-                          setClientSearchFocused(true);
-                        }}
-                        onBlur={() => {
-                          clearClientSearchBlurTimer();
-                          clientSearchBlurTimerRef.current = window.setTimeout(() => {
-                            setClientSearchFocused(false);
-                            clientSearchBlurTimerRef.current = null;
-                          }, 200);
-                        }}
-                        placeholder="client@example.com"
-                        type="email"
-                        autoComplete="off"
-                        className={inputCls}
-                      />
-                    </Field>
-                    {clientSearchFocused &&
-                    clientInviteEmail.includes("@") &&
-                    clientInviteEmail.trim().length >= 2 ? (
-                      <div
-                        className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-md border border-border bg-card text-left shadow-lg"
-                        role="listbox"
-                        aria-label="Client search results"
-                      >
-                        {clientLookupStatus === "loading" ? (
-                          <div className="flex items-center gap-2 px-3 py-3 text-sm text-muted-foreground">
-                            <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
-                            Searching…
-                          </div>
-                        ) : clientLookupStatus === "not_found" ? (
-                          <div className="px-3 py-3 text-sm text-muted-foreground">
-                            No matching client accounts (up to 3 shown).
-                          </div>
-                        ) : clientLookupStatus === "found" && clientLookupHits.length > 0 ? (
-                          <ul className="max-h-52 divide-y divide-border overflow-y-auto py-0.5">
-                            {clientLookupHits.map((hit) => (
-                              <li key={hit.id}>
-                                <button
-                                  type="button"
-                                  role="option"
-                                  className="flex w-full flex-col items-start gap-0.5 px-3 py-2.5 text-left text-sm transition hover:bg-muted"
-                                  onMouseDown={(e) => e.preventDefault()}
-                                  onClick={() => {
-                                    setSelectedInviteClient(hit);
-                                    setClientInviteEmail(hit.email);
-                                    clearClientSearchBlurTimer();
-                                    setClientSearchFocused(false);
-                                  }}
-                                >
-                                  <span className="font-medium text-foreground">{hit.name}</span>
-                                  <span className="text-xs text-muted-foreground">{hit.email}</span>
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : null}
-                      </div>
-                    ) : null}
-                  </div>
-                  {selectedInviteClient ? (
-                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Selected for invite</p>
-                        <p className="font-medium text-foreground">{selectedInviteClient.name}</p>
-                        <p className="text-xs text-muted-foreground">{selectedInviteClient.email}</p>
-                      </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        disabled={clientInviteBusy}
-                        onClick={() => void handleSendInviteNotification()}
-                      >
-                        Send invite
-                      </Button>
-                    </div>
-                  ) : null}
-                  <div className="border-t border-border pt-3">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-9"
-                      disabled={clientInviteBusy}
-                      onClick={() => void handleCopyInviteLink()}
-                    >
-                      Copy invite link
-                    </Button>
-                    <p className="mt-1.5 text-[11px] text-muted-foreground">
-                      Single-use link (14 days). Opens join flow; client must log in or sign up.
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="shrink-0 font-medium shadow-sm"
+                    disabled={clientInviteBusy || updateProjectMutation.isPending}
+                    onClick={() => promptRemoveAssignedClient()}
+                  >
+                    Remove client
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <FreelancerClientInviteCard
+                mode="invite"
+                description="Invite someone who already has a client account (they get a notification), or copy a link for anyone to sign up or log in and join."
+                lookupLabel="Client email (registered)"
+                resetKey={inviteLookupResetKey}
+                lookupDisabled={clientInviteBusy}
+                selectedClient={selectedInviteClient}
+                onSelectedClientChange={setSelectedInviteClient}
+                showCopyInviteLink
+                onSendInvite={() => void handleSendInviteNotification()}
+                onCopyInviteLink={() => void handleCopyInviteLink()}
+                inviteBusy={clientInviteBusy}
+              />
+            )
           ) : null}
 
           <Field label="Status">
@@ -1601,6 +1514,40 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         </form>
       </Modal>
 
+      <Modal
+        open={assignedClientModalOpen}
+        onClose={closeAssignedClientModal}
+        title="Client details"
+        subtitle="Registered client on this project."
+        maxWidth="max-w-md"
+        zIndexClass="z-[100]"
+      >
+        {assignedClientLoading ? (
+          <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+            Loading…
+          </div>
+        ) : assignedClientError ? (
+          <p className="py-4 text-sm text-destructive">{assignedClientError}</p>
+        ) : assignedClientDetails ? (
+          <dl className="space-y-3 text-sm">
+            <div>
+              <dt className="text-xs font-medium text-muted-foreground">Name</dt>
+              <dd className="text-foreground">{assignedClientDetails.name}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium text-muted-foreground">Email</dt>
+              <dd className="break-all text-foreground">{assignedClientDetails.email}</dd>
+            </div>
+          </dl>
+        ) : null}
+        <div className="mt-6 flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={closeAssignedClientModal}>
+            Close
+          </Button>
+        </div>
+      </Modal>
+
       {activeTab === "Files" ? (
         <FilesPanel projectId={numericProjectId} />
       ) : null}
@@ -1669,6 +1616,25 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
           />
         )
       ) : null}
+
+      <AlertModal
+        open={alertOpen}
+        onClose={() => {
+          setAlertOpen(false);
+          setAlertActionVariant(undefined);
+        }}
+        title={alertTitle}
+        description={alertDescription}
+        actionLabel={alertActionLabel}
+        actionVariant={alertActionVariant}
+        onAction={async () => {
+          const fn = alertActionRef.current;
+          setAlertOpen(false);
+          setAlertActionVariant(undefined);
+          alertActionRef.current = null;
+          if (fn) await fn();
+        }}
+      />
     </div>
   );
 }

@@ -1,6 +1,8 @@
 import { X } from "lucide-react";
 import { useEffect } from "react";
 
+import { cn } from "@/lib/utils";
+
 export function Modal({
   open,
   onClose,
@@ -9,6 +11,8 @@ export function Modal({
   children,
   maxWidth = "max-w-2xl",
   titleId,
+  /** Use a higher value (e.g. z-[100]) when stacking above another dialog. */
+  zIndexClass = "z-50",
 }: {
   open: boolean;
   onClose: () => void;
@@ -17,6 +21,7 @@ export function Modal({
   children: React.ReactNode;
   maxWidth?: string;
   titleId?: string;
+  zIndexClass?: string;
 }) {
   useEffect(() => {
     if (!open) return;
@@ -35,7 +40,10 @@ export function Modal({
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 !m-0 flex h-screen w-screen items-center justify-center bg-[var(--overlay-color)] backdrop-blur-sm !p-0"
+      className={cn(
+        "fixed inset-0 !m-0 flex h-screen w-screen items-center justify-center bg-[var(--overlay-color)] backdrop-blur-sm !p-0",
+        zIndexClass,
+      )}
       style={{ margin: 0, padding: 0 }}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();

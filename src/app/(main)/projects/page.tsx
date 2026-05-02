@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { FreelancerClientInviteCard } from "@/components/project-detail/components/FreelancerClientInviteCard";
+import type { UserRead } from "@/lib/apis/auth/schema";
 import type { ProjectCreate } from "@/lib/apis/projects/schema";
 import type {
   ProjectMilestoneCreateInput,
@@ -111,7 +113,8 @@ export default function ProjectsPage() {
   const [pTitle, setPTitle] = useState("New project");
   const [pDescription, setPDescription] = useState("");
   const [pStatus, setPStatus] = useState<ProjectStatus>("pending");
-  const [pClientId, setPClientId] = useState("");
+  const [createClientLookupResetKey, setCreateClientLookupResetKey] = useState(0);
+  const [selectedCreateClient, setSelectedCreateClient] = useState<UserRead | null>(null);
   const [pTotalAmount, setPTotalAmount] = useState("0");
   const [pAmountPaid, setPAmountPaid] = useState("0");
   const [pStartDate, setPStartDate] = useState("");
@@ -143,8 +146,18 @@ export default function ProjectsPage() {
     ]);
   }, [nowIso, twoWeeksIso]);
 
+  const resetCreateClientPicker = () => {
+    setCreateClientLookupResetKey((k) => k + 1);
+  };
+
   const openCreateModal = () => {
+    resetCreateClientPicker();
     setCreateOpen(true);
+  };
+
+  const closeCreateModal = () => {
+    resetCreateClientPicker();
+    setCreateOpen(false);
   };
 
   const addMilestone = () => {
@@ -204,9 +217,9 @@ export default function ProjectsPage() {
   const handleCreateProject = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!pTitle.trim()) return;
-    const clientIdNum = Number(pClientId);
-    if (!Number.isFinite(clientIdNum) || clientIdNum <= 0) {
-      toast.error("Client ID is required.");
+    const clientIdNum = selectedCreateClient?.id;
+    if (clientIdNum == null || clientIdNum <= 0) {
+      toast.error("Select a registered client from the email search results.");
       return;
     }
 
@@ -240,7 +253,7 @@ export default function ProjectsPage() {
       return;
     }
     toast.success(res.message || "Project created.");
-    setCreateOpen(false);
+    closeCreateModal();
 
     // Refresh and patch list cache
     await queryClient.invalidateQueries({
@@ -327,7 +340,7 @@ export default function ProjectsPage() {
 
       <Modal
         open={createOpen}
-        onClose={() => setCreateOpen(false)}
+        onClose={closeCreateModal}
         title="Add Project"
         subtitle="Create a project with milestones and tasks in one go."
         maxWidth="max-w-4xl"
@@ -368,14 +381,16 @@ export default function ProjectsPage() {
             </select>
           </Field>
 
-          <Field label="Client ID">
-            <input
-              value={pClientId}
-              onChange={(e) => setPClientId(e.target.value)}
-              className={inputCls}
-              placeholder="e.g. 12"
-            />
-          </Field>
+          <FreelancerClientInviteCard
+            mode="assign"
+            description="Choose a registered client for this project."
+            lookupLabel="Client (registered)"
+            lookupHint="Type after @ to search; pick one match (up to 3 shown)."
+            resetKey={createClientLookupResetKey}
+            lookupDisabled={createProjectMutation.isPending}
+            selectedClient={selectedCreateClient}
+            onSelectedClientChange={setSelectedCreateClient}
+          />
 
           <Field label="Total amount">
             <input

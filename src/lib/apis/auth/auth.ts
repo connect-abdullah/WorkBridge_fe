@@ -60,3 +60,10 @@ export const getProfile = async () => {
   const response = await get<APIResponse<UserRead>>(authApi.getProfile);
   return response;
 };
+
+export const getUserById = async (userId: number) => {
+  const response = await get<APIResponse<UserRead>>(
+    `${auth_api_endpoint}/${userId}`,
+  );
+  return response;
+};
