@@ -25,3 +25,23 @@ export function clientPaymentStatusDisplay(
       return { tone: "pending", label: String(status) };
   }
 }
+
+/** Client may upload proof when payment is due or after a send-back (failed / legacy disputed). */
+export function clientCanSubmitPaymentProof(p: PaymentRead): boolean {
+  return p.payment_status === "requested" || p.payment_status === "disputed";
+}
+
+/** Primary action label on the client payments table. */
+export function clientPaymentSubmitButtonLabel(p: PaymentRead): string {
+  if (p.payment_status === "disputed") return "Repay";
+  if (p.payment_status === "requested" && p.last_failure_reason?.trim()) {
+    return "Repay";
+  }
+  return "Pay Now";
+}
+
+/** Shown in the submit-payment modal when the client is fixing a rejected proof. */
+export function clientResubmitFreelancerNote(p: PaymentRead): string | null {
+  if (p.last_failure_reason?.trim()) return p.last_failure_reason.trim();
+  return null;
+}

@@ -22,7 +22,6 @@ export type Permissions = {
   canRequestPayment: boolean;
   canPayPayment: boolean;
   canApprovePayment: boolean;
-  canDisputePayment: boolean;
   canFailPayment: boolean;
 };
 
@@ -44,7 +43,6 @@ const FREELANCER_PERMISSIONS: Permissions = {
   canRequestPayment: true,
   canPayPayment: false,
   canApprovePayment: true,
-  canDisputePayment: true,
   canFailPayment: true,
 };
 
@@ -66,7 +64,6 @@ const CLIENT_PERMISSIONS: Permissions = {
   canRequestPayment: false,
   canPayPayment: true,
   canApprovePayment: false,
-  canDisputePayment: false,
   canFailPayment: false,
 };
 

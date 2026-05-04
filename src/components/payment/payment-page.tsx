@@ -19,7 +19,6 @@ import { getStoredUserId, queryKeys, queryApi } from "@/lib/queryApi";
 import type { PaymentRead, PaymentMethod, PaymentStatus } from "@/lib/apis/payments/schema";
 import {
   approvePayment,
-  disputePayment,
   failPayment,
   requestPayment,
   submitPayment,
@@ -169,19 +168,6 @@ export default function PaymentsPage() {
     onError: () => toast.error("Approve failed"),
   });
 
-  const disputeMut = useMutation({
-    mutationFn: (paymentId: number) => disputePayment(paymentId),
-    onSuccess: async (res) => {
-      if (res.success === false) {
-        toast.error(res.message || "Could not update payment");
-        return;
-      }
-      toast.success("Payment marked disputed");
-      await invalidatePaymentCaches(res.data ?? undefined);
-    },
-    onError: () => toast.error("Could not update payment"),
-  });
-
   const failMut = useMutation({
     mutationFn: (vars: { paymentId: number; reason?: string | null }) =>
       failPayment(vars.paymentId, { failure_reason: vars.reason }),
@@ -190,7 +176,7 @@ export default function PaymentsPage() {
         toast.error(res.message || "Could not mark payment failed");
         return;
       }
-      toast.success("Payment failed — client can try again");
+      toast.success("Payment not approved — client can resubmit");
       await invalidatePaymentCaches(res.data ?? undefined);
     },
     onError: () => toast.error("Could not mark payment failed"),
@@ -244,7 +230,6 @@ export default function PaymentsPage() {
     requestMut.isPending ||
     submitMut.isPending ||
     approveMut.isPending ||
-    disputeMut.isPending ||
     failMut.isPending ||
     payBusy;
 
@@ -449,13 +434,7 @@ export default function PaymentsPage() {
                                       disabled={busy}
                                     />
                                     <PaymentActionButton
-                                      label="Not Approve"
-                                      variant="outline"
-                                      onClick={() => disputeMut.mutate(p.id)}
-                                      disabled={busy}
-                                    />
-                                    <PaymentActionButton
-                                      label="Fail"
+                                      label="Not approve"
                                       variant="destructive"
                                       onClick={() => openFail(p.id)}
                                       disabled={busy}
@@ -633,17 +612,17 @@ export default function PaymentsPage() {
       <Modal
         open={failOpen}
         onClose={() => !failMut.isPending && setFailOpen(false)}
-        title="Mark payment as failed"
-        subtitle="The client will be asked to pay again. Previous proof is kept in history."
+        title="Not approve payment"
+        subtitle="Add an optional note for the client. They can submit payment proof again; previous proof stays in history."
         maxWidth="max-w-lg"
       >
         <div className="space-y-4">
-          <Field label="Reason (optional)">
+          <Field label="Note for client (optional)">
             <textarea
               className={`${inputCls} min-h-[88px]`}
               value={failReason}
               onChange={(e) => setFailReason(e.target.value)}
-              placeholder="Wrong account, wrong amount, declined, etc."
+              placeholder="e.g. wrong account, amount mismatch, proof unclear…"
             />
           </Field>
           <div className="flex justify-end gap-2 pt-2">
@@ -667,7 +646,7 @@ export default function PaymentsPage() {
                 );
               }}
             >
-              {failMut.isPending ? "Saving…" : "Confirm fail"}
+              {failMut.isPending ? "Saving…" : "Confirm"}
             </Button>
           </div>
         </div>

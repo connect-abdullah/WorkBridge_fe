@@ -48,10 +48,6 @@ export async function approvePayment(paymentId: number) {
   return post<APIResponse<PaymentRead>>(`${base}/${paymentId}/approve`);
 }
 
-export async function disputePayment(paymentId: number) {
-  return post<APIResponse<PaymentRead>>(`${base}/${paymentId}/dispute`);
-}
-
 export async function failPayment(paymentId: number, body: PaymentFailBody) {
   return post<APIResponse<PaymentRead>, PaymentFailBody>(
     `${base}/${paymentId}/fail`,

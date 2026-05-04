@@ -2,7 +2,7 @@ import type { PaymentRead } from "@/lib/apis/payments/schema";
 
 /**
  * Freelancer may preview client-submitted proof unless the payment was rejected
- * in workflow terms (disputed / failed). Stays available after approval (`paid`).
+ * in workflow terms (e.g. failed or legacy disputed). Stays available after approval (`paid`).
  */
 export function canShowFreelancerPaymentProof(p: PaymentRead): boolean {
   const url = (p.proof_of_payment || "").trim();
