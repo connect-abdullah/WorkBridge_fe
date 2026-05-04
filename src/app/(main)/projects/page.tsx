@@ -23,6 +23,7 @@ import type {
 } from "@/lib/apis/projects/schema";
 import type { MilestoneStatus } from "@/lib/apis/milestones/schema";
 import { toLocalDateTime } from "@/lib/utils";
+import { usePermissions } from "@/lib/permissions";
 
 type DraftTask = ProjectTaskCreateInput & { _cid: string };
 type DraftMilestone = Omit<ProjectMilestoneCreateInput, "tasks"> & {
@@ -86,6 +87,7 @@ function toLocalDate(isoLike: string) {
 
 export default function ProjectsPage() {
   const userId = getStoredUserId() ?? 0;
+  const permissions = usePermissions();
   const {
     data: res,
     isLoading,
@@ -271,9 +273,11 @@ export default function ProjectsPage() {
             View active engagements, milestones, and progress.
           </p>
         </div>
-        <Button className="h-10" onClick={openCreateModal}>
-          <Plus className="mr-1.5 h-4 w-4" /> Add Project
-        </Button>
+        {permissions.canCreateProject ? (
+          <Button className="h-10" onClick={openCreateModal}>
+            <Plus className="mr-1.5 h-4 w-4" /> Add Project
+          </Button>
+        ) : null}
       </header>
 
       <section className="space-y-3 flex flex-col">

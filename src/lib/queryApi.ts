@@ -45,6 +45,12 @@ import { listActivityLogsByProjectId } from "@/lib/apis/activityLogs/activityLog
 import type { ActivityLogRead } from "@/lib/apis/activityLogs/schema";
 import { createFile, listFilesByProjectId, updateFile, deleteFile } from "@/lib/apis/files/files";
 import type { FileCreate, FileRead, FileUpdate } from "@/lib/apis/files/schema";
+import {
+  listPaymentsByProjectId,
+  listPaymentsReceived,
+  listPaymentsSentRequested,
+} from "@/lib/apis/payments/payments";
+import type { PaymentRead } from "@/lib/apis/payments/schema";
 
 // =============================================================================
 // Cache config helpers (dynamic per-query overrides)
@@ -114,6 +120,12 @@ export const queryKeys = {
   files: {
     listByProjectId: (projectId: number) =>
       ["files", "listByProjectId", projectId] as const,
+  },
+  payments: {
+    listByProjectId: (projectId: number, forClient: boolean) =>
+      ["payments", "listByProjectId", projectId, forClient] as const,
+    received: (userId: number) => ["payments", "received", userId] as const,
+    sentRequested: (userId: number) => ["payments", "sentRequested", userId] as const,
   },
 };
 
@@ -200,6 +212,43 @@ export const queryApi = {
       queryFn: () => listFilesByProjectId(projectId),
       ...cache(cacheConfig),
       enabled: Number.isFinite(projectId) && projectId > 0,
+    }),
+  },
+
+  payments: {
+    listByProjectId: (
+      projectId: number,
+      opts?: { forClient?: boolean },
+      cacheConfig?: CacheConfig,
+    ): UseQueryOptions<APIResponse<PaymentRead[]>, Error> => ({
+      queryKey: queryKeys.payments.listByProjectId(
+        projectId,
+        opts?.forClient === true,
+      ),
+      queryFn: () =>
+        listPaymentsByProjectId(projectId, { forClient: opts?.forClient }),
+      ...cache(cacheConfig),
+      enabled: Number.isFinite(projectId) && projectId > 0,
+    }),
+
+    received: (
+      userId: number,
+      cacheConfig?: CacheConfig,
+    ): UseQueryOptions<APIResponse<PaymentRead[]>, Error> => ({
+      queryKey: queryKeys.payments.received(userId),
+      queryFn: () => listPaymentsReceived(),
+      ...cache(cacheConfig),
+      enabled: Number.isFinite(userId) && userId > 0,
+    }),
+
+    sentRequested: (
+      userId: number,
+      cacheConfig?: CacheConfig,
+    ): UseQueryOptions<APIResponse<PaymentRead[]>, Error> => ({
+      queryKey: queryKeys.payments.sentRequested(userId),
+      queryFn: () => listPaymentsSentRequested(),
+      ...cache(cacheConfig),
+      enabled: Number.isFinite(userId) && userId > 0,
     }),
   },
 

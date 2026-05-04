@@ -15,6 +15,7 @@ import {
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { ProjectSummary, ProjectStatus } from "@/constants/project-detail";
 import { getStoredUserId, queryApi, queryKeys } from "@/lib/queryApi";
+import { getPermissionsFor } from "@/lib/permissions";
 import type { MilestoneRead } from "@/lib/apis/milestones/schema";
 import type { ProjectRead, ProjectReadWithMilestones } from "@/lib/apis/projects/schema";
 import type { ProjectUpdate } from "@/lib/apis/projects/schema";
@@ -229,6 +230,22 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     return projectDetail.freelancer_id === uid;
   }, [projectDetail]);
 
+  const isProjectClient = useMemo(() => {
+    const uid = getStoredUserId();
+    if (uid == null || !projectDetail) return false;
+    return projectDetail.client_id === uid;
+  }, [projectDetail]);
+
+  // Derive permissions from the actor's project-scoped role. Stays server-safe:
+  // defaults to the more restrictive "client" permissions only when we have
+  // confirmed the actor is the project's client. Freelancer permissions are the
+  // default so other viewers (rare) can't act. `usePermissions` (localStorage)
+  // is intentionally not used here — project role always wins.
+  const projectPermissions = useMemo(() => {
+    if (isProjectClient) return getPermissionsFor("client");
+    return getPermissionsFor("freelancer");
+  }, [isProjectClient]);
+
   const projectDetailQueryKey = queryKeys.projects.detail(numericProjectId);
 
   function setProjectDetailCache(
@@ -420,11 +437,6 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
   // ── Notes tab is rendered by NotesPanel (GET /api/v1/notes)
 
-  // ── Payments
-  const [paymentActions, setPaymentActions] = useState<
-    Record<string, "pay" | "invoice">
-  >({});
-
   // ── Files are handled inside FilesPanel via /api/v1/files
 
   useEffect(() => {
@@ -475,6 +487,17 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
  
     }),
   );
+
+  const paymentsQuery = useQuery({
+    ...queryApi.payments.listByProjectId(numericProjectId, {
+      forClient: isProjectClient === true,
+    }),
+    enabled:
+      Number.isFinite(numericProjectId) &&
+      numericProjectId > 0 &&
+      !!projectDetail &&
+      (isProjectFreelancer || isProjectClient),
+  });
 
   const activityLogsQuery = useQuery({
     ...queryApi.activityLogs.listByProjectId(
@@ -868,6 +891,52 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     });
   };
 
+  const handleMilestoneApprove = (milestoneId: string) => {
+    if (!projectPermissions.canApproveMilestone) return;
+    const milestoneIdNum = Number(milestoneId);
+
+    setMilestoneState((prev) =>
+      prev.map((m) =>
+        m.id === milestoneId ? { ...m, approvalStatus: "approved" } : m,
+      ),
+    );
+
+    updateMilestoneMutation
+      .mutateAsync({
+        milestoneId: milestoneIdNum,
+        data: { status: "approved" },
+      })
+      .then((res) => {
+        if (!res.success) {
+          toast.error(res.message || "Failed to approve milestone.");
+          setMilestoneState((prev) =>
+            prev.map((m) =>
+              m.id === milestoneId ? { ...m, approvalStatus: "pending" } : m,
+            ),
+          );
+          return;
+        }
+        if (res.data) patchMilestoneInCache(res.data);
+        if (res.data) {
+          const ui = toUiMilestone(res.data);
+          setMilestoneState((prev) =>
+            prev.map((m) => (m.id === ui.id ? ui : m)),
+          );
+        }
+        toast.success(res.message || "Milestone approved.");
+        return queryClient.invalidateQueries({
+          queryKey: projectDetailQueryKey,
+        });
+      })
+      .catch(() => {
+        setMilestoneState((prev) =>
+          prev.map((m) =>
+            m.id === milestoneId ? { ...m, approvalStatus: "pending" } : m,
+          ),
+        );
+      });
+  };
+
   const handleMilestoneDeleteConfirmed = (milestoneId: string) => {
     setMilestoneState((prev) => prev.filter((m) => m.id !== milestoneId));
     setExpandedMilestones((prev) => {
@@ -1206,14 +1275,16 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
           </h1>
           <div className="flex items-center gap-2">
             <StatusBadge status={projectSummary.status} />
-            <button
-              type="button"
-              onClick={openProjectModal}
-              className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-card px-3 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
-            >
-              <Pencil className="h-4 w-4" />
-              Edit
-            </button>
+            {projectPermissions.canEditProject ? (
+              <button
+                type="button"
+                onClick={openProjectModal}
+                className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-card px-3 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
+              >
+                <Pencil className="h-4 w-4" />
+                Edit
+              </button>
+            ) : null}
           </div>
         </div>
         <p className="max-w-3xl text-sm text-muted-foreground">
@@ -1281,6 +1352,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
       {activeTab === "Milestones" ? (
         <MilestonesPanel
+          permissions={projectPermissions}
           milestones={sortedMilestones}
           sortValue={milestoneSort}
           onSortChange={setMilestoneSort}
@@ -1297,6 +1369,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
           }
           onStatusChange={handleMilestoneStatusChange}
           onDelete={handleMilestoneDelete}
+          onApprove={handleMilestoneApprove}
           onOpenModal={openMilestoneModal}
           onOpenTaskModal={openTaskModal}
           onEditTask={editTask}
@@ -1587,11 +1660,12 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
       {activeTab === "Payments" ? (
         <PaymentsPanel
+          projectId={numericProjectId}
+          payments={paymentsQuery.data?.data ?? []}
+          paymentsLoading={paymentsQuery.isLoading}
           completedMilestones={completedMilestones}
-          paymentActions={paymentActions}
-          onPay={(id) =>
-            setPaymentActions((prev) => ({ ...prev, [id]: "invoice" }))
-          }
+          isFreelancer={isProjectFreelancer}
+          isClient={isProjectClient}
         />
       ) : null}
 

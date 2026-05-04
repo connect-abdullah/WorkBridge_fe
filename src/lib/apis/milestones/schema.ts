@@ -1,4 +1,5 @@
 import type { TaskCreate, TaskRead, TaskUpdate } from "@/lib/apis/tasks/schema";
+import type { PaymentRead } from "@/lib/apis/payments/schema";
 
 export type MilestoneStatus =
   | "pending"
@@ -25,7 +26,8 @@ export interface MilestoneBase {
 
 export interface MilestoneCreate extends MilestoneBase {
   tasks?: TaskCreate[];
-  payment?: unknown | null;
+  /** Backend accepts `PaymentCreate` when creating a milestone with a payment row. */
+  payment?: Record<string, unknown> | null;
 }
 
 export interface MilestoneRead extends MilestoneBase {
@@ -34,7 +36,7 @@ export interface MilestoneRead extends MilestoneBase {
   status: MilestoneApproval;
   is_approved?: boolean | null;
   tasks?: TaskRead[];
-  payment?: unknown | null;
+  payment?: PaymentRead | null;
 }
 
 export interface MilestoneUpdate {
@@ -47,5 +49,6 @@ export interface MilestoneUpdate {
   project_id?: number;
   status?: MilestoneApproval;
   tasks?: TaskUpdate[] | null;
-  payment?: unknown | null;
+  /** Backend accepts `PaymentUpdate` for nested milestone updates. */
+  payment?: Record<string, unknown> | null;
 }

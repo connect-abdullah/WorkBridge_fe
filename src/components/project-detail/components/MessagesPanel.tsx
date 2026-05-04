@@ -14,6 +14,7 @@ import {
   Check,
   CheckCheck,
   FileText,
+  Image as ImageIcon,
   Link2,
   Loader2,
   Lock,
@@ -42,6 +43,8 @@ import type {
 } from "@/lib/apis/messages/schema";
 import { useChatSocket } from "@/hooks/useChatSocket";
 import { getStoredUserId, queryKeys } from "@/lib/queryApi";
+import { cn } from "@/lib/utils";
+import { Modal } from "./Modal";
 
 type PendingMessage = {
   clientKey: string;
@@ -91,12 +94,41 @@ function formatTime(value?: string | null): string {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+const IMAGE_EXT = new Set([
+  "jpg",
+  "jpeg",
+  "png",
+  "gif",
+  "webp",
+  "svg",
+  "bmp",
+  "avif",
+  "ico",
+]);
+
+function extensionOf(fileName: string): string {
+  const i = fileName.lastIndexOf(".");
+  if (i === -1) return "";
+  return fileName.slice(i + 1).toLowerCase();
+}
+
+/** True when we should open an in-app image preview instead of a new tab. */
+function shouldPreviewImageInModal(file: FileRead): boolean {
+  if (file.file_type === "link") return false;
+  if (file.file_type === "image") return true;
+  return IMAGE_EXT.has(extensionOf(file.file_name));
+}
+
 function MessageWithFileTokens({
   message,
   files,
+  variant,
+  onFileClick,
 }: {
   message: string;
   files: ReadonlyArray<FileRead>;
+  variant: "sent" | "received";
+  onFileClick: (file: FileRead) => void;
 }) {
   const matches = files
     .map((file) => ({ file, token: fileToken(file) }))
@@ -122,22 +154,37 @@ function MessageWithFileTokens({
     remaining = remaining.slice(next.index + next.token.length);
   }
 
+  const capsuleIcon = (file: FileRead) => {
+    if (file.file_type === "link") return Link2;
+    if (shouldPreviewImageInModal(file)) return ImageIcon;
+    return FileText;
+  };
+
   return (
     <>
-      {parts.map((part, index) =>
-        typeof part === "string" ? (
-          <span key={`${part}-${index}`}>{part}</span>
-        ) : (
-          <span
+      {parts.map((part, index) => {
+        if (typeof part === "string") {
+          return <span key={`${part}-${index}`}>{part}</span>;
+        }
+        const Icon = capsuleIcon(part);
+        return (
+          <button
             key={`${part.id}-${index}`}
-            className="mx-0.5 inline-flex max-w-[220px] items-center gap-1 rounded-full bg-background/80 px-2 py-0.5 text-xs font-semibold text-foreground ring-1 ring-border align-middle"
-            title={part.file_name}
+            type="button"
+            onClick={() => onFileClick(part)}
+            title={`Open ${part.file_name}`}
+            className={cn(
+              "mx-0.5 inline-flex max-w-[min(240px,72vw)] cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 text-left text-xs font-medium align-middle transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1",
+              variant === "sent"
+                ? "bg-white/20 text-primary-foreground ring-1 ring-white/35 hover:bg-white/28 focus-visible:ring-white/80 focus-visible:ring-offset-primary"
+                : "bg-muted/90 text-foreground shadow-sm ring-1 ring-border/70 hover:bg-muted focus-visible:ring-primary/40 focus-visible:ring-offset-background",
+            )}
           >
-            <FileText className="h-3 w-3 shrink-0" />
-            <span className="truncate">{part.file_name}</span>
-          </span>
-        ),
-      )}
+            <Icon className="h-3.5 w-3.5 shrink-0 opacity-90" aria-hidden />
+            <span className="min-w-0 truncate">{part.file_name}</span>
+          </button>
+        );
+      })}
     </>
   );
 }
@@ -172,6 +219,28 @@ export function MessagesPanel({
   const [fileMenuOpen, setFileMenuOpen] = useState(false);
   const [isFetchingFiles, setIsFetchingFiles] = useState(false);
   const [fileListVersion, setFileListVersion] = useState(0);
+
+  const [imagePreview, setImagePreview] = useState<{
+    url: string;
+    name: string;
+  } | null>(null);
+
+  const openMessageAttachment = useCallback((file: FileRead) => {
+    const url = (file.file_path || "").trim();
+    if (!url) {
+      toast.error("File is not available yet.");
+      return;
+    }
+    if (file.file_type === "link") {
+      window.open(url, "_blank", "noopener,noreferrer");
+      return;
+    }
+    if (shouldPreviewImageInModal(file)) {
+      setImagePreview({ url, name: file.file_name });
+      return;
+    }
+    window.open(url, "_blank", "noopener,noreferrer");
+  }, []);
 
   const uploadFileMutation = useMutation({
     mutationFn: (file: File) => uploadProjectFile(file, projectId),
@@ -536,26 +605,40 @@ export function MessagesPanel({
           ) : null}
 
           {messages.map((item) => {
-            const isSelf = item.sender_id === currentUserId;
+            const isSelf =
+              currentUserId > 0 && item.sender_id === currentUserId;
             return (
               <div
                 key={item.id}
-                className={`flex ${isSelf ? "justify-end" : "justify-start"}`}
+                className={`flex w-full ${isSelf ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[68%] rounded-2xl px-3 py-2 text-sm leading-relaxed shadow-sm ${
+                  className={cn(
+                    "max-w-[min(78%,520px)] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
                     isSelf
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-background text-foreground ring-1 ring-border"
-                  }`}
+                      ? "rounded-br-md bg-primary text-primary-foreground shadow-md"
+                      : "rounded-bl-md border border-border/80 bg-card text-foreground shadow-md ring-1 ring-black/[0.04] dark:ring-white/[0.06]",
+                  )}
                 >
-                  <p className="whitespace-pre-wrap break-words">
+                  <p
+                    className={cn(
+                      "whitespace-pre-wrap break-words",
+                      isSelf ? "text-primary-foreground" : "text-foreground",
+                    )}
+                  >
                     <MessageWithFileTokens
                       message={item.content}
                       files={cachedFiles}
+                      variant={isSelf ? "sent" : "received"}
+                      onFileClick={openMessageAttachment}
                     />
                   </p>
-                  <div className="mt-1 flex items-center justify-end gap-1 text-[11px] opacity-70">
+                  <div
+                    className={cn(
+                      "mt-1.5 flex items-center gap-1 text-[11px]",
+                      isSelf ? "justify-end text-primary-foreground/75" : "justify-end text-muted-foreground",
+                    )}
+                  >
                     <span>{formatTime(item.created_at)}</span>
                     {isSelf ? (
                       item.status === "READ" ? (
@@ -573,18 +656,21 @@ export function MessagesPanel({
           })}
 
           {pending.map((item) => (
-            <div key={item.clientKey} className="flex flex-col items-end gap-1">
+            <div key={item.clientKey} className="flex w-full flex-col items-end gap-1">
               <div
-                className={`max-w-[68%] rounded-2xl px-3 py-2 text-sm leading-relaxed shadow-sm ${
+                className={cn(
+                  "max-w-[min(78%,520px)] rounded-2xl rounded-br-md px-3.5 py-2.5 text-sm leading-relaxed shadow-md",
                   item.status === "failed"
                     ? "bg-destructive/10 text-foreground ring-1 ring-destructive/40"
-                    : "bg-primary text-primary-foreground"
-                }`}
+                    : "bg-primary text-primary-foreground",
+                )}
               >
                 <p className="whitespace-pre-wrap break-words">
                   <MessageWithFileTokens
                     message={item.content}
                     files={cachedFiles}
+                    variant="sent"
+                    onFileClick={openMessageAttachment}
                   />
                 </p>
                 <div className="mt-1 flex items-center justify-end gap-2 text-[11px] opacity-80">
@@ -749,6 +835,29 @@ export function MessagesPanel({
           </div>
         )}
       </div>
+
+      <Modal
+        open={imagePreview != null}
+        onClose={() => setImagePreview(null)}
+        title={imagePreview?.name ?? "Image preview"}
+        subtitle="Press Escape or click outside to close."
+        maxWidth="max-w-4xl"
+        zIndexClass="z-[60]"
+      >
+        {imagePreview ? (
+          <div className="flex min-h-[180px] items-center justify-center rounded-lg bg-muted/40 p-3">
+            <img
+              src={imagePreview.url}
+              alt={imagePreview.name}
+              className="max-h-[min(72vh,640px)] w-auto max-w-full rounded-md object-contain shadow-sm"
+              onError={() => {
+                toast.error("Could not load this image.");
+                setImagePreview(null);
+              }}
+            />
+          </div>
+        ) : null}
+      </Modal>
     </section>
   );
 }

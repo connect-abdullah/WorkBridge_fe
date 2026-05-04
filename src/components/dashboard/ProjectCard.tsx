@@ -6,6 +6,7 @@ type ProjectStatus = "in-progress" | "pending" | "completed" | "issue";
 export function ProjectCard({
   title,
   clientName,
+  partnerKind = "client",
   progress,
   milestoneTitle,
   milestoneDueDate,
@@ -15,7 +16,10 @@ export function ProjectCard({
   href,
 }: {
   title: string;
+  /** Partner name under the title (client name on freelancer dashboard; freelancer name on client dashboard). */
   clientName: string;
+  /** Which role label to show above the name line. */
+  partnerKind?: "client" | "freelancer";
   progress: number;
   milestoneTitle: string;
   milestoneDueDate: string;
@@ -30,7 +34,16 @@ export function ProjectCard({
         {/* Top: project identity + progress */}
         <header>
           <h3 className="text-base font-semibold text-foreground">{title}</h3>
-          <p className="text-sm text-muted-foreground">{clientName}</p>
+          {partnerKind === "freelancer" ? (
+            <div className="mt-0.5 space-y-0.5">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                Freelancer
+              </p>
+              <p className="text-sm text-muted-foreground">{clientName}</p>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">{clientName}</p>
+          )}
         </header>
 
         <div>

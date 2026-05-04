@@ -1,6 +1,11 @@
 import { cn } from "@/lib/utils";
 
-type StatusTone = "in-progress" | "pending" | "completed" | "paid" | "issue";
+export type StatusTone =
+  | "in-progress"
+  | "pending"
+  | "completed"
+  | "paid"
+  | "issue";
 
 const toneClasses: Record<StatusTone, string> = {
   "in-progress":
@@ -15,9 +20,12 @@ const toneClasses: Record<StatusTone, string> = {
 export function StatusBadge({
   status,
   className,
+  label,
 }: {
   status: StatusTone;
   className?: string;
+  /** When set, shown instead of the default text derived from `status`. */
+  label?: string;
 }) {
   return (
     <span
@@ -27,7 +35,7 @@ export function StatusBadge({
         className,
       )}
     >
-      {status.replace("-", " ")}
+      {label ?? status.replace("-", " ")}
     </span>
   );
 }

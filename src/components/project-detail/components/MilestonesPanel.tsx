@@ -3,6 +3,7 @@
 import { FormEvent } from "react";
 import {
   Calendar,
+  Check,
   ChevronDown,
   ChevronUp,
   Pencil,
@@ -23,8 +24,10 @@ import {
   inputCls,
   selectCls,
 } from "@/components/project-detail/components/Field";
+import type { Permissions } from "@/lib/permissions";
 
 export function MilestonesPanel({
+  permissions,
   milestones,
   sortValue,
   onSortChange,
@@ -34,6 +37,7 @@ export function MilestonesPanel({
   onStatusDropdownToggle,
   onStatusChange,
   onDelete,
+  onApprove,
   onOpenModal,
   onOpenTaskModal,
   onEditTask,
@@ -63,6 +67,7 @@ export function MilestonesPanel({
   setTaskDescription,
   onTaskSubmit,
 }: {
+  permissions: Permissions;
   milestones: Milestone[];
   sortValue: "dueDate" | "order";
   onSortChange: (v: "dueDate" | "order") => void;
@@ -72,6 +77,7 @@ export function MilestonesPanel({
   onStatusDropdownToggle: (id: string) => void;
   onStatusChange: (id: string, status: MilestoneStatus) => void;
   onDelete: (id: string) => void;
+  onApprove?: (id: string) => void;
   onOpenModal: (mode: "create" | "edit", ms?: Milestone) => void;
   onOpenTaskModal: (milestoneId: string) => void;
   onEditTask: (milestoneId: string, task: TaskItem) => void;
@@ -147,9 +153,11 @@ export function MilestonesPanel({
             <option value="order">Order</option>
           </select>
         </div>
-        <Button className="h-10" onClick={() => onOpenModal("create")}>
-          <Plus className="mr-1.5 h-4 w-4" /> Add Milestone
-        </Button>
+        {permissions.canCreateMilestone ? (
+          <Button className="h-10" onClick={() => onOpenModal("create")}>
+            <Plus className="mr-1.5 h-4 w-4" /> Add Milestone
+          </Button>
+        ) : null}
       </div>
 
       <div className="space-y-3">
@@ -187,14 +195,24 @@ export function MilestonesPanel({
                     <div className="relative">
                       <button
                         type="button"
-                        onClick={() => onStatusDropdownToggle(milestone.id)}
-                        className="cursor-pointer rounded-full focus:outline-none"
+                        onClick={
+                          permissions.canChangeMilestoneProgress
+                            ? () => onStatusDropdownToggle(milestone.id)
+                            : undefined
+                        }
+                        disabled={!permissions.canChangeMilestoneProgress}
+                        className={`rounded-full focus:outline-none ${
+                          permissions.canChangeMilestoneProgress
+                            ? "cursor-pointer"
+                            : "cursor-default"
+                        }`}
                         aria-label="Change progress status"
                       >
                         <StatusBadge status={milestone.status} />
                       </button>
 
-                      {isDropdownOpen ? (
+                      {isDropdownOpen &&
+                      permissions.canChangeMilestoneProgress ? (
                         <div className="absolute right-0 top-full z-30 mt-1.5 w-40 overflow-hidden rounded-lg border border-border bg-card shadow-md">
                           {(
                             [
@@ -221,23 +239,40 @@ export function MilestonesPanel({
                     </div>
                   ) : null}
 
-                  <button
-                    type="button"
-                    onClick={() => onOpenModal("edit", milestone)}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                    aria-label="Edit milestone"
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </button>
+                  {permissions.canApproveMilestone &&
+                  milestone.approvalStatus === "pending" &&
+                  onApprove ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => onApprove(milestone.id)}
+                    >
+                      <Check className="mr-1 h-3.5 w-3.5" /> Approve
+                    </Button>
+                  ) : null}
 
-                  <button
-                    type="button"
-                    onClick={() => onDelete(milestone.id)}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition hover:bg-muted hover:text-destructive"
-                    aria-label="Delete milestone"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  {permissions.canEditMilestone ? (
+                    <button
+                      type="button"
+                      onClick={() => onOpenModal("edit", milestone)}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                      aria-label="Edit milestone"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  ) : null}
+
+                  {permissions.canDeleteMilestone ? (
+                    <button
+                      type="button"
+                      onClick={() => onDelete(milestone.id)}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition hover:bg-muted hover:text-destructive"
+                      aria-label="Delete milestone"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  ) : null}
                 </div>
               </div>
 
@@ -296,34 +331,44 @@ export function MilestonesPanel({
                             </p>
                           ) : null}
                         </div>
-                        <div className="flex shrink-0 items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => onEditTask(milestone.id, task)}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                            aria-label="Edit task"
-                          >
-                            <PencilLine className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => onDeleteTask(milestone.id, task.id)}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition hover:bg-muted hover:text-destructive"
-                            aria-label="Delete task"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
+                        {permissions.canEditTask || permissions.canDeleteTask ? (
+                          <div className="flex shrink-0 items-center gap-1.5">
+                            {permissions.canEditTask ? (
+                              <button
+                                type="button"
+                                onClick={() => onEditTask(milestone.id, task)}
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                                aria-label="Edit task"
+                              >
+                                <PencilLine className="h-3.5 w-3.5" />
+                              </button>
+                            ) : null}
+                            {permissions.canDeleteTask ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  onDeleteTask(milestone.id, task.id)
+                                }
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition hover:bg-muted hover:text-destructive"
+                                aria-label="Delete task"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            ) : null}
+                          </div>
+                        ) : null}
                       </div>
                     ))}
                   </div>
-                  <Button
-                    variant="outline"
-                    className="mt-3 h-9"
-                    onClick={() => onOpenTaskModal(milestone.id)}
-                  >
-                    <Plus className="mr-1.5 h-4 w-4" /> Add Task
-                  </Button>
+                  {permissions.canCreateTask ? (
+                    <Button
+                      variant="outline"
+                      className="mt-3 h-9"
+                      onClick={() => onOpenTaskModal(milestone.id)}
+                    >
+                      <Plus className="mr-1.5 h-4 w-4" /> Add Task
+                    </Button>
+                  ) : null}
                 </div>
               ) : null}
             </article>

@@ -19,6 +19,25 @@ function normalizeStoragePath(bucket: string, keyOrPath: string): string {
   return v;
 }
 
+/**
+ * Storage object names must not contain raw spaces, `#`, `?`, slashes, or odd Unicode
+ * (common in macOS screenshots). Original `File.name` is still sent to your API for display.
+ */
+function sanitizeStorageFileName(name: string): string {
+  const base = (name || "file").replace(/\\/g, "/").split("/").pop() || "file";
+  const normalized = base.normalize("NFKC").replace(/\s+/g, "-");
+  const extMatch = normalized.match(/(\.[a-zA-Z0-9]{1,10})$/);
+  const ext = extMatch ? extMatch[1].toLowerCase() : "";
+  const stem = ext ? normalized.slice(0, -ext.length) : normalized;
+  const safeStem = stem
+    .replace(/[^a-zA-Z0-9._-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 120);
+  const safeExt = ext.replace(/[^.a-z0-9]/g, "");
+  return `${safeStem || "upload"}${safeExt || ""}`;
+}
+
 // Uploads the selected file to Supabase and returns a public URL.
 export const handleUpload = async (
   input: React.ChangeEvent<HTMLInputElement> | File,
@@ -45,8 +64,8 @@ export const handleUpload = async (
   }
   if (!userId) throw new Error("User ID not found.");
 
-  // Create a unique file path
-  const filePath = `${userId}/${Date.now()}-${file.name}`;
+  const safeName = sanitizeStorageFileName(file.name);
+  const filePath = `${userId}/${Date.now()}-${safeName}`;
 
   // Upload the file
   const { data: uploadData, error } = await supabase.storage

@@ -60,6 +60,29 @@ export async function uploadProjectFile(file: File, projectId: number) {
   return createFile(payload);
 }
 
+/**
+ * Upload to storage only — does **not** create a project `files` row.
+ * Use for payment proof so invoices stay on the Payments flow only.
+ */
+export async function uploadPaymentProofOnly(
+  file: File,
+): Promise<APIResponse<{ file_path: string }>> {
+  try {
+    const publicUrl = await handleUpload(file);
+    return {
+      success: true,
+      message: "Proof uploaded.",
+      data: { file_path: publicUrl },
+    };
+  } catch (e) {
+    return {
+      success: false,
+      message: e instanceof Error ? e.message : "Upload failed",
+      data: null,
+    };
+  }
+}
+
 export function appendProjectFileToCache(
   queryClient: QueryClient,
   projectId: number,
