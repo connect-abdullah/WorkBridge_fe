@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { forceLogout } from "@/lib/forceLogout";
 import { NAV_ITEMS, isNavItemActive } from "./navItems";
 
@@ -166,7 +167,7 @@ export function AppSidebar({
           </div>
         </div>
 
-        <div className="mt-3 flex justify-center">
+        <div className="mt-3 flex items-center justify-center gap-3">
           <Button
             type="button"
             variant="outline"
@@ -178,6 +179,7 @@ export function AppSidebar({
             <LogOut className="h-4 w-4" />
             Log out
           </Button>
+          <AnimatedThemeToggler className="shrink-0 justify-center" />
         </div>
       </div>
     </aside>

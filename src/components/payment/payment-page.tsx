@@ -1,22 +1,26 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { StatusBadge } from "@/components/ui/status-badge";
-import type { StatusTone } from "@/components/ui/status-badge";
-import { PaymentActionButton } from "@/components/project-detail/components/PaymentActionButton";
-import { Modal } from "@/components/project-detail/components/Modal";
+
 import {
   Field,
   inputCls,
   selectCls,
 } from "@/components/project-detail/components/Field";
+import { Modal } from "@/components/project-detail/components/Modal";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
+import { PaymentProofDropzone } from "@/components/payment/PaymentProofDropzone";
+import { InvoicePreviewModal } from "@/components/payment/InvoicePreviewModal";
+import {
+  PaymentsListView,
+  type PaymentsListHandlers,
+} from "@/components/payment/PaymentsListView";
+import { getDateValue } from "@/components/payment/payment-page-utils";
 import { getStoredUserId, queryKeys, queryApi } from "@/lib/queryApi";
-import type { PaymentRead, PaymentMethod, PaymentStatus } from "@/lib/apis/payments/schema";
+import { useRole } from "@/lib/permissions";
+import type { PaymentMethod, PaymentRead } from "@/lib/apis/payments/schema";
 import {
   approvePayment,
   failPayment,
@@ -24,11 +28,6 @@ import {
   submitPayment,
 } from "@/lib/apis/payments/payments";
 import { uploadPaymentProofOnly } from "@/lib/apis/files/upload";
-import { PaymentProofDropzone } from "@/components/payment/PaymentProofDropzone";
-import { canShowFreelancerPaymentProof } from "@/lib/apis/payments/preview";
-import { InvoicePreviewModal } from "@/components/payment/InvoicePreviewModal";
-import { useRole } from "@/lib/permissions";
-import { clientPaymentStatusDisplay } from "@/lib/apis/payments/clientStatus";
 
 const PAYMENT_METHOD_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: "wise", label: "Wise" },
@@ -37,54 +36,6 @@ const PAYMENT_METHOD_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: "stripe", label: "Stripe" },
   { value: "other", label: "Other" },
 ];
-
-function getDateValue(iso: string | null | undefined) {
-  if (!iso) return 0;
-  const t = new Date(iso).getTime();
-  return Number.isNaN(t) ? 0 : t;
-}
-
-function paymentStatusToBadge(status: PaymentStatus): { tone: StatusTone; label: string } {
-  switch (status) {
-    case "pending":
-      return { tone: "pending", label: "Pending" };
-    case "requested":
-      return { tone: "in-progress", label: "Requested" };
-    case "submitted":
-      return { tone: "completed", label: "Submitted" };
-    case "paid":
-      return { tone: "paid", label: "Paid" };
-    case "disputed":
-      return { tone: "issue", label: "Disputed" };
-    case "failed":
-      return { tone: "issue", label: "Failed" };
-    default:
-      return { tone: "pending", label: status };
-  }
-}
-
-function formatMoney(amount: number, currency: string | null) {
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency || "USD",
-      maximumFractionDigits: 0,
-    }).format(amount);
-  } catch {
-    return String(amount);
-  }
-}
-
-function formatDate(iso: string | null | undefined) {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  });
-}
 
 export default function PaymentsPage() {
   const [sortBy, setSortBy] = useState<"latest" | "oldest">("latest");
@@ -95,7 +46,9 @@ export default function PaymentsPage() {
   const invalidatePaymentCaches = useCallback(
     async (payment?: PaymentRead | null) => {
       if (userId != null && userId > 0) {
-        await queryClient.invalidateQueries({ queryKey: queryKeys.payments.received(userId) });
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.payments.received(userId),
+        });
         await queryClient.invalidateQueries({
           queryKey: queryKeys.payments.sentRequested(userId),
         });
@@ -189,9 +142,10 @@ export default function PaymentsPage() {
   const [reqCurrency, setReqCurrency] = useState("USD");
 
   const [payOpen, setPayOpen] = useState(false);
-  const [payContext, setPayContext] = useState<{ paymentId: number; projectId: number } | null>(
-    null,
-  );
+  const [payContext, setPayContext] = useState<{
+    paymentId: number;
+    projectId: number;
+  } | null>(null);
   const [payTxn, setPayTxn] = useState("");
   const [payFile, setPayFile] = useState<File | null>(null);
   const [payBusy, setPayBusy] = useState(false);
@@ -205,26 +159,47 @@ export default function PaymentsPage() {
     title: string;
   } | null>(null);
 
-  function openRequest(pid: number) {
+  const openRequest = useCallback((pid: number) => {
     setRequestPaymentId(pid);
     setReqMethod("wise");
     setReqLink("");
     setReqCurrency("USD");
     setRequestOpen(true);
-  }
+  }, []);
 
-  function openPay(paymentId: number, projectId: number) {
+  const openPay = useCallback((paymentId: number, projectId: number) => {
     setPayContext({ paymentId, projectId });
     setPayTxn("");
     setPayFile(null);
     setPayOpen(true);
-  }
+  }, []);
 
-  function openFail(pid: number) {
+  const openFail = useCallback((pid: number) => {
     setFailPaymentId(pid);
     setFailReason("");
     setFailOpen(true);
-  }
+  }, []);
+
+  const handleApprove = useCallback(
+    (paymentId: number) => approveMut.mutate(paymentId),
+    [approveMut],
+  );
+
+  const handlePreviewProof = useCallback(
+    (payload: { url: string; title: string }) => setInvoicePreview(payload),
+    [],
+  );
+
+  const listHandlers = useMemo<PaymentsListHandlers>(
+    () => ({
+      onRequestPayment: openRequest,
+      onPayNow: openPay,
+      onApprove: handleApprove,
+      onNotApprove: openFail,
+      onPreviewProof: handlePreviewProof,
+    }),
+    [openRequest, openPay, handleApprove, openFail, handlePreviewProof],
+  );
 
   const busy =
     requestMut.isPending ||
@@ -233,11 +208,12 @@ export default function PaymentsPage() {
     failMut.isPending ||
     payBusy;
 
-  const freelancerRows = freelancerQuery.data?.data ?? [];
-  const clientRows = clientQuery.data?.data ?? [];
+  const freelancerRows = freelancerQuery.data?.data;
+  const clientRows = clientQuery.data?.data;
 
   const sortedFreelancer = useMemo(() => {
-    return [...freelancerRows].sort((a, b) =>
+    const rows = freelancerRows ?? [];
+    return [...rows].sort((a, b) =>
       sortBy === "latest"
         ? getDateValue(b.created_at) - getDateValue(a.created_at)
         : getDateValue(a.created_at) - getDateValue(b.created_at),
@@ -245,7 +221,8 @@ export default function PaymentsPage() {
   }, [sortBy, freelancerRows]);
 
   const sortedClient = useMemo(() => {
-    return [...clientRows].sort((a, b) =>
+    const rows = clientRows ?? [];
+    return [...rows].sort((a, b) =>
       sortBy === "latest"
         ? getDateValue(b.created_at) - getDateValue(a.created_at)
         : getDateValue(a.created_at) - getDateValue(b.created_at),
@@ -254,14 +231,16 @@ export default function PaymentsPage() {
 
   if (role !== "freelancer" && role !== "client") {
     return (
-      <div className="space-y-5">
+      <div className="mx-auto max-w-3xl space-y-6">
         <header className="space-y-1">
-          <h1 className="text-2xl font-semibold text-foreground">Payments</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            Payments
+          </h1>
           <p className="text-sm text-muted-foreground">
             Sign in as a freelancer or client to manage milestone payments here.
           </p>
         </header>
-        <section className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm">
+        <section className="rounded-2xl border border-border/80 bg-card p-8 text-center text-sm text-muted-foreground shadow-sm">
           Sign in to see payments linked to your account.
         </section>
       </div>
@@ -270,11 +249,13 @@ export default function PaymentsPage() {
 
   if (userId == null || userId <= 0) {
     return (
-      <div className="space-y-5">
+      <div className="mx-auto max-w-3xl space-y-6">
         <header className="space-y-1">
-          <h1 className="text-2xl font-semibold text-foreground">Payments</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            Payments
+          </h1>
         </header>
-        <section className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm">
+        <section className="rounded-2xl border border-border/80 bg-card p-8 text-center text-sm text-muted-foreground shadow-sm">
           Sign in to continue.
         </section>
       </div>
@@ -286,184 +267,39 @@ export default function PaymentsPage() {
   const sortedPayments = isFreelancer ? sortedFreelancer : sortedClient;
 
   return (
-    <div className="space-y-5">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold text-foreground">Payments</h1>
-        <p className="text-sm text-muted-foreground">
-          {isFreelancer
-            ? "All milestone payments where you are the freelancer — same actions as each project’s Payments tab."
-            : "Your milestone payments: pay when due, then track approval and confirmation here or on each project."}
+    <div className="mx-auto max-w-6xl space-y-6 sm:space-y-8">
+      <header className="space-y-2">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          Payments
+        </h1>
+        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
+          {isFreelancer ? (
+            <>
+              Milestone payments where you are the{" "}
+              <span className="font-medium text-foreground">freelancer</span>.
+              Actions match each project&apos;s Payments tab — open a project for
+              full context.
+            </>
+          ) : (
+            <>
+              Pay when a milestone is due, then track{" "}
+              <span className="font-medium text-foreground">approval</span> and
+              confirmation. You can also manage these from each project page.
+            </>
+          )}
         </p>
       </header>
 
-      <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-        <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
-          <p className="text-sm font-medium text-foreground">Milestone payments</p>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "latest" | "oldest")}
-            className="h-9 rounded-md border border-input bg-background px-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-          >
-            <option value="latest">Latest first</option>
-            <option value="oldest">Oldest first</option>
-          </select>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-[960px] w-full text-left text-sm">
-            <thead className="bg-muted/40 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3">Project</th>
-                <th className="px-4 py-3">Milestone</th>
-                <th className="px-4 py-3">Amount</th>
-                <th className="px-4 py-3">Status</th>
-                {!isFreelancer ? <th className="px-4 py-3">Note</th> : null}
-                <th className="px-4 py-3">Updated</th>
-                <th className="px-4 py-3">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paymentsQuery.isLoading ? (
-                <tr>
-                  <td colSpan={isFreelancer ? 6 : 7} className="px-4 py-10 text-muted-foreground">
-                    Loading payments…
-                  </td>
-                </tr>
-              ) : paymentsQuery.isError ? (
-                <tr>
-                  <td colSpan={isFreelancer ? 6 : 7} className="px-4 py-10 text-destructive">
-                    Could not load payments.
-                  </td>
-                </tr>
-              ) : sortedPayments.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={isFreelancer ? 6 : 7}
-                    className="px-4 py-12 text-center text-muted-foreground"
-                  >
-                    {isFreelancer
-                      ? "No milestone payments yet."
-                      : "No payments yet. When a freelancer requests payment for a completed milestone, it will appear here."}
-                  </td>
-                </tr>
-              ) : (
-                sortedPayments.map((p: PaymentRead) => {
-                  const badge = isFreelancer
-                    ? paymentStatusToBadge(p.payment_status)
-                    : clientPaymentStatusDisplay(p.payment_status);
-                  return (
-                    <tr
-                      key={p.id}
-                      className="border-t border-border/70 transition hover:bg-muted/30"
-                    >
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/projects/${p.project_id}`}
-                          className="font-medium text-primary underline-offset-4 hover:underline"
-                        >
-                          {p.project_title?.trim() || `Project #${p.project_id}`}
-                        </Link>
-                      </td>
-                      <td className="px-4 py-3 text-foreground">
-                        <Link
-                          href={`/projects/${p.project_id}`}
-                          className="text-primary underline-offset-4 hover:underline"
-                        >
-                          {p.milestone_title?.trim() || `Milestone #${p.milestone_id}`}
-                        </Link>
-                      </td>
-                      <td className="px-4 py-3 text-foreground">
-                        {formatMoney(p.amount, p.currency)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <StatusBadge status={badge.tone} label={badge.label} />
-                      </td>
-                      {!isFreelancer ? (
-                        <td className="max-w-xs px-4 py-3 text-xs text-muted-foreground">
-                          {p.last_failure_reason ? (
-                            <span className="text-destructive">{p.last_failure_reason}</span>
-                          ) : (
-                            "—"
-                          )}
-                        </td>
-                      ) : null}
-                      <td className="px-4 py-3 text-muted-foreground">
-                        {formatDate(p.updated_at ?? p.created_at)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {isFreelancer ? (
-                          <>
-                            {p.payment_status === "pending" ? (
-                              <PaymentActionButton
-                                label="Request Payment"
-                                onClick={() => openRequest(p.id)}
-                                disabled={busy}
-                              />
-                            ) : (
-                              <div className="flex flex-wrap items-center gap-2">
-                                {canShowFreelancerPaymentProof(p) ? (
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8 shrink-0"
-                                    disabled={busy}
-                                    aria-label="Preview submitted proof"
-                                    title="Preview proof"
-                                    onClick={() =>
-                                      setInvoicePreview({
-                                        url: p.proof_of_payment!.trim(),
-                                        title:
-                                          [
-                                            p.project_title?.trim(),
-                                            p.milestone_title?.trim(),
-                                          ]
-                                            .filter(Boolean)
-                                            .join(" — ") || `Payment #${p.id}`,
-                                      })
-                                    }
-                                  >
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                ) : null}
-                                {p.payment_status === "submitted" ? (
-                                  <>
-                                    <PaymentActionButton
-                                      label="Approve"
-                                      onClick={() => approveMut.mutate(p.id)}
-                                      disabled={busy}
-                                    />
-                                    <PaymentActionButton
-                                      label="Not approve"
-                                      variant="destructive"
-                                      onClick={() => openFail(p.id)}
-                                      disabled={busy}
-                                    />
-                                  </>
-                                ) : !canShowFreelancerPaymentProof(p) ? (
-                                  <span className="text-xs text-muted-foreground">—</span>
-                                ) : null}
-                              </div>
-                            )}
-                          </>
-                        ) : p.payment_status === "requested" ? (
-                          <PaymentActionButton
-                            label="Pay Now"
-                            onClick={() => openPay(p.id, p.project_id)}
-                            disabled={busy}
-                          />
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <PaymentsListView
+        isFreelancer={isFreelancer}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        payments={sortedPayments}
+        isLoading={paymentsQuery.isLoading}
+        isError={paymentsQuery.isError}
+        busy={busy}
+        handlers={listHandlers}
+      />
 
       <Modal
         open={requestOpen}
@@ -578,10 +414,7 @@ export default function PaymentsPage() {
             <Button
               type="button"
               disabled={
-                payBusy ||
-                !payFile ||
-                !payTxn.trim() ||
-                payContext == null
+                payBusy || !payFile || !payTxn.trim() || payContext == null
               }
               onClick={async () => {
                 if (!payFile || payContext == null) return;
