@@ -4,19 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import {
-  Bell,
-  X,
-  CreditCard,
-  LayoutGrid,
-  UserRound,
-  FolderKanban,
-  LogOut,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { forceLogout } from "@/lib/forceLogout";
+import { NAV_ITEMS, isNavItemActive } from "./navItems";
 
 type Role = "freelancer" | "client";
 type StoredUser = {
@@ -52,31 +44,16 @@ function normalizeAvatarSrc(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const v = value.trim();
   if (!v) return null;
-  // Allow absolute URLs and same-origin paths.
   if (v.startsWith("http://") || v.startsWith("https://") || v.startsWith("/"))
     return v;
   return null;
 }
 
-const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
-  { label: "Projects", href: "/projects", icon: FolderKanban },
-  { label: "Payments", href: "/payments", icon: CreditCard },
-  { label: "Notifications", href: "/notifications", icon: Bell },
-  { label: "Profile", href: "/profile", icon: UserRound },
-];
-
 export function AppSidebar({
   className,
-  onNavigate,
-  showCloseButton = false,
-  onClose,
   embedded = false,
 }: {
   className?: string;
-  onNavigate?: () => void;
-  showCloseButton?: boolean;
-  onClose?: () => void;
   embedded?: boolean;
 }) {
   const pathname = usePathname();
@@ -127,51 +104,31 @@ export function AppSidebar({
       )}
     >
       <div className="border-b border-border px-3 py-5">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-1">
-            <Image
-              src="/logo.png"
-              alt="WorkBridge logo"
-              width={100}
-              height={100}
-              className="h-22 w-22 object-contain"
-              priority
-            />
-            <div>
-              <h1 className="text-lg font-semibold">WorkBridge</h1>
-              <p className="text-xs text-muted-foreground">
-                {uiRoleLabel}
-              </p>
-            </div>
+        <div className="flex items-center gap-1">
+          <Image
+            src="/logo.png"
+            alt="WorkBridge logo"
+            width={100}
+            height={100}
+            className="h-22 w-22 object-contain"
+            priority
+          />
+          <div>
+            <h1 className="text-lg font-semibold">WorkBridge</h1>
+            <p className="text-xs text-muted-foreground">{uiRoleLabel}</p>
           </div>
-          {showCloseButton ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={onClose}
-              aria-label="Close menu"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          ) : null}
         </div>
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {navItems.map((item) => {
+        {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
-          const isActive =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
+          const isActive = isNavItemActive(pathname, item.href);
 
           return (
             <Link
               key={item.label}
               href={item.href}
-              onClick={onNavigate}
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition",
                 isActive
@@ -202,28 +159,25 @@ export function AppSidebar({
             )}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium">
-              {uiName}
-            </p>
+            <p className="truncate text-sm font-medium">{uiName}</p>
             {mounted && roleLabel ? (
               <p className="text-xs text-muted-foreground">{roleLabel}</p>
             ) : null}
           </div>
         </div>
 
-        <div className="mt-3 flex items-center justify-center gap-3">
+        <div className="mt-3 flex justify-center">
           <Button
             type="button"
-            variant="ghost"
-            size="icon"
-            className="shrink-0 text-muted-foreground"
+            variant="outline"
+            size="sm"
+            className="gap-2 text-muted-foreground"
             onClick={handleLogout}
             aria-label="Log out"
           >
-            <LogOut className="h-4 w-4" onClick={handleLogout} />
+            <LogOut className="h-4 w-4" />
+            Log out
           </Button>
-
-          <AnimatedThemeToggler className="flex-1 justify-center" />
         </div>
       </div>
     </aside>
