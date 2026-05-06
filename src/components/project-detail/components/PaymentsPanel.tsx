@@ -26,6 +26,7 @@ import {
 import { uploadPaymentProofOnly } from "@/lib/apis/files/upload";
 import { canShowFreelancerPaymentProof } from "@/lib/apis/payments/preview";
 import { InvoicePreviewModal } from "@/components/payment/InvoicePreviewModal";
+import { PaymentsPanelTableSkeleton } from "@/components/skeletons";
 import { queryKeys } from "@/lib/queryApi";
 import type { Permissions } from "@/lib/permissions";
 import {
@@ -227,11 +228,7 @@ export function PaymentsPanel({
             </thead>
             <tbody>
               {paymentsLoading ? (
-                <tr>
-                  <td colSpan={5} className="px-4 py-8 text-muted-foreground">
-                    Loading payments…
-                  </td>
-                </tr>
+                <PaymentsPanelTableSkeleton />
               ) : payments.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-12 text-center text-muted-foreground">
@@ -373,11 +370,7 @@ export function PaymentsPanel({
           </thead>
           <tbody>
             {paymentsLoading ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-muted-foreground">
-                  Loading payments…
-                </td>
-              </tr>
+              <PaymentsPanelTableSkeleton />
             ) : completedMilestones.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-4 py-12 text-center text-muted-foreground">

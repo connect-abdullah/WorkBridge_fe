@@ -44,6 +44,7 @@ import type {
 import { useChatSocket } from "@/hooks/useChatSocket";
 import { getStoredUserId, queryKeys } from "@/lib/queryApi";
 import { cn } from "@/lib/utils";
+import { MessagesPanelSkeleton } from "@/components/skeletons";
 import { Modal } from "./Modal";
 
 type PendingMessage = {
@@ -590,10 +591,7 @@ export function MessagesPanel({
           ) : null}
 
           {isInitialLoading ? (
-            <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Loading messages…
-            </div>
+            <MessagesPanelSkeleton />
           ) : loadError ? (
             <p className="py-6 text-center text-sm text-destructive">
               {loadError}

@@ -11,11 +11,12 @@ import {
   type ReactNode,
 } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { CalendarDays, Loader2, Mail, Shield, Sparkles } from "lucide-react";
+import { Loader2, Mail, Shield, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { Button } from "@/components/ui/button";
+import { ProfilePageSkeleton } from "@/components/skeletons";
 import { FormField, inputCls } from "@/components/ui/form-field";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import type { UserRead } from "@/lib/apis/auth/schema";
@@ -256,6 +257,13 @@ export default function ProfilePage() {
       setIsSubmitting(false);
     }
   };
+
+  const showProfileSkeleton =
+    profileQuery.isFetching && !profileQuery.data;
+
+  if (showProfileSkeleton) {
+    return <ProfilePageSkeleton />;
+  }
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 sm:space-y-8">

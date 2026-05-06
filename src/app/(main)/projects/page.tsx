@@ -24,6 +24,7 @@ import type {
 import type { MilestoneStatus } from "@/lib/apis/milestones/schema";
 import { toLocalDateTime } from "@/lib/utils";
 import { usePermissions } from "@/lib/permissions";
+import { ProjectsListSkeleton } from "@/components/skeletons";
 
 type DraftTask = ProjectTaskCreateInput & { _cid: string };
 type DraftMilestone = Omit<ProjectMilestoneCreateInput, "tasks"> & {
@@ -285,7 +286,7 @@ export default function ProjectsPage() {
             Sign in to view your projects.
           </p>
         ) : isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading projects…</p>
+          <ProjectsListSkeleton />
         ) : error ? (
           <p className="text-sm text-destructive">
             {error.message || "Failed to load projects."}

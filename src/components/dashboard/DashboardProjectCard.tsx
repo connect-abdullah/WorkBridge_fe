@@ -72,7 +72,9 @@ export function DashboardProjectCard({
       <footer className="mt-4 flex items-end justify-between text-sm">
         <div>
           <p className="text-xs text-muted-foreground">Due date</p>
-          <p className="font-medium text-foreground">{formatLongDate(dueDate)}</p>
+          <p className="font-medium text-foreground">
+            {formatLongDate(dueDate ?? undefined)}
+          </p>
         </div>
         <div className="text-right">
           <p className="text-xs text-muted-foreground">Total amount</p>

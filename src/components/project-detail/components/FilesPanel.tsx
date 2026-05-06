@@ -31,6 +31,7 @@ import {
 } from "@/lib/apis/files/upload";
 import { updateFile } from "@/lib/apis/files/files";
 import { Modal } from "@/components/project-detail/components/Modal";
+import { FilesListSkeleton } from "@/components/skeletons";
 import type { Permissions } from "@/lib/permissions";
 
 type ApiErrorShape = {
@@ -661,9 +662,7 @@ export function FilesPanel({
 
       <div className="rounded-xl border border-border bg-card shadow-sm">
         {filesQuery.isLoading ? (
-          <p className="px-4 py-8 text-center text-sm text-muted-foreground">
-            Loading files…
-          </p>
+          <FilesListSkeleton />
         ) : filesQuery.error ? (
           <p className="px-4 py-8 text-center text-sm text-destructive">
             {(filesQuery.error as Error).message || "Failed to load files."}

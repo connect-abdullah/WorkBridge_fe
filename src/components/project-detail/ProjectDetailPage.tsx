@@ -54,6 +54,12 @@ import { NotesPanel } from "@/components/project-detail/components/NotesPanel";
 import { PaymentsPanel } from "@/components/project-detail/components/PaymentsPanel";
 import { ActivityPanel } from "@/components/project-detail/components/ActivityPanel";
 import type { ActivityLogRead } from "@/lib/apis/activityLogs/schema";
+import {
+  ActivityFeedSkeleton,
+  MilestoneStepTrackerSkeleton,
+  ProjectDetailHeaderSkeleton,
+  ProjectDetailTabContentSkeleton,
+} from "@/components/skeletons";
 
 function toUiProjectStatus(status?: string): ProjectStatus {
   const s = (status ?? "pending").toLowerCase();
@@ -1264,49 +1270,53 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
             {projectRes.message || "Failed to load project."}
           </p>
         ) : null}
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <h1 className="text-3xl font-semibold text-foreground">
-            {projectSummary.title}
-          </h1>
-          <div className="flex items-center gap-2">
-            <StatusBadge status={projectSummary.status} />
-            {projectPermissions.canEditProject ? (
-              <button
-                type="button"
-                onClick={openProjectModal}
-                className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-card px-3 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
-              >
-                <Pencil className="h-4 w-4" />
-                Edit
-              </button>
-            ) : null}
-          </div>
-        </div>
-        <p className="max-w-3xl text-sm text-muted-foreground">
-          {projectSummary.description}
-        </p>
-        <div className="flex flex-wrap gap-6 text-sm">
-          <span>
-            <span className="text-muted-foreground">Start:</span>{" "}
-            {projectSummary.startDate}
-          </span>
-          <span>
-            <span className="text-muted-foreground">End:</span>{" "}
-            {projectSummary.endDate}
-          </span>
-          <span>
-            <span className="text-muted-foreground">Budget:</span>{" "}
-            {projectSummary.paidAmount} paid / {projectSummary.totalAmount}{" "}
-            total
-          </span>
-        </div>
+        {isProjectLoading ? (
+          <ProjectDetailHeaderSkeleton />
+        ) : (
+          <>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <h1 className="text-3xl font-semibold text-foreground">
+                {projectSummary.title}
+              </h1>
+              <div className="flex items-center gap-2">
+                <StatusBadge status={projectSummary.status} />
+                {projectPermissions.canEditProject ? (
+                  <button
+                    type="button"
+                    onClick={openProjectModal}
+                    className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-card px-3 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Edit
+                  </button>
+                ) : null}
+              </div>
+            </div>
+            <p className="max-w-3xl text-sm text-muted-foreground">
+              {projectSummary.description}
+            </p>
+            <div className="flex flex-wrap gap-6 text-sm">
+              <span>
+                <span className="text-muted-foreground">Start:</span>{" "}
+                {projectSummary.startDate}
+              </span>
+              <span>
+                <span className="text-muted-foreground">End:</span>{" "}
+                {projectSummary.endDate}
+              </span>
+              <span>
+                <span className="text-muted-foreground">Budget:</span>{" "}
+                {projectSummary.paidAmount} paid / {projectSummary.totalAmount}{" "}
+                total
+              </span>
+            </div>
+          </>
+        )}
       </header>
 
       {/* ── Milestone Step Tracker ─────────────────────── */}
       {isProjectLoading ? (
-        <p className="text-sm text-muted-foreground">
-          Loading project details…
-        </p>
+        <MilestoneStepTrackerSkeleton />
       ) : (
         <MilestoneStepTracker milestoneItems={sortedMilestones} />
       )}
@@ -1318,11 +1328,12 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
             <button
               key={tab}
               type="button"
+              disabled={isProjectLoading}
               onClick={() => {
                 setActiveTab(tab);
                 setMeetingNotesId(null);
               }}
-              className={`rounded-md px-3 py-2 text-sm font-medium whitespace-nowrap transition ${
+              className={`rounded-md px-3 py-2 text-sm font-medium whitespace-nowrap transition disabled:pointer-events-none disabled:opacity-50 ${
                 activeTab === tab
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -1334,9 +1345,11 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         </div>
       </div>
 
+      {isProjectLoading ? <ProjectDetailTabContentSkeleton /> : null}
+
       {/* ═══════════════════════════ TAB PANELS ═══════════════════════════ */}
 
-      {activeTab === "Overview" ? (
+      {!isProjectLoading && activeTab === "Overview" ? (
         <OverviewPanel
           summary={projectSummary}
           nextMilestone={nextMilestone}
@@ -1345,7 +1358,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         />
       ) : null}
 
-      {activeTab === "Milestones" ? (
+      {!isProjectLoading && activeTab === "Milestones" ? (
         <MilestonesPanel
           permissions={projectPermissions}
           milestones={sortedMilestones}
@@ -1616,18 +1629,18 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         </div>
       </Modal>
 
-      {activeTab === "Files" ? (
+      {!isProjectLoading && activeTab === "Files" ? (
         <FilesPanel
           projectId={numericProjectId}
           permissions={projectPermissions}
         />
       ) : null}
 
-      {activeTab === "Messages" ? (
+      {!isProjectLoading && activeTab === "Messages" ? (
         <MessagesPanel projectId={numericProjectId} access={messagesAccess} />
       ) : null}
 
-      {activeTab === "Meetings" ? (
+      {!isProjectLoading && activeTab === "Meetings" ? (
         <MeetingsPanel
           permissions={projectPermissions}
           projectId={numericProjectId}
@@ -1650,14 +1663,14 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         />
       ) : null}
 
-      {activeTab === "Notes" ? (
+      {!isProjectLoading && activeTab === "Notes" ? (
         <NotesPanel
           projectId={numericProjectId}
           meetingId={meetingNotesId ? Number(meetingNotesId) : undefined}
         />
       ) : null}
 
-      {activeTab === "Payments" ? (
+      {!isProjectLoading && activeTab === "Payments" ? (
         <PaymentsPanel
           projectId={numericProjectId}
           payments={paymentsQuery.data?.data ?? []}
@@ -1667,9 +1680,9 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         />
       ) : null}
 
-      {activeTab === "Activity" ? (
+      {!isProjectLoading && activeTab === "Activity" ? (
         activityLogsQuery.isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading activity…</p>
+          <ActivityFeedSkeleton />
         ) : activityLogsQuery.error ? (
           <p className="text-sm text-destructive">
             {activityLogsQuery.error.message || "Failed to load activity."}

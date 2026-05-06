@@ -11,6 +11,10 @@ import { cn } from "@/lib/utils";
 import type { PaymentRead } from "@/lib/apis/payments/schema";
 import { canShowFreelancerPaymentProof } from "@/lib/apis/payments/preview";
 import {
+  PaymentsMobileSkeletonList,
+  PaymentsTableSkeletonRows,
+} from "@/components/skeletons";
+import {
   formatDate,
   formatMoney,
   getPaymentBadge,
@@ -305,35 +309,6 @@ const PaymentDesktopRow = memo(function PaymentDesktopRow({
   );
 });
 
-function TableSkeleton({ colCount }: { colCount: number }) {
-  return (
-    <>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <tr key={i} className="border-b border-border/40">
-          {Array.from({ length: colCount }).map((_, j) => (
-            <td key={j} className="px-4 py-4">
-              <div className="h-4 animate-pulse rounded-md bg-muted/70" />
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
-  );
-}
-
-function CardSkeletonList() {
-  return (
-    <div className="space-y-3">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div
-          key={i}
-          className="h-40 animate-pulse rounded-2xl border border-border/50 bg-muted/30"
-        />
-      ))}
-    </div>
-  );
-}
-
 export const PaymentsListView = memo(function PaymentsListView({
   isFreelancer,
   sortBy,
@@ -385,7 +360,7 @@ export const PaymentsListView = memo(function PaymentsListView({
 
       <div className="p-3 md:hidden">
         {isLoading ? (
-          <CardSkeletonList />
+          <PaymentsMobileSkeletonList />
         ) : isError ? (
           <div className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-10 text-center text-sm text-destructive">
             Could not load payments. Try refreshing the page.
@@ -433,7 +408,7 @@ export const PaymentsListView = memo(function PaymentsListView({
           </thead>
           <tbody>
             {isLoading ? (
-              <TableSkeleton colCount={colCount} />
+              <PaymentsTableSkeletonRows colCount={colCount} />
             ) : isError ? (
               <tr>
                 <td

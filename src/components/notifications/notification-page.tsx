@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * When notifications are loaded via React Query, show
+ * `NotificationsPageSkeleton` from `@/components/skeletons` while
+ * `isPending && !data`.
+ */
+
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, CheckCircle2, MessageSquareText, Wallet } from "lucide-react";

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { NotesEditorSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import { createNote, updateNote } from "@/lib/apis/notes/notes";
 import type { NoteRead } from "@/lib/apis/notes/schema";
@@ -118,7 +119,7 @@ export function NotesEditor({
   }
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Loading notes…</p>;
+    return <NotesEditorSkeleton />;
   }
 
   if (error) {

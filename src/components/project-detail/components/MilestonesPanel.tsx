@@ -135,10 +135,10 @@ export function MilestonesPanel({
   };
 
   return (
-    <section className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-        <div className="flex w-full items-center gap-2 sm:w-auto">
-          <span className="text-xs font-medium text-muted-foreground">
+    <section className="w-full min-w-0 max-w-full space-y-4 pr-[max(0px,env(safe-area-inset-right))]">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="flex min-w-0 max-w-full items-center gap-2 sm:max-w-[min(100%,18rem)]">
+          <span className="shrink-0 text-xs font-medium text-muted-foreground">
             Sort
           </span>
           <select
@@ -146,7 +146,7 @@ export function MilestonesPanel({
             onChange={(e) =>
               onSortChange(e.target.value as "dueDate" | "order")
             }
-            className={`${selectCls} min-w-0 flex-1 sm:flex-none sm:min-w-[8.5rem]`}
+            className={`${selectCls} min-w-0 max-w-full flex-1 sm:flex-1 sm:basis-0`}
             aria-label="Sort milestones"
           >
             <option value="dueDate">Due date</option>
@@ -173,7 +173,7 @@ export function MilestonesPanel({
           return (
             <article
               key={milestone.id}
-              className="rounded-xl border border-border bg-card p-4 shadow-sm"
+              className="min-w-0 max-w-full rounded-xl border border-border bg-card p-4 shadow-sm"
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 flex-1">
