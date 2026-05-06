@@ -13,8 +13,10 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "./Modal";
 import { FormField, inputCls } from "@/components/ui/form-field";
 import { NotesEditor } from "./NotesEditor";
+import type { Permissions } from "@/lib/permissions";
 
 export function MeetingsPanel({
+  permissions,
   projectId,
   meetings,
   meetingNotesId,
@@ -33,6 +35,7 @@ export function MeetingsPanel({
   setMtDescription,
   onMeetingSubmit,
 }: {
+  permissions: Permissions;
   projectId: number;
   meetings: Meeting[];
   meetingNotesId: string | null;
@@ -86,12 +89,14 @@ export function MeetingsPanel({
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-foreground">Meetings</h2>
-            <Button
-              className="h-10"
-              onClick={() => onOpenMeetingForm("create")}
-            >
-              <Plus className="mr-1.5 h-4 w-4" /> Create Meeting
-            </Button>
+            {permissions.canEditProject ? (
+              <Button
+                className="h-10"
+                onClick={() => onOpenMeetingForm("create")}
+              >
+                <Plus className="mr-1.5 h-4 w-4" /> Create Meeting
+              </Button>
+            ) : null}
           </div>
 
           <div className="space-y-3">
@@ -134,15 +139,17 @@ export function MeetingsPanel({
                     <ExternalLink className="h-4 w-4" />
                   </a>
 
-                  <button
-                    type="button"
-                    onClick={() => onOpenMeetingForm("edit", meeting)}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                    aria-label="Edit meeting"
-                    title="Edit Meeting"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
+                  {permissions.canEditProject ? (
+                    <button
+                      type="button"
+                      onClick={() => onOpenMeetingForm("edit", meeting)}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                      aria-label="Edit meeting"
+                      title="Edit Meeting"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  ) : null}
                 </div>
               </article>
             ))}

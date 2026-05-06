@@ -227,20 +227,15 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
   const isProjectFreelancer = useMemo(() => {
     const uid = getStoredUserId();
     if (uid == null || !projectDetail) return false;
-    return projectDetail.freelancer_id === uid;
+    return Number(projectDetail.freelancer_id) === uid;
   }, [projectDetail]);
 
   const isProjectClient = useMemo(() => {
     const uid = getStoredUserId();
     if (uid == null || !projectDetail) return false;
-    return projectDetail.client_id === uid;
+    return Number(projectDetail.client_id) === uid;
   }, [projectDetail]);
 
-  // Derive permissions from the actor's project-scoped role. Stays server-safe:
-  // defaults to the more restrictive "client" permissions only when we have
-  // confirmed the actor is the project's client. Freelancer permissions are the
-  // default so other viewers (rare) can't act. `usePermissions` (localStorage)
-  // is intentionally not used here — project role always wins.
   const projectPermissions = useMemo(() => {
     if (isProjectClient) return getPermissionsFor("client");
     return getPermissionsFor("freelancer");
@@ -1622,7 +1617,10 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       </Modal>
 
       {activeTab === "Files" ? (
-        <FilesPanel projectId={numericProjectId} />
+        <FilesPanel
+          projectId={numericProjectId}
+          permissions={projectPermissions}
+        />
       ) : null}
 
       {activeTab === "Messages" ? (
@@ -1631,6 +1629,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
       {activeTab === "Meetings" ? (
         <MeetingsPanel
+          permissions={projectPermissions}
           projectId={numericProjectId}
           meetings={meetings}
           meetingNotesId={meetingNotesId}
@@ -1664,8 +1663,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
           payments={paymentsQuery.data?.data ?? []}
           paymentsLoading={paymentsQuery.isLoading}
           completedMilestones={completedMilestones}
-          isFreelancer={isProjectFreelancer}
-          isClient={isProjectClient}
+          permissions={projectPermissions}
         />
       ) : null}
 

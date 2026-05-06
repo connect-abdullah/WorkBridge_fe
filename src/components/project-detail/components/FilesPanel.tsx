@@ -31,6 +31,7 @@ import {
 } from "@/lib/apis/files/upload";
 import { updateFile } from "@/lib/apis/files/files";
 import { Modal } from "@/components/project-detail/components/Modal";
+import type { Permissions } from "@/lib/permissions";
 
 type ApiErrorShape = {
   response?: {
@@ -103,8 +104,10 @@ function formatDate(value: unknown): string {
 
 export function FilesPanel({
   projectId,
+  permissions,
 }: {
   projectId: number;
+  permissions: Permissions;
 }) {
   const updateTitleId = useId();
   const linkTitleId = useId();
@@ -528,7 +531,12 @@ export function FilesPanel({
       />
 
       <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center shadow-sm">
-        {!pendingFile ? (
+        {!permissions.canEditProject ? (
+          <p className="text-sm text-muted-foreground">
+            Files shared on this project are listed below. Uploads are managed by
+            the freelancer.
+          </p>
+        ) : !pendingFile ? (
           <>
             <p className="font-medium text-foreground">
               Drag and drop files here
@@ -694,22 +702,26 @@ export function FilesPanel({
                     <Download className="h-4 w-4" />
                   )}
                 </button>
-                <button
-                  type="button"
-                  className="rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                  aria-label={`Edit ${file.file_name}`}
-                  onClick={() => openUpdateModal(file)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDeleteTarget(file)}
-                  className="rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-destructive"
-                  aria-label={`Delete ${file.file_name}`}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                {permissions.canEditProject ? (
+                  <button
+                    type="button"
+                    className="rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                    aria-label={`Edit ${file.file_name}`}
+                    onClick={() => openUpdateModal(file)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                ) : null}
+                {permissions.canEditProject ? (
+                  <button
+                    type="button"
+                    onClick={() => setDeleteTarget(file)}
+                    className="rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-destructive"
+                    aria-label={`Delete ${file.file_name}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                ) : null}
               </div>
               </div>
             ))}

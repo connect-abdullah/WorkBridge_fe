@@ -1,25 +1,186 @@
 "use client";
 
-import { ProjectCard } from "@/components/dashboard/ProjectCard";
+import { DashboardProjectCard } from "@/components/dashboard/DashboardProjectCard";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { StatCard } from "@/components/dashboard/StatCard";
-import {
-  clientDashboardActivities,
-  clientDashboardProjects,
-  clientDashboardStats,
-  dashboardActivities,
-  dashboardProjects,
-  dashboardStats,
-} from "@/constants/dashboard";
 import { useRole } from "@/lib/permissions";
+import {
+  isClientDashboardKeyMetrics,
+  isFreelancerDashboardKeyMetrics,
+} from "@/lib/apis/dashboard/schema";
+import { useQuery } from "@tanstack/react-query";
+import { queryApi } from "@/lib/queryApi";
+import {
+  CheckCircle2,
+  Clock4,
+  FolderKanban,
+  ListChecks,
+  ReceiptText,
+  Wallet,
+  Activity as ActivityIcon,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+function formatMoney(amount: number) {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return `$${amount}`;
+  }
+}
+
+function formatActivityTimestamp(isoLike: string) {
+  const d = new Date(isoLike);
+  if (Number.isNaN(d.getTime())) return isoLike;
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default function DashboardPage() {
   const role = useRole();
   const isClient = role === "client";
 
-  const stats = isClient ? clientDashboardStats : dashboardStats;
-  const projects = isClient ? clientDashboardProjects : dashboardProjects;
-  const activities = isClient ? clientDashboardActivities : dashboardActivities;
+  const { data: res, isLoading } = useQuery(queryApi.dashboard.summary());
+  const data = res?.data ?? null;
+  const metrics = data?.key_metrics ?? null;
+
+  type StatRow = {
+    title: string;
+    value: string;
+    hint: string;
+    icon: LucideIcon;
+  };
+
+  let stats: readonly StatRow[];
+  if (isClientDashboardKeyMetrics(metrics)) {
+    stats = [
+      {
+        title: "Total Spend",
+        value: formatMoney(metrics.total_spent),
+        hint: "Lifetime on WorkBridge",
+        icon: Wallet,
+      },
+      {
+        title: "Active Projects",
+        value: String(metrics.active_projects),
+        hint: "Across your projects",
+        icon: FolderKanban,
+      },
+      {
+        title: "Pending Payments",
+        value: String(metrics.pending_payments),
+        hint: "Awaiting your action",
+        icon: ReceiptText,
+      },
+      {
+        title: "Milestones to approve",
+        value: String(metrics.milestones_to_approve),
+        hint: "Your review unlocks the next phase",
+        icon: ListChecks,
+      },
+    ];
+  } else if (isFreelancerDashboardKeyMetrics(metrics)) {
+    stats = [
+      {
+        title: "Active Projects",
+        value: String(metrics.active_projects),
+        hint: "Currently in progress",
+        icon: FolderKanban,
+      },
+      {
+        title: "Total Earnings",
+        value: formatMoney(metrics.total_earnings),
+        hint: "All-time",
+        icon: Wallet,
+      },
+      {
+        title: "Pending Approvals",
+        value: String(metrics.approval_pending_milestones),
+        hint: "Milestones awaiting client review",
+        icon: Clock4,
+      },
+      {
+        title: "Completed Projects",
+        value: String(metrics.completed_projects),
+        hint: "Delivered",
+        icon: CheckCircle2,
+      },
+    ];
+  } else {
+    stats = isClient
+      ? [
+          {
+            title: "Total Spend",
+            value: "—",
+            hint: "Lifetime on WorkBridge",
+            icon: Wallet,
+          },
+          {
+            title: "Active Projects",
+            value: "—",
+            hint: "Across your projects",
+            icon: FolderKanban,
+          },
+          {
+            title: "Pending Payments",
+            value: "—",
+            hint: "Awaiting your action",
+            icon: ReceiptText,
+          },
+          {
+            title: "Milestones to approve",
+            value: "—",
+            hint: "Your review unlocks the next phase",
+            icon: ListChecks,
+          },
+        ]
+      : [
+          {
+            title: "Active Projects",
+            value: "—",
+            hint: "Currently in progress",
+            icon: FolderKanban,
+          },
+          {
+            title: "Total Earnings",
+            value: "—",
+            hint: "All-time",
+            icon: Wallet,
+          },
+          {
+            title: "Pending Approvals",
+            value: "—",
+            hint: "Milestones awaiting client review",
+            icon: Clock4,
+          },
+          {
+            title: "Completed Projects",
+            value: "—",
+            hint: "Delivered",
+            icon: CheckCircle2,
+          },
+        ];
+  }
+
+  const projects = data?.projects ?? [];
+
+  const activities = (data?.activity_log ?? []).map((a, idx) => ({
+    id: `${a.timestamp}-${idx}`,
+    icon: ActivityIcon,
+    title: a.activity,
+    project: a.project_name,
+    by: a.user_name,
+    timestamp: formatActivityTimestamp(a.timestamp),
+  }));
 
   return (
     <div className="space-y-6">
@@ -47,17 +208,20 @@ export default function DashboardPage() {
               {isClient ? "Your projects" : "Projects"}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {isClient
-                ? "Open projects with your freelancers"
-                : "3 active projects"}
+              {isLoading
+                ? "Loading projects…"
+                : `${projects.length} project${projects.length === 1 ? "" : "s"}`}
             </p>
           </div>
           <div className="flex flex-col space-y-3">
             {projects.map((project, index) => (
-              <ProjectCard
-                key={project.title}
-                {...project}
-                partnerKind={isClient ? "freelancer" : "client"}
+              <DashboardProjectCard
+                key={`${project.title}-${index}`}
+                title={project.title}
+                description={project.description}
+                totalAmount={project.total_amount}
+                progressPercentage={project.progress_percentage}
+                dueDate={project.due_date ?? undefined}
                 href={`/projects/${index + 1}`}
               />
             ))}

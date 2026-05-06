@@ -314,6 +314,7 @@ export default function ProjectsPage() {
               <ProjectCard
                 key={project.id}
                 title={project.title}
+                description={project.description}
                 clientName={
                   project.client_id != null && project.client_id > 0
                     ? `Client #${project.client_id}`

@@ -27,6 +27,7 @@ import { uploadPaymentProofOnly } from "@/lib/apis/files/upload";
 import { canShowFreelancerPaymentProof } from "@/lib/apis/payments/preview";
 import { InvoicePreviewModal } from "@/components/payment/InvoicePreviewModal";
 import { queryKeys } from "@/lib/queryApi";
+import type { Permissions } from "@/lib/permissions";
 import {
   clientCanSubmitPaymentProof,
   clientPaymentStatusDisplay,
@@ -68,15 +69,13 @@ export function PaymentsPanel({
   payments,
   paymentsLoading,
   completedMilestones,
-  isFreelancer,
-  isClient,
+  permissions,
 }: {
   projectId: number;
   payments: PaymentRead[];
   paymentsLoading: boolean;
   completedMilestones: Milestone[];
-  isFreelancer: boolean;
-  isClient: boolean;
+  permissions: Permissions;
 }) {
   const queryClient = useQueryClient();
   const detailKey = queryKeys.projects.detail(projectId);
@@ -203,7 +202,7 @@ export function PaymentsPanel({
     failMut.isPending ||
     payBusy;
 
-  if (!isFreelancer && !isClient) {
+  if (!permissions.canPayPayment && !permissions.canRequestPayment) {
     return (
       <section className="overflow-hidden rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm">
         Only the freelancer or assigned client can manage milestone payments for this
@@ -212,7 +211,7 @@ export function PaymentsPanel({
     );
   }
 
-  if (isClient) {
+  if (permissions.canPayPayment) {
     return (
       <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         <div className="overflow-x-auto">
@@ -405,11 +404,15 @@ export function PaymentsPanel({
                       {!p ? (
                         <span className="text-xs text-muted-foreground">—</span>
                       ) : p.payment_status === "pending" ? (
-                        <PaymentActionButton
-                          label="Request Payment"
-                          onClick={() => openRequest(p.id)}
-                          disabled={busy}
-                        />
+                        permissions.canRequestPayment ? (
+                          <PaymentActionButton
+                            label="Request Payment"
+                            onClick={() => openRequest(p.id)}
+                            disabled={busy}
+                          />
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )
                       ) : (
                         <div className="flex flex-wrap items-center gap-2">
                           {canShowFreelancerPaymentProof(p) ? (
@@ -433,17 +436,21 @@ export function PaymentsPanel({
                           ) : null}
                           {p.payment_status === "submitted" ? (
                             <>
-                              <PaymentActionButton
-                                label="Approve"
-                                onClick={() => approveMut.mutate(p.id)}
-                                disabled={busy}
-                              />
-                              <PaymentActionButton
-                                label="Not approve"
-                                variant="destructive"
-                                onClick={() => openFail(p.id)}
-                                disabled={busy}
-                              />
+                              {permissions.canApprovePayment ? (
+                                <PaymentActionButton
+                                  label="Approve"
+                                  onClick={() => approveMut.mutate(p.id)}
+                                  disabled={busy}
+                                />
+                              ) : null}
+                              {permissions.canFailPayment ? (
+                                <PaymentActionButton
+                                  label="Not approve"
+                                  variant="destructive"
+                                  onClick={() => openFail(p.id)}
+                                  disabled={busy}
+                                />
+                              ) : null}
                             </>
                           ) : !canShowFreelancerPaymentProof(p) ? (
                             <span className="text-xs text-muted-foreground">—</span>

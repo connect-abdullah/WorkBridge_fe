@@ -43,6 +43,8 @@ import { createMeeting, deleteMeeting, listMeetingsByProject, updateMeeting } fr
 import type { MeetingCreate, MeetingRead, MeetingUpdate } from "@/lib/apis/meetings/schema";
 import { listActivityLogsByProjectId } from "@/lib/apis/activityLogs/activityLogs";
 import type { ActivityLogRead } from "@/lib/apis/activityLogs/schema";
+import { getDashboardSummary } from "@/lib/apis/dashboard/dashboard";
+import type { DashboardSummary } from "@/lib/apis/dashboard/schema";
 import { createFile, listFilesByProjectId, updateFile, deleteFile } from "@/lib/apis/files/files";
 import type { FileCreate, FileRead, FileUpdate } from "@/lib/apis/files/schema";
 import {
@@ -95,6 +97,9 @@ export function getStoredUserId(): number | null {
 // =============================================================================
 
 export const queryKeys = {
+  dashboard: {
+    summary: ["dashboard", "summary"] as const,
+  },
   projects: {
     all: ["projects"] as const,
     listForUser: (userId: number) =>
@@ -137,6 +142,15 @@ export const queryApi = {
   // -----------------------------
   // Queries
   // -----------------------------
+  dashboard: {
+    summary: (
+      cacheConfig?: CacheConfig,
+    ): UseQueryOptions<APIResponse<DashboardSummary>, Error> => ({
+      queryKey: queryKeys.dashboard.summary,
+      queryFn: () => getDashboardSummary(),
+      ...cache(cacheConfig),
+    }),
+  },
   projects: {
     listForUser: (
       userId: number,
