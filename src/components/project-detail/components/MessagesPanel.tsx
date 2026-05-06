@@ -174,7 +174,7 @@ function MessageWithFileTokens({
             onClick={() => onFileClick(part)}
             title={`Open ${part.file_name}`}
             className={cn(
-              "mx-0.5 inline-flex max-w-[min(240px,72vw)] cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 text-left text-xs font-medium align-middle transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1",
+              "mx-0.5 inline-flex max-w-[min(70%,11rem)] cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 text-left text-xs font-medium align-middle transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 sm:max-w-[min(240px,72vw)]",
               variant === "sent"
                 ? "bg-white/20 text-primary-foreground ring-1 ring-white/35 hover:bg-white/28 focus-visible:ring-white/80 focus-visible:ring-offset-primary"
                 : "bg-muted/90 text-foreground shadow-sm ring-1 ring-border/70 hover:bg-muted focus-visible:ring-primary/40 focus-visible:ring-offset-background",
@@ -556,8 +556,8 @@ export function MessagesPanel({
 
   return (
     <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-      <div className="flex h-[500px] flex-col">
-        <div className="border-b border-border px-4 py-3">
+      <div className="flex h-[min(42rem,calc(100dvh-6rem-env(safe-area-inset-bottom,0px)))] flex-col sm:h-[500px]">
+        <div className="shrink-0 border-b border-border px-3 py-2.5 sm:px-4 sm:py-3">
           <h3 className="text-sm font-semibold text-foreground">Messages</h3>
           <p className="text-xs text-muted-foreground">{headerHint}</p>
         </div>
@@ -566,7 +566,7 @@ export function MessagesPanel({
           <>
         <div
           ref={messagesContainerRef}
-          className="min-h-0 flex-1 space-y-2.5 overflow-y-auto bg-muted/20 p-4"
+          className="min-h-0 flex-1 space-y-2.5 overflow-y-auto bg-muted/20 p-3 sm:p-4"
         >
           {nextCursor != null ? (
             <div className="flex justify-center pb-2">
@@ -614,7 +614,7 @@ export function MessagesPanel({
               >
                 <div
                   className={cn(
-                    "max-w-[min(78%,520px)] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+                    "max-w-[min(78%,15rem)] rounded-2xl px-3 py-2 text-sm leading-relaxed sm:max-w-[min(78%,520px)] sm:px-3.5 sm:py-2.5",
                     isSelf
                       ? "rounded-br-md bg-primary text-primary-foreground shadow-md"
                       : "rounded-bl-md border border-border/80 bg-card text-foreground shadow-md ring-1 ring-black/[0.04] dark:ring-white/[0.06]",
@@ -659,7 +659,7 @@ export function MessagesPanel({
             <div key={item.clientKey} className="flex w-full flex-col items-end gap-1">
               <div
                 className={cn(
-                  "max-w-[min(78%,520px)] rounded-2xl rounded-br-md px-3.5 py-2.5 text-sm leading-relaxed shadow-md",
+                  "max-w-[min(78%,15rem)] rounded-2xl rounded-br-md px-3 py-2 text-sm leading-relaxed shadow-md sm:max-w-[min(78%,520px)] sm:px-3.5 sm:py-2.5",
                   item.status === "failed"
                     ? "bg-destructive/10 text-foreground ring-1 ring-destructive/40"
                     : "bg-primary text-primary-foreground",
@@ -693,9 +693,12 @@ export function MessagesPanel({
           ))}
         </div>
 
-        <form onSubmit={onSubmit} className="relative border-t border-border p-3">
+        <form
+          onSubmit={onSubmit}
+          className="relative shrink-0 border-t border-border p-2 sm:p-3"
+        >
           {fileMenuOpen && slashState ? (
-            <div className="absolute bottom-[64px] left-3 z-20 w-[min(420px,calc(100%-24px))] overflow-hidden rounded-xl border border-border bg-card shadow-lg">
+            <div className="absolute bottom-[56px] left-2 right-2 z-20 w-auto overflow-hidden rounded-xl border border-border bg-card shadow-lg sm:bottom-[64px] sm:left-3 sm:right-auto sm:w-[min(420px,calc(100%-24px))]">
               <div className="flex items-center justify-between border-b border-border px-3 py-2">
                 <span className="text-xs font-medium text-muted-foreground">Files</span>
                 {isFetchingFiles ? (
@@ -743,7 +746,7 @@ export function MessagesPanel({
             onChange={onUploadFile}
           />
 
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
             <Button
               type="button"
               variant="outline"
@@ -767,15 +770,16 @@ export function MessagesPanel({
                 if (getSlashQuery(draft, cachedFiles)) openFileMenu();
               }}
               placeholder="Message… type / to tag a file"
-              className="h-10 flex-1 rounded-full border border-input bg-background px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="h-10 min-w-0 flex-1 rounded-full border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 sm:px-4"
             />
             <Button
               type="submit"
-              className="h-10 rounded-full px-4"
+              className="h-10 shrink-0 rounded-full px-3 sm:px-4"
               disabled={!draft.trim()}
+              aria-label="Send message"
             >
-              <Send className="mr-1.5 h-4 w-4" />
-              Send
+              <Send className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Send</span>
             </Button>
           </div>
         </form>
@@ -797,10 +801,10 @@ export function MessagesPanel({
               </p>
             </div>
             <form
-              className="pointer-events-none border-t border-border p-3 opacity-40"
+              className="pointer-events-none border-t border-border p-2 opacity-40 sm:p-3"
               onSubmit={(e) => e.preventDefault()}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
                 <Button
                   type="button"
                   variant="outline"
@@ -814,12 +818,16 @@ export function MessagesPanel({
                 <input
                   readOnly
                   disabled
-                  className="h-10 flex-1 cursor-not-allowed rounded-full border border-input bg-background px-4 text-sm opacity-60"
+                  className="h-10 min-w-0 flex-1 cursor-not-allowed rounded-full border border-input bg-background px-3 text-sm opacity-60 sm:px-4"
                   placeholder="Messaging locked"
                 />
-                <Button type="button" className="h-10 rounded-full px-4" disabled>
-                  <Send className="mr-1.5 h-4 w-4" />
-                  Send
+                <Button
+                  type="button"
+                  className="h-10 shrink-0 rounded-full px-3 sm:px-4"
+                  disabled
+                >
+                  <Send className="h-4 w-4 sm:mr-1.5" />
+                  <span className="hidden sm:inline">Send</span>
                 </Button>
               </div>
             </form>

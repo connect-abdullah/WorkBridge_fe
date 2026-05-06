@@ -392,6 +392,60 @@ export function FilesPanel({
     }
   };
 
+  const openOrDownloadFile = (file: FileRead) => {
+    if (file.file_type === "link") {
+      const url = toValidUrl(file.file_path);
+      if (!url) {
+        toast.error("Invalid link.");
+        return;
+      }
+      window.open(url, "_blank", "noopener,noreferrer");
+      return;
+    }
+    void downloadFile(file);
+  };
+
+  const fileRowActions = (file: FileRead) => (
+    <>
+      <button
+        type="button"
+        className="rounded-md p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:p-1.5"
+        aria-label={
+          file.file_type === "link"
+            ? `Go to ${file.file_name}`
+            : `Download ${file.file_name}`
+        }
+        onClick={() => openOrDownloadFile(file)}
+      >
+        {file.file_type === "link" ? (
+          <ExternalLink className="h-4 w-4" />
+        ) : (
+          <Download className="h-4 w-4" />
+        )}
+      </button>
+      {permissions.canEditProject ? (
+        <button
+          type="button"
+          className="rounded-md p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground sm:p-1.5"
+          aria-label={`Edit ${file.file_name}`}
+          onClick={() => openUpdateModal(file)}
+        >
+          <Pencil className="h-4 w-4" />
+        </button>
+      ) : null}
+      {permissions.canEditProject ? (
+        <button
+          type="button"
+          onClick={() => setDeleteTarget(file)}
+          className="rounded-md p-2 text-muted-foreground transition hover:bg-muted hover:text-destructive sm:p-1.5"
+          aria-label={`Delete ${file.file_name}`}
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      ) : null}
+    </>
+  );
+
   return (
     <section className="space-y-4">
       <AlertModal
@@ -530,7 +584,7 @@ export function FilesPanel({
         onChange={onFileSelected}
       />
 
-      <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center shadow-sm">
+      <div className="rounded-xl border border-dashed border-border bg-card p-4 text-center shadow-sm sm:p-8">
         {!permissions.canEditProject ? (
           <p className="text-sm text-muted-foreground">
             Files shared on this project are listed below. Uploads are managed by
@@ -605,7 +659,7 @@ export function FilesPanel({
         )}
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+      <div className="rounded-xl border border-border bg-card shadow-sm">
         {filesQuery.isLoading ? (
           <p className="px-4 py-8 text-center text-sm text-muted-foreground">
             Loading files…
@@ -620,111 +674,90 @@ export function FilesPanel({
           </p>
         ) : (
           <>
-            <div className="grid min-w-[680px] items-center gap-3 border-b border-border bg-muted/30 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground md:grid-cols-[1.4fr_0.6fr_0.9fr_0.9fr_auto]">
-              <div className="flex min-w-0 items-center gap-2">
-                <span
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm border border-border bg-muted/40 opacity-0"
-                  aria-hidden="true"
-                />
-                <span className="min-w-0 truncate">Name</span>
-              </div>
-              <span>Type</span>
-              <span>Uploaded Date</span>
-              <span>Uploaded By</span>
-              <div className="flex justify-end">
-                <span>Actions</span>
-              </div>
-            </div>
-
-            {rows.map((file, i) => (
-              <div
-                key={String(file.id)}
-                className={`grid min-w-[680px] items-center gap-3 px-4 py-3 text-sm md:grid-cols-[1.4fr_0.6fr_0.9fr_0.9fr_auto] ${
-                  i !== rows.length - 1 ? "border-b border-border" : ""
-                }`}
-              >
-                <div className="flex min-w-0 items-center gap-2">
-                  {(() => {
-                    const Icon = getFileRowIcon(file);
-                    return (
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm border border-border bg-muted/40 text-muted-foreground">
+            <div className="md:hidden">
+              {rows.map((file) => {
+                const Icon = getFileRowIcon(file);
+                return (
+                  <div
+                    key={String(file.id)}
+                    className="space-y-3 border-b border-border p-4 last:border-b-0"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-muted/40 text-muted-foreground">
                         <Icon className="h-4 w-4" />
                       </span>
-                    );
-                  })()}
-                  <p className="min-w-0 truncate font-medium text-foreground">
-                    {file.file_name}
-                  </p>
+                      <div className="min-w-0 flex-1">
+                        <p className="break-words font-medium text-foreground">
+                          {file.file_name}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground capitalize">
+                          {file.file_type}
+                          <span className="mx-1.5 text-border">·</span>
+                          {formatDate(file.created_at)}
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground capitalize">
+                          {file.uploaded_user}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-end gap-1 border-t border-border/60 pt-3">
+                      {fileRowActions(file)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="hidden overflow-x-auto md:block">
+              <div className="grid min-w-[640px] items-center gap-3 border-b border-border bg-muted/30 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground md:grid-cols-[1.4fr_0.6fr_0.9fr_0.9fr_auto]">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span
+                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm border border-border bg-muted/40 opacity-0"
+                    aria-hidden="true"
+                  />
+                  <span className="min-w-0 truncate">Name</span>
                 </div>
-                <p className="text-muted-foreground capitalize">{file.file_type}</p>
-                <p className="text-muted-foreground">
-                  {formatDate(file.created_at)}
-                </p>
-                <p className="text-muted-foreground capitalize">
-                  {file.uploaded_user}
-                </p>
-                <div className="flex items-center justify-end gap-1.5">
-                {/* {file.file_type === "image" && (
-                  <button
-                    type="button"
-                    className="rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-primary"
-                    aria-label={`Preview ${file.file_name}`}
-                    onClick={() => window.open(file.file_path, "_blank", "noopener,noreferrer")}
-                  >
-                    <EyeIcon className="h-4 w-4" />
-                  </button>
-                )}
-            */}
-                <button
-                  type="button"
-                  className="rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                  aria-label={
-                    file.file_type === "link"
-                      ? `Go to ${file.file_name}`
-                      : `Download ${file.file_name}`
-                  }
-                  onClick={() => {
-                    if (file.file_type === "link") {
-                      const url = toValidUrl(file.file_path);
-                      if (!url) {
-                        toast.error("Invalid link.");
-                        return;
-                      }
-                      window.open(url, "_blank", "noopener,noreferrer");
-                      return;
-                    }
-                    downloadFile(file);
-                  }}
+                <span>Type</span>
+                <span>Uploaded Date</span>
+                <span>Uploaded By</span>
+                <div className="flex justify-end">
+                  <span>Actions</span>
+                </div>
+              </div>
+
+              {rows.map((file, i) => (
+                <div
+                  key={String(file.id)}
+                  className={`grid min-w-[640px] items-center gap-3 px-4 py-3 text-sm md:grid-cols-[1.4fr_0.6fr_0.9fr_0.9fr_auto] ${
+                    i !== rows.length - 1 ? "border-b border-border" : ""
+                  }`}
                 >
-                  {file.file_type === "link" ? (
-                    <ExternalLink className="h-4 w-4" />
-                  ) : (
-                    <Download className="h-4 w-4" />
-                  )}
-                </button>
-                {permissions.canEditProject ? (
-                  <button
-                    type="button"
-                    className="rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                    aria-label={`Edit ${file.file_name}`}
-                    onClick={() => openUpdateModal(file)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                ) : null}
-                {permissions.canEditProject ? (
-                  <button
-                    type="button"
-                    onClick={() => setDeleteTarget(file)}
-                    className="rounded-md p-1.5 text-muted-foreground transition hover:bg-muted hover:text-destructive"
-                    aria-label={`Delete ${file.file_name}`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                ) : null}
-              </div>
-              </div>
-            ))}
+                  <div className="flex min-w-0 items-center gap-2">
+                    {(() => {
+                      const Icon = getFileRowIcon(file);
+                      return (
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-sm border border-border bg-muted/40 text-muted-foreground">
+                          <Icon className="h-4 w-4" />
+                        </span>
+                      );
+                    })()}
+                    <p className="min-w-0 truncate font-medium text-foreground">
+                      {file.file_name}
+                    </p>
+                  </div>
+                  <p className="text-muted-foreground capitalize">{file.file_type}</p>
+                  <p className="text-muted-foreground">
+                    {formatDate(file.created_at)}
+                  </p>
+                  <p className="text-muted-foreground capitalize">
+                    {file.uploaded_user}
+                  </p>
+                  <div className="flex items-center justify-end gap-1.5">
+                    {fileRowActions(file)}
+                  </div>
+                </div>
+              ))}
+            </div>
           </>
         )}
       </div>

@@ -87,11 +87,11 @@ export function MeetingsPanel({
         </div>
       ) : (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-lg font-semibold text-foreground">Meetings</h2>
             {permissions.canEditProject ? (
               <Button
-                className="h-10"
+                className="h-10 w-full shrink-0 sm:w-auto"
                 onClick={() => onOpenMeetingForm("create")}
               >
                 <Plus className="mr-1.5 h-4 w-4" /> Create Meeting
@@ -103,21 +103,21 @@ export function MeetingsPanel({
             {meetings.map((meeting) => (
               <article
                 key={meeting.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 shadow-sm"
+                className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
               >
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <h3 className="font-semibold text-foreground">
                     {meeting.title}
                   </h3>
                   <p className="mt-0.5 text-sm text-muted-foreground">
                     {meeting.dateTime}
                   </p>
-                  <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                  <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground sm:truncate sm:line-clamp-none">
                     {meeting.description}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border/60 pt-3 sm:border-t-0 sm:pt-0">
                   <button
                     type="button"
                     onClick={() => setMeetingNotesId(meeting.id)}
