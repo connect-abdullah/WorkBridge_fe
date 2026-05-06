@@ -102,6 +102,10 @@ export const queryKeys = {
   },
   projects: {
     all: ["projects"] as const,
+    /**
+     * Partition cache per signed-in user. API still resolves user from auth only —
+     * `userId` is for React Query only.
+     */
     listForUser: (userId: number) =>
       ["projects", "listForUser", userId] as const,
     detail: (projectId: number) => ["projects", "detail", projectId] as const,
@@ -157,8 +161,9 @@ export const queryApi = {
       cacheConfig?: CacheConfig,
     ): UseQueryOptions<APIResponse<ProjectReadWithMilestones[]>, Error> => ({
       queryKey: queryKeys.projects.listForUser(userId),
-      queryFn: () => listProjectsForUser(userId),
+      queryFn: () => listProjectsForUser(),
       ...cache(cacheConfig),
+      enabled: Number.isFinite(userId) && userId > 0,
     }),
 
     detailWithMilestones: (

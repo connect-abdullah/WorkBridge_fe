@@ -94,7 +94,6 @@ export default function ProjectsPage() {
     error,
   } = useQuery({
     ...queryApi.projects.listForUser(userId),
-    enabled: userId > 0,
   });
   const data = res?.data ?? [];
   const queryClient = useQueryClient();

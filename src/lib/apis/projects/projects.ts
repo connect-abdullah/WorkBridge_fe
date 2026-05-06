@@ -28,12 +28,10 @@ export async function createProject(data: ProjectCreate) {
   return res;
 }
 
-export async function listProjectsForUser(userId: number) {
+export async function listProjectsForUser() {
   const res = await get<APIResponse<ProjectReadWithMilestones[]>>(
     projectsApi.all,
-    {
-      params: { user_id: userId },
-    },
+
   );
   return res;
 }

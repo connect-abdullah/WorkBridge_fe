@@ -41,7 +41,7 @@ export function ProjectCard({
               {description}
             </p>
           ) : null}
-          {partnerKind === "freelancer" ? (
+          {/* {partnerKind === "freelancer" ? (
             <div className="mt-0.5 space-y-0.5">
               <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                 Freelancer
@@ -50,7 +50,7 @@ export function ProjectCard({
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">{clientName}</p>
-          )}
+          )} */}
         </header>
 
         <div>
