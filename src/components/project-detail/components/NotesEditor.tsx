@@ -161,7 +161,7 @@ export function NotesEditor({
             setPrivateValue(e.target.value);
             setPrivateDirty(true);
           }}
-          className="h-44 w-full resize-none rounded-md border border-input bg-background p-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+          className="h-44 w-full resize-none rounded-md border border-input bg-input-background p-3 text-sm text-input-foreground outline-none transition placeholder:text-neutral-500 dark:placeholder:text-neutral-600 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/35"
           placeholder="Your private notes…"
         />
         <Button
@@ -187,7 +187,7 @@ export function NotesEditor({
             setSharedValue(e.target.value);
             setSharedDirty(true);
           }}
-          className="h-44 w-full resize-none rounded-md border border-input bg-background p-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+          className="h-44 w-full resize-none rounded-md border border-input bg-input-background p-3 text-sm text-input-foreground outline-none transition placeholder:text-neutral-500 dark:placeholder:text-neutral-600 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/35"
           placeholder="Shared notes…"
         />
         <Button

@@ -350,7 +350,7 @@ export const PaymentsListView = memo(function PaymentsListView({
             onChange={(e) =>
               onSortChange(e.target.value as "latest" | "oldest")
             }
-            className="h-9 min-w-[10rem] rounded-lg border border-input bg-background px-3 text-sm font-medium text-foreground shadow-sm outline-none transition hover:bg-muted/30 focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-9 min-w-[10rem] rounded-lg border border-input bg-input-background px-3 text-sm font-medium text-input-foreground shadow-sm outline-none transition hover:bg-neutral-100 dark:hover:bg-neutral-200 focus-visible:ring-2 focus-visible:ring-ring"
           >
             <option value="latest">Latest first</option>
             <option value="oldest">Oldest first</option>

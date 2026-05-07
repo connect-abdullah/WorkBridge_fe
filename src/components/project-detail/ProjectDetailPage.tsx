@@ -1322,7 +1322,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       )}
 
       {/* ── Tab Nav ────────────────────────────────────── */}
-      <div className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
+      <div className="sticky top-0 z-20 border-b border-border backdrop-blur">
         <div className="flex gap-0.5 overflow-x-auto py-1.5">
           {tabs.map((tab) => (
             <button
@@ -1433,7 +1433,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
             <textarea
               value={pDescription}
               onChange={(e) => setPDescription(e.target.value)}
-              className="min-h-[88px] w-full resize-none rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="min-h-[88px] w-full resize-none rounded-md border border-input bg-input-background px-3 py-2.5 text-sm text-input-foreground outline-none transition placeholder:text-neutral-500 dark:placeholder:text-neutral-600 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/35"
             />
           </Field>
 

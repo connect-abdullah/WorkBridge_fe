@@ -4,7 +4,7 @@ export const colors = {
     white: "#FFFFFF",
     black: "#000000",
 
-    // Brand
+    // Brand (light: high-contrast neutral primary)
     primary: "#000000",
     ring: "#000000",
 
@@ -13,7 +13,7 @@ export const colors = {
     card: "#FFFFFF",
     sidebarBackground: "#FFFFFF",
 
-    // Text
+    // Text hierarchy
     foreground: "#000000",
     textSecondary: "#4B5563",
     mutedForeground: "#6B7280",
@@ -24,28 +24,34 @@ export const colors = {
     muted: "#F3F4F6",
     border: "#E5E7EB",
     input: "#E5E7EB",
+    inputBackground: "#FFFFFF",
+    inputForeground: "#000000",
     destructive: "#D6455D",
     disabled: "#D1D5DB",
 
     // Popover
     popover: "#FFFFFF",
 
-    // Semantic colors (used by Tailwind `text-success`/`text-warning`)
+    // Semantic solids
     success: "#15803D",
     successForeground: "#FFFFFF",
     warning: "#92400E",
     warningForeground: "#FFFFFF",
+    info: "#1D4ED8",
+    infoForeground: "#FFFFFF",
+    teal: "#0F766E",
+    tealForeground: "#FFFFFF",
 
-    // Sidebar tokens
+    // Sidebar
     sidebarForeground: "#000000",
     sidebarPrimary: "#000000",
     sidebarAccent: "#F3F4F6",
     sidebarBorder: "#E5E7EB",
     sidebarRing: "#000000",
 
-    // Status badges (raw hex colors used in Tailwind `bg-[var(--...)]`)
+    // Capsules (filled pills)
     statusInProgressBg: "#DBEAFE",
-    statusInProgressFg: "#1D4ED8",
+    statusInProgressFg: "#1E3A5F",
     statusPendingBg: "#FEF3C7",
     statusPendingFg: "#92400E",
     statusCompletedBg: "#DCFCE7",
@@ -54,70 +60,76 @@ export const colors = {
     statusPaidFg: "#15803D",
     statusIssueBg: "#FEE2E2",
     statusIssueFg: "#B91C1C",
+    statusNeutralBg: "#F3F4F6",
+    statusNeutralFg: "#374151",
 
     // Overlay
     overlayBase: "#000000",
     overlayAlpha: 0.45,
   },
   dark: {
-    // Base
-    white: "#EEF2F7",
-    black: "#0E1116",
+    // Base — pure white only used as foreground on saturated fills
+    white: "#FFFFFF",
+    black: "#0A0A0A",
 
-    // Brand (vibrant but easy on eyes)
-    primary: "#A78BFA",
-    ring: "#C4B5FD",
+    // Primary — violet (Linear-style), distinct from semantic info blue
+    primary: "#8B5CF6",
+    ring: "#A78BFA",
 
-    // Surfaces
-    background: "#0B0B10",
-    card: "#111118",
-    sidebarBackground: "#0E0E14",
+    // Surfaces — Tailwind `neutral` ladder: pure achromatic gray (no tint)
+    background: "#0A0A0A",
+    card: "#171717",
+    sidebarBackground: "#0A0A0A",
 
-    // Text
-    foreground: "#EDEDF5",
-    textSecondary: "#C7C7D6",
-    mutedForeground: "#9A9AAF",
+    // Text — near-white, never pure white
+    foreground: "#FAFAFA",
+    textSecondary: "#D4D4D4",
+    mutedForeground: "#A3A3A3",
 
-    // UI tokens
-    secondary: "#161622",
-    accent: "#1D1D2A",
-    muted: "#14141E",
-    border: "#2A2A3A",
-    input: "#2A2A3A",
-    destructive: "#E17A8E",
-    disabled: "#36404D",
+    secondary: "#262626",
+    accent: "#262626",
+    muted: "#171717",
+    border: "#262626",
+    input: "#A3A3A3",
+    inputBackground: "#E5E5E5",
+    inputForeground: "#171717",
+    destructive: "#F87171",
+    disabled: "#525252",
 
-    // Popover
-    popover: "#111118",
+    popover: "#171717",
 
-    // Semantic colors (used by Tailwind `text-success`/`text-warning`)
-    success: "#5CCB97",
-    successForeground: "#0E1116",
-    warning: "#D6AD51",
-    warningForeground: "#0E1116",
+    // Semantic solids — saturated 500-tier hues
+    success: "#10B981",
+    successForeground: "#FFFFFF",
+    warning: "#F59E0B",
+    warningForeground: "#171717",
+    info: "#3B82F6",
+    infoForeground: "#FFFFFF",
+    teal: "#14B8A6",
+    tealForeground: "#FFFFFF",
 
-    // Sidebar tokens
-    sidebarForeground: "#EDEDF5",
+    sidebarForeground: "#FAFAFA",
     sidebarPrimary: "#A78BFA",
-    sidebarAccent: "#1D1D2A",
-    sidebarBorder: "#2A2A3A",
-    sidebarRing: "#C4B5FD",
+    sidebarAccent: "#262626",
+    sidebarBorder: "#262626",
+    sidebarRing: "#A78BFA",
 
-    // Status badges (raw hex colors used in Tailwind `bg-[var(--...)]`)
-    statusInProgressBg: "#1A2433",
-    statusInProgressFg: "#6EA1D4",
-    statusPendingBg: "#2C2616",
-    statusPendingFg: "#D6AD51",
-    statusCompletedBg: "#1A2A23",
-    statusCompletedFg: "#5CCB97",
-    statusPaidBg: "#1A2A23",
-    statusPaidFg: "#5CCB97",
-    statusIssueBg: "#2D1D22",
-    statusIssueFg: "#E17A8E",
+    // Capsules — bright fills, max-contrast text
+    statusInProgressBg: "#3B82F6",
+    statusInProgressFg: "#FFFFFF",
+    statusPendingBg: "#F59E0B",
+    statusPendingFg: "#171717",
+    statusCompletedBg: "#10B981",
+    statusCompletedFg: "#FFFFFF",
+    statusPaidBg: "#059669",
+    statusPaidFg: "#FFFFFF",
+    statusIssueBg: "#EF4444",
+    statusIssueFg: "#FFFFFF",
+    statusNeutralBg: "#404040",
+    statusNeutralFg: "#FAFAFA",
 
-    // Overlay
-    overlayBase: "#0E1116",
-    overlayAlpha: 0.5,
+    overlayBase: "#0A0A0A",
+    overlayAlpha: 0.6,
   },
 } as const;
 

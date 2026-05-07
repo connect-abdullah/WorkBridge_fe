@@ -24,6 +24,8 @@ function buildThemeCssVars(theme: ThemeName) {
     "--muted-foreground": hexToHslChannels(c.mutedForeground),
     "--border": hexToHslChannels(c.border),
     "--input": hexToHslChannels(c.input),
+    "--input-background": hexToHslChannels(c.inputBackground),
+    "--input-foreground": hexToHslChannels(c.inputForeground),
     "--ring": hexToHslChannels(c.ring),
     "--destructive": hexToHslChannels(c.destructive),
     "--destructive-foreground": hexToHslChannels(c.white),
@@ -35,6 +37,10 @@ function buildThemeCssVars(theme: ThemeName) {
     "--success-foreground": hexToHslChannels(c.successForeground),
     "--warning": hexToHslChannels(c.warning),
     "--warning-foreground": hexToHslChannels(c.warningForeground),
+    "--info": hexToHslChannels(c.info),
+    "--info-foreground": hexToHslChannels(c.infoForeground),
+    "--teal": hexToHslChannels(c.teal),
+    "--teal-foreground": hexToHslChannels(c.tealForeground),
     "--disabled": hexToHslChannels(c.disabled),
 
     "--sidebar-background": hexToHslChannels(c.sidebarBackground),
@@ -57,6 +63,8 @@ function buildThemeCssVars(theme: ThemeName) {
     "--status-paid-fg": c.statusPaidFg,
     "--status-issue-bg": c.statusIssueBg,
     "--status-issue-fg": c.statusIssueFg,
+    "--status-neutral-bg": c.statusNeutralBg,
+    "--status-neutral-fg": c.statusNeutralFg,
 
     // Modal overlay
     "--overlay-color": hexToRgba(c.overlayBase, c.overlayAlpha),

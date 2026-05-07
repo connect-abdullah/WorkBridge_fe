@@ -48,11 +48,25 @@ export function AuthShell({
         </p>
       </section>
 
-      <section className="relative flex items-center justify-center px-4 py-10">
-        <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
+      <section className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden px-4 py-10 lg:min-h-screen">
+        <div
+          className="pointer-events-none absolute inset-0"
+          aria-hidden
+        >
+          <Image
+            src="/auth_bg_image.png"
+            alt=""
+            fill
+            className="object-cover object-[center_30%]"
+            priority
+            sizes="(min-width: 1024px) 50vw, 100vw"
+          />
+          <div className="absolute inset-0 bg-background/80 dark:bg-background/88" />
+        </div>
+        <div className="absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
           <AnimatedThemeToggler />
         </div>
-        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-7 shadow-sm sm:p-8">
+        <div className="relative z-10 w-full max-w-md rounded-2xl border border-border/80 bg-card/90 p-7 shadow-lg backdrop-blur-md sm:p-8">
           <header className="mb-6 space-y-2">
             <h2 className="text-2xl font-semibold text-foreground">{title}</h2>
             <p className="text-sm text-muted-foreground">{description}</p>

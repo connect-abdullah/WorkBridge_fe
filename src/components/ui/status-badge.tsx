@@ -5,7 +5,8 @@ export type StatusTone =
   | "pending"
   | "completed"
   | "paid"
-  | "issue";
+  | "issue"
+  | "neutral";
 
 const toneClasses: Record<StatusTone, string> = {
   "in-progress":
@@ -15,6 +16,8 @@ const toneClasses: Record<StatusTone, string> = {
     "bg-[var(--status-completed-bg)] text-[var(--status-completed-fg)]",
   paid: "bg-[var(--status-paid-bg)] text-[var(--status-paid-fg)]",
   issue: "bg-[var(--status-issue-bg)] text-[var(--status-issue-fg)]",
+  neutral:
+    "bg-[var(--status-neutral-bg)] text-[var(--status-neutral-fg)]",
 };
 
 export function StatusBadge({
@@ -31,6 +34,8 @@ export function StatusBadge({
     <span
       className={cn(
         "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium capitalize",
+        "shadow-sm ring-1 ring-black/5 dark:ring-white/10",
+        "transition-[filter,box-shadow] duration-150 hover:brightness-[1.03] dark:hover:brightness-110",
         toneClasses[status],
         className,
       )}

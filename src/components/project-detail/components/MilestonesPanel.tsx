@@ -405,7 +405,7 @@ export function MilestonesPanel({
               value={msDescription}
               onChange={(e) => setMsDescription(e.target.value)}
               placeholder="What does this milestone cover?"
-              className="min-h-[88px] w-full resize-none rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="min-h-[88px] w-full resize-none rounded-md border border-input bg-input-background px-3 py-2.5 text-sm text-input-foreground outline-none transition placeholder:text-neutral-500 dark:placeholder:text-neutral-600 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/35"
             />
           </Field>
 
@@ -506,7 +506,7 @@ export function MilestonesPanel({
               value={taskDescription}
               onChange={(e) => setTaskDescription(e.target.value)}
               placeholder="Add a short description to remove ambiguity."
-              className="min-h-[88px] w-full resize-none rounded-md border border-input bg-background px-3 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="min-h-[88px] w-full resize-none rounded-md border border-input bg-input-background px-3 py-2.5 text-sm text-input-foreground outline-none transition placeholder:text-neutral-500 dark:placeholder:text-neutral-600 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/35"
             />
           </Field>
 

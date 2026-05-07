@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { forceLogout } from "@/lib/forceLogout";
+import { useUnreadNotificationsCount } from "@/hooks/useUnreadNotificationsCount";
+import { NotificationUnreadBadge } from "./NotificationUnreadBadge";
 import { NAV_ITEMS, isNavItemActive } from "./navItems";
 
 type Role = "freelancer" | "client";
@@ -87,6 +89,8 @@ export function AppSidebar({
     [user?.avatar],
   );
 
+  const { data: notificationsUnread = 0 } = useUnreadNotificationsCount();
+
   const uiRoleLabel = mounted ? roleLabel || "Account" : "Account";
   const uiName = mounted ? user?.name || "—" : "—";
 
@@ -125,11 +129,17 @@ export function AppSidebar({
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = isNavItemActive(pathname, item.href);
+          const isNotifications = item.href === "/notifications";
 
           return (
             <Link
               key={item.label}
               href={item.href}
+              aria-label={
+                isNotifications && notificationsUnread > 0
+                  ? `${item.label}, ${notificationsUnread} unread`
+                  : item.label
+              }
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition",
                 isActive
@@ -137,7 +147,15 @@ export function AppSidebar({
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
-              <Icon className="h-4 w-4" />
+              <span className="relative inline-flex shrink-0">
+                <Icon className="h-4 w-4" />
+                {isNotifications ? (
+                  <NotificationUnreadBadge
+                    count={notificationsUnread}
+                    className="ring-sidebar"
+                  />
+                ) : null}
+              </span>
               {item.label}
             </Link>
           );

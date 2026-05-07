@@ -4,10 +4,10 @@ import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export const inputCls =
-  "h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20";
+  "h-11 w-full rounded-md border border-input bg-input-background px-3 text-sm text-input-foreground outline-none transition placeholder:text-neutral-500 dark:placeholder:text-neutral-600 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/35 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent";
 
 export const selectCls =
-  "h-11 w-full rounded-md border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20";
+  "h-11 w-full rounded-md border border-input bg-input-background px-3 text-sm text-input-foreground outline-none transition focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/35 focus-visible:ring-offset-0 focus-visible:ring-offset-transparent";
 
 export function FormField({
   label,

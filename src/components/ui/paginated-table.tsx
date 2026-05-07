@@ -37,9 +37,9 @@ export function PaginatedTable<T>({
   const page = Math.floor(offset / Math.max(1, limit)) + 1;
 
   return (
-    <section className="rounded-xl border border-border bg-bg-card shadow-sm">
+    <section className="rounded-xl border border-border/80 bg-card shadow-sm ring-1 ring-border/30">
       {title ? (
-        <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+        <div className="flex items-center justify-between gap-3 border-b border-border/70 px-4 py-3">
           <div className="text-sm font-semibold text-foreground">{title}</div>
           {isLoading ? (
             <div className="text-xs text-muted-foreground">Loading…</div>
@@ -49,8 +49,8 @@ export function PaginatedTable<T>({
 
       <div className="w-full overflow-x-auto">
         <table className="w-full border-collapse">
-          <thead className="bg-primary/10 dark:bg-muted/40">
-            <tr className="border-b border-border">
+          <thead className="bg-muted/45 dark:bg-muted/55">
+            <tr className="border-b border-border/70">
               {columns.map((c) => (
                 <th
                   key={c.key}
@@ -77,7 +77,7 @@ export function PaginatedTable<T>({
               rows.map((row, idx) => (
                 <tr
                   key={getRowKey(row, idx)}
-                  className="border-b border-border last:border-b-0"
+                  className="border-b border-border/50 transition-colors last:border-b-0 even:bg-muted/15 hover:bg-muted/35 dark:even:bg-muted/25 dark:hover:bg-muted/40"
                 >
                   {columns.map((c) => (
                     <td
@@ -96,7 +96,7 @@ export function PaginatedTable<T>({
         </table>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/70 px-4 py-3">
         <div className="text-xs text-muted-foreground">
           Page {page}
           {rows.length > 0 ? (

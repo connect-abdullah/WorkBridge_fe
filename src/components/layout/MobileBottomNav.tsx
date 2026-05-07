@@ -6,11 +6,14 @@ import { LogOut } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { forceLogout } from "@/lib/forceLogout";
+import { useUnreadNotificationsCount } from "@/hooks/useUnreadNotificationsCount";
+import { NotificationUnreadBadge } from "./NotificationUnreadBadge";
 import { NAV_ITEMS, isNavItemActive } from "./navItems";
 
 export function MobileBottomNav({ className }: { className?: string }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { data: notificationsUnread = 0 } = useUnreadNotificationsCount();
 
   const handleLogout = () => {
     forceLogout(false);
@@ -29,11 +32,16 @@ export function MobileBottomNav({ className }: { className?: string }) {
       <ul className="grid grid-cols-6 divide-x divide-border">
         {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
           const active = isNavItemActive(pathname, href);
+          const isNotifications = href === "/notifications";
           return (
             <li key={href} className="min-w-0">
               <Link
                 href={href}
-                aria-label={label}
+                aria-label={
+                  isNotifications && notificationsUnread > 0
+                    ? `${label}, ${notificationsUnread} unread`
+                    : label
+                }
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "relative flex min-h-[3.25rem] items-center justify-center px-1 py-3 transition-colors",
@@ -43,13 +51,21 @@ export function MobileBottomNav({ className }: { className?: string }) {
                     : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
                 )}
               >
-                <Icon
-                  className={cn(
-                    "h-6 w-6 shrink-0 transition-transform",
-                    active && "scale-110",
-                  )}
-                  aria-hidden
-                />
+                <span className="relative inline-flex">
+                  <Icon
+                    className={cn(
+                      "h-6 w-6 shrink-0 transition-transform",
+                      active && "scale-110",
+                    )}
+                    aria-hidden
+                  />
+                  {isNotifications ? (
+                    <NotificationUnreadBadge
+                      count={notificationsUnread}
+                      className="ring-background"
+                    />
+                  ) : null}
+                </span>
               </Link>
             </li>
           );

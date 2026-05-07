@@ -1,4 +1,6 @@
 import type {
+  InfiniteData,
+  UseInfiniteQueryOptions,
   UseMutationOptions,
   UseQueryOptions,
 } from "@tanstack/react-query";
@@ -53,6 +55,15 @@ import {
   listPaymentsSentRequested,
 } from "@/lib/apis/payments/payments";
 import type { PaymentRead } from "@/lib/apis/payments/schema";
+import {
+  listNotifications,
+  markAllNotificationsRead,
+  markNotificationsRead,
+} from "@/lib/apis/notifications/notifications";
+import type {
+  NotificationCountResponse,
+  NotificationListResponse,
+} from "@/lib/apis/notifications/schema";
 
 // =============================================================================
 // Cache config helpers (dynamic per-query overrides)
@@ -135,6 +146,12 @@ export const queryKeys = {
       ["payments", "listByProjectId", projectId, forClient] as const,
     received: (userId: number) => ["payments", "received", userId] as const,
     sentRequested: (userId: number) => ["payments", "sentRequested", userId] as const,
+  },
+  notifications: {
+    list: (offset: number, limit: number) =>
+      ["notifications", "list", offset, limit] as const,
+    infiniteList: (pageSize: number) =>
+      ["notifications", "infinite", pageSize] as const,
   },
 };
 
@@ -271,6 +288,56 @@ export const queryApi = {
     }),
   },
 
+  notifications: {
+    list: (
+      opts?: { offset?: number; limit?: number },
+      cacheConfig?: CacheConfig,
+    ): UseQueryOptions<APIResponse<NotificationListResponse>, Error> => {
+      const offset = opts?.offset ?? 0;
+      const limit = opts?.limit ?? 50;
+      return {
+        queryKey: queryKeys.notifications.list(offset, limit),
+        queryFn: () => listNotifications({ offset, limit }),
+        ...cache(cacheConfig),
+        staleTime: 60 * 1000,
+        gcTime: 5 * 60 * 1000,
+        enabled:
+          typeof window !== "undefined" &&
+          Boolean(localStorage.getItem("auth:token")),
+      };
+    },
+
+    infiniteList: (
+      pageSize: number,
+      cacheConfig?: CacheConfig,
+    ): UseInfiniteQueryOptions<
+      APIResponse<NotificationListResponse>,
+      Error,
+      InfiniteData<APIResponse<NotificationListResponse>>,
+      readonly (string | number)[],
+      number
+    > => ({
+      queryKey: queryKeys.notifications.infiniteList(pageSize),
+      queryFn: ({ pageParam }) =>
+        listNotifications({ offset: pageParam, limit: pageSize }),
+      initialPageParam: 0,
+      getNextPageParam: (lastPage) => {
+        if (!lastPage.success || !lastPage.data) return undefined;
+        const { results, total, offset } = lastPage.data;
+        if (results.length === 0) return undefined;
+        const nextOffset = offset + results.length;
+        if (nextOffset >= total) return undefined;
+        return nextOffset;
+      },
+      ...cache(cacheConfig),
+      staleTime: 60 * 1000,
+      gcTime: 5 * 60 * 1000,
+      enabled:
+        typeof window !== "undefined" &&
+        Boolean(localStorage.getItem("auth:token")),
+    }),
+  },
+
   // -----------------------------
   // Mutations
   // -----------------------------
@@ -404,6 +471,23 @@ export const queryApi = {
         { fileId: number }
       > => ({
         mutationFn: ({ fileId }) => deleteFile(fileId),
+      }),
+    },
+
+    notifications: {
+      markRead: (): UseMutationOptions<
+        APIResponse<NotificationCountResponse>,
+        Error,
+        number[]
+      > => ({
+        mutationFn: (notification_ids) => markNotificationsRead(notification_ids),
+      }),
+      markAllRead: (): UseMutationOptions<
+        APIResponse<NotificationCountResponse>,
+        Error,
+        void
+      > => ({
+        mutationFn: () => markAllNotificationsRead(),
       }),
     },
   },

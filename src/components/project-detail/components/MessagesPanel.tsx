@@ -768,7 +768,7 @@ export function MessagesPanel({
                 if (getSlashQuery(draft, cachedFiles)) openFileMenu();
               }}
               placeholder="Message… type / to tag a file"
-              className="h-10 min-w-0 flex-1 rounded-full border border-input bg-background px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 sm:px-4"
+              className="h-10 min-w-0 flex-1 rounded-full border border-input bg-input-background px-3 text-sm text-input-foreground outline-none transition placeholder:text-neutral-500 dark:placeholder:text-neutral-600 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/35 sm:px-4"
             />
             <Button
               type="submit"
@@ -816,7 +816,7 @@ export function MessagesPanel({
                 <input
                   readOnly
                   disabled
-                  className="h-10 min-w-0 flex-1 cursor-not-allowed rounded-full border border-input bg-background px-3 text-sm opacity-60 sm:px-4"
+                  className="h-10 min-w-0 flex-1 cursor-not-allowed rounded-full border border-input bg-input-background px-3 text-sm text-input-foreground opacity-60 sm:px-4"
                   placeholder="Messaging locked"
                 />
                 <Button
