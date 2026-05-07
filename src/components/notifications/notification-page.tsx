@@ -21,18 +21,21 @@ import { Button } from "@/components/ui/button";
 import type { NotificationRead } from "@/lib/apis/notifications/schema";
 import { useAuthTokenReady } from "@/hooks/useAuthTokenReady";
 import { useNotificationMarkMutations } from "@/hooks/useNotificationMarkMutations";
-import { queryKeys, queryApi } from "@/lib/queryApi";
+import { getStoredUserId, queryKeys, queryApi } from "@/lib/queryApi";
 
 export default function NotificationsPage() {
   const router = useRouter();
   const authReady = useAuthTokenReady();
   const hasToken =
     authReady === true && Boolean(localStorage.getItem("auth:token"));
+  const userId = getStoredUserId() ?? 0;
 
   const notifInfiniteKey = queryKeys.notifications.infiniteList(
+    userId,
     NOTIFICATIONS_PAGE_SIZE,
   );
   const notifBadgeKey = queryKeys.notifications.list(
+    userId,
     NOTIFICATIONS_BADGE_LIST_QUERY.offset,
     NOTIFICATIONS_BADGE_LIST_QUERY.limit,
   );
@@ -43,7 +46,7 @@ export default function NotificationsPage() {
   });
 
   const notificationsQuery = useInfiniteQuery({
-    ...queryApi.notifications.infiniteList(NOTIFICATIONS_PAGE_SIZE),
+    ...queryApi.notifications.infiniteList(userId, NOTIFICATIONS_PAGE_SIZE),
   });
 
   const pages = notificationsQuery.data?.pages;

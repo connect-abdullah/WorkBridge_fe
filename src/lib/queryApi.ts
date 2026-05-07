@@ -148,10 +148,11 @@ export const queryKeys = {
     sentRequested: (userId: number) => ["payments", "sentRequested", userId] as const,
   },
   notifications: {
-    list: (offset: number, limit: number) =>
-      ["notifications", "list", offset, limit] as const,
-    infiniteList: (pageSize: number) =>
-      ["notifications", "infinite", pageSize] as const,
+    /** `userId` partitions cache per account (API still resolves user from JWT). */
+    list: (userId: number, offset: number, limit: number) =>
+      ["notifications", "list", userId, offset, limit] as const,
+    infiniteList: (userId: number, pageSize: number) =>
+      ["notifications", "infinite", userId, pageSize] as const,
   },
 };
 
@@ -290,24 +291,28 @@ export const queryApi = {
 
   notifications: {
     list: (
+      userId: number,
       opts?: { offset?: number; limit?: number },
       cacheConfig?: CacheConfig,
     ): UseQueryOptions<APIResponse<NotificationListResponse>, Error> => {
       const offset = opts?.offset ?? 0;
       const limit = opts?.limit ?? 50;
       return {
-        queryKey: queryKeys.notifications.list(offset, limit),
+        queryKey: queryKeys.notifications.list(userId, offset, limit),
         queryFn: () => listNotifications({ offset, limit }),
         ...cache(cacheConfig),
         staleTime: 60 * 1000,
         gcTime: 5 * 60 * 1000,
         enabled:
           typeof window !== "undefined" &&
+          Number.isFinite(userId) &&
+          userId > 0 &&
           Boolean(localStorage.getItem("auth:token")),
       };
     },
 
     infiniteList: (
+      userId: number,
       pageSize: number,
       cacheConfig?: CacheConfig,
     ): UseInfiniteQueryOptions<
@@ -317,7 +322,7 @@ export const queryApi = {
       readonly (string | number)[],
       number
     > => ({
-      queryKey: queryKeys.notifications.infiniteList(pageSize),
+      queryKey: queryKeys.notifications.infiniteList(userId, pageSize),
       queryFn: ({ pageParam }) =>
         listNotifications({ offset: pageParam, limit: pageSize }),
       initialPageParam: 0,
@@ -334,6 +339,8 @@ export const queryApi = {
       gcTime: 5 * 60 * 1000,
       enabled:
         typeof window !== "undefined" &&
+        Number.isFinite(userId) &&
+        userId > 0 &&
         Boolean(localStorage.getItem("auth:token")),
     }),
   },
