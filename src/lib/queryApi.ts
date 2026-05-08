@@ -301,8 +301,8 @@ export const queryApi = {
         queryKey: queryKeys.notifications.list(userId, offset, limit),
         queryFn: () => listNotifications({ offset, limit }),
         ...cache(cacheConfig),
-        staleTime: 60 * 1000,
-        gcTime: 5 * 60 * 1000,
+        staleTime: 30 * 1000, // 30 seconds
+        gcTime: 1 * 60 * 1000, // 1 minute
         enabled:
           typeof window !== "undefined" &&
           Number.isFinite(userId) &&
