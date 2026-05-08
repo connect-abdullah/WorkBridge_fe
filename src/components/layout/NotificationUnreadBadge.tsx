@@ -15,7 +15,7 @@ export function NotificationUnreadBadge({
   return (
     <span
       className={cn(
-        "pointer-events-none absolute -right-1.5 -top-1.5 flex h-[13px] min-w-[12px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold leading-none text-destructive-foreground shadow-sm ",
+        "pointer-events-none absolute -right-1.5 -top-1.5 flex h-[14px] min-w-[12px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold leading-none text-destructive-foreground shadow-sm ",
         className,
       )}
       aria-hidden

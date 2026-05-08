@@ -7,9 +7,10 @@ export function MilestoneStepTracker({
 }) {
   if (milestoneItems.length === 1) {
     const ms = milestoneItems[0];
-    const steps = ["pending", "in-progress", "completed"] as const;
+    const steps = ["pending", "in-progress", "completed", "paid"] as const;
     const idx = steps.indexOf(ms.status);
     const activeIndex = idx === -1 ? 0 : idx;
+    const showPaidMarkerOnCompleted = ms.status === "paid";
 
     return (
       <section className="rounded-xl border border-border bg-card px-6 py-4 shadow-sm">
@@ -28,15 +29,25 @@ export function MilestoneStepTracker({
                 return (
                   <div key={step} className="contents">
                     <div className="flex items-center justify-center">
-                      <div
-                        className={`h-4 w-4 shrink-0 rounded-full border-2 transition-colors ${
-                          isCompleted
-                            ? "border-primary bg-primary"
-                            : isCurrent
-                              ? "border-primary bg-primary/10"
-                              : "border-muted-foreground/40 bg-background"
-                        }`}
-                      />
+                      <div className="relative">
+                        <div
+                          className={`h-4 w-4 shrink-0 rounded-full border-2 transition-colors ${
+                            isCompleted
+                              ? "border-primary bg-primary"
+                              : isCurrent
+                                ? "border-primary bg-primary/10"
+                                : "border-muted-foreground/40 bg-background"
+                          }`}
+                        />
+                        {showPaidMarkerOnCompleted && step === "completed" ? (
+                          <span
+                            className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                            aria-hidden
+                          >
+                            <span className="h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-card" />
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                     {index < steps.length - 1 ? (
                       <div
@@ -73,7 +84,7 @@ export function MilestoneStepTracker({
     (m) => m.status === "in-progress",
   );
   const firstIncompleteIndex = milestoneItems.findIndex(
-    (m) => m.status !== "completed",
+    (m) => m.status !== "completed" && m.status !== "paid",
   );
 
   const activeIndex =
@@ -94,22 +105,36 @@ export function MilestoneStepTracker({
           {/* Row 1: dots + connectors */}
           <div className="flex items-center">
             {milestoneItems.map((milestone, index) => {
-              const isCompleted = milestone.status === "completed";
+              const isCompleted =
+                milestone.status === "completed" || milestone.status === "paid";
+              const showPaidMarker = milestone.status === "paid";
               const isCurrent =
-                index === activeIndex && milestone.status !== "completed";
+                index === activeIndex &&
+                milestone.status !== "completed" &&
+                milestone.status !== "paid";
 
               return (
                 <div key={milestone.id} className="contents">
                   <div className="flex items-center justify-center">
-                    <div
-                      className={`h-4 w-4 shrink-0 rounded-full border-2 transition-colors ${
-                        isCompleted
-                          ? "border-primary bg-primary"
-                          : isCurrent
-                            ? "border-primary bg-primary/10"
-                            : "border-muted-foreground/40 bg-background"
-                      }`}
-                    />
+                    <div className="relative">
+                      <div
+                        className={`h-4 w-4 shrink-0 rounded-full border-2 transition-colors ${
+                          isCompleted
+                            ? "border-primary bg-primary"
+                            : isCurrent
+                              ? "border-primary bg-primary/10"
+                              : "border-muted-foreground/40 bg-background"
+                        }`}
+                      />
+                      {showPaidMarker ? (
+                        <span
+                          className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                          aria-hidden
+                        >
+                          <span className="h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-card" />
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
                   {index < milestoneItems.length - 1 ? (
                     <div

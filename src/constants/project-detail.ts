@@ -1,5 +1,5 @@
 export type ProjectStatus = "pending" | "in-progress" | "completed";
-export type MilestoneStatus = "pending" | "in-progress" | "completed";
+export type MilestoneStatus = "pending" | "in-progress" | "completed" | "paid";
 export type MilestoneApprovalStatus =
   | "pending"
   | "approved"

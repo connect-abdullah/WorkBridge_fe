@@ -11,6 +11,29 @@ import {
   notificationDestinationLabel,
 } from "@/components/notifications/notification-utils";
 
+function priorityBadgeMeta(priorityRaw: unknown):
+  | { label: "High" | "Urgent"; className: string }
+  | null {
+  const p = typeof priorityRaw === "string" ? priorityRaw.trim().toLowerCase() : "";
+  if (p === "high") {
+    return {
+      label: "High",
+      className:
+        "border-amber-500/25 bg-amber-500/10 text-amber-300 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-300 " +
+        "border bg-amber-50 text-amber-700 sm:bg-amber-50 sm:text-amber-700",
+    };
+  }
+  if (p === "urgent") {
+    return {
+      label: "Urgent",
+      className:
+        "border-red-500/25 bg-red-500/10 text-red-300 dark:border-red-500/25 dark:bg-red-500/10 dark:text-red-300 " +
+        "border bg-red-50 text-red-700 sm:bg-red-50 sm:text-red-700",
+    };
+  }
+  return null;
+}
+
 export const NotificationListItem = memo(function NotificationListItem({
   notification,
   onActivate,
@@ -28,6 +51,7 @@ export const NotificationListItem = memo(function NotificationListItem({
 
   const navigable = destinationLabel != null;
   const unread = !notification.is_read;
+  const priorityBadge = priorityBadgeMeta(notification.priority);
 
   return (
     <button
@@ -79,15 +103,29 @@ export const NotificationListItem = memo(function NotificationListItem({
 
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline justify-between gap-2">
-            <p
-              className={cn(
-                "min-w-0 flex-1 text-[11px] leading-tight text-foreground transition-colors duration-200 sm:text-sm sm:leading-snug",
-                unread ? "font-semibold" : "font-medium text-foreground/90",
-                navigable && "group-hover:text-primary",
-              )}
-            >
-              {notification.title}
-            </p>
+            <div className="min-w-0 flex flex-1 items-baseline gap-1.5">
+              <p
+                className={cn(
+                  "min-w-0 flex-1 text-[11px] leading-tight text-foreground transition-colors duration-200 sm:text-sm sm:leading-snug",
+                  unread ? "font-semibold" : "font-medium text-foreground/90",
+                  navigable && "group-hover:text-primary",
+                )}
+              >
+                {notification.title}
+              </p>
+              {priorityBadge ? (
+                <span
+                  className={cn(
+                    "inline-flex shrink-0 items-center rounded-full px-1.5 py-0 text-[9px] font-semibold leading-4 tracking-wide sm:px-2 sm:text-[10px]",
+                    "border",
+                    priorityBadge.className,
+                    unread ? "opacity-90" : "opacity-75",
+                  )}
+                >
+                  {priorityBadge.label}
+                </span>
+              ) : null}
+            </div>
             <time
               dateTime={notification.created_at}
               className="shrink-0 text-right text-[10px] tabular-nums text-muted-foreground/75 sm:text-[11px]"

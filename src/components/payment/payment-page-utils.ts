@@ -17,7 +17,7 @@ export function paymentStatusToBadge(
     case "requested":
       return { tone: "in-progress", label: "Requested" };
     case "submitted":
-      return { tone: "completed", label: "Submitted" };
+      return { tone: "completed", label: "Awaiting Approval" };
     case "paid":
       return { tone: "paid", label: "Paid" };
     case "disputed":

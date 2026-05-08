@@ -90,6 +90,12 @@ export default function NotificationsPage() {
         if (url) navigateFromNotificationActionUrl(url, router);
         return;
       }
+      const t = n.notification_type.toLowerCase();
+      const isPaymentNotification = t.startsWith("payment_") || t.includes("payment");
+      if (isPaymentNotification) {
+        startTransition(() => router.push("/payments"));
+        return;
+      }
       const projectId = getNotificationProjectId(n);
       if (projectId != null) {
         startTransition(() => router.push(`/projects/${projectId}`));

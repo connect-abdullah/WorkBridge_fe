@@ -72,6 +72,7 @@ function toUiMilestoneStatus(status?: string | null): MilestoneStatus {
   const s = (status ?? "pending").toLowerCase();
   if (s === "in_progress") return "in-progress";
   if (s === "completed") return "completed";
+  if (s === "paid") return "paid";
   return "pending";
 }
 
@@ -864,6 +865,8 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     milestoneId: string,
     status: MilestoneStatus,
   ) => {
+    const current = milestoneState.find((m) => m.id === milestoneId);
+    if (current?.status === "paid") return;
     setMilestoneState((prev) =>
       prev.map((m) => (m.id === milestoneId ? { ...m, status } : m)),
     );

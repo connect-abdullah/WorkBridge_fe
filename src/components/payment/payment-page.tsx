@@ -28,6 +28,7 @@ import {
   submitPayment,
 } from "@/lib/apis/payments/payments";
 import { uploadPaymentProofOnly } from "@/lib/apis/files/upload";
+import { CURRENCY_OPTIONS } from "@/constants/currencies";
 
 const PAYMENT_METHOD_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: "wise", label: "Wise" },
@@ -68,11 +69,16 @@ export default function PaymentsPage() {
   const freelancerQuery = useQuery({
     ...queryApi.payments.received(userId ?? 0),
     enabled: role === "freelancer" && userId != null && userId > 0,
+    // Keep status fresh while viewing /payments (clients may resubmit at any time).
+    refetchOnMount: "always",
+    refetchInterval: 15 * 1000,
   });
 
   const clientQuery = useQuery({
     ...queryApi.payments.sentRequested(userId ?? 0),
     enabled: role === "client" && userId != null && userId > 0,
+    refetchOnMount: "always",
+    refetchInterval: 15 * 1000,
   });
 
   const requestMut = useMutation({
@@ -349,13 +355,17 @@ export default function PaymentsPage() {
             />
           </Field>
           <Field label="Currency">
-            <input
-              className={inputCls}
-              required
+            <select
+              className={selectCls}
               value={reqCurrency}
               onChange={(e) => setReqCurrency(e.target.value)}
-              placeholder="USD"
-            />
+            >
+              {CURRENCY_OPTIONS.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
           </Field>
           <div className="flex justify-end gap-2 pt-2">
             <Button

@@ -94,6 +94,7 @@ export function SignupForm() {
         JSON.stringify(response.data?.user || {}),
       );
       document.cookie = `auth:token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+      window.dispatchEvent(new Event("auth:user-updated"));
       if (inviteToken) {
         router.push(`/join-project?token=${encodeURIComponent(inviteToken)}`);
       } else {

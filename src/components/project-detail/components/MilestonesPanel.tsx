@@ -137,21 +137,23 @@ export function MilestonesPanel({
   return (
     <section className="w-full min-w-0 max-w-full space-y-4 pr-[max(0px,env(safe-area-inset-right))]">
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-        <div className="flex min-w-0 max-w-full items-center gap-2 sm:max-w-[min(100%,18rem)]">
+        <div className="flex min-w-0 max-w-full items-center gap-2 sm:max-w-[min(100%,20rem)]">
           <span className="shrink-0 text-xs font-medium text-muted-foreground">
             Sort
           </span>
-          <select
-            value={sortValue}
-            onChange={(e) =>
-              onSortChange(e.target.value as "dueDate" | "order")
-            }
-            className={`${selectCls} min-w-0 max-w-full flex-1 sm:flex-1 sm:basis-0`}
-            aria-label="Sort milestones"
-          >
-            <option value="dueDate">Due date</option>
-            <option value="order">Order</option>
-          </select>
+          <div className="flex min-w-0 flex-1">
+            <select
+              value={sortValue}
+              onChange={(e) =>
+                onSortChange(e.target.value as "dueDate" | "order")
+              }
+              className={`${selectCls} h-9 min-w-0 max-w-full flex-1 rounded-lg bg-background px-3 text-sm shadow-sm sm:text-sm`}
+              aria-label="Sort milestones"
+            >
+              <option value="dueDate">Due date</option>
+              <option value="order">Order</option>
+            </select>
+          </div>
         </div>
         {permissions.canCreateMilestone ? (
           <Button
@@ -196,6 +198,9 @@ export function MilestonesPanel({
                   {approvalCapsule(milestone.approvalStatus)}
                   {isApproved ? (
                     <div className="relative">
+                      {milestone.status === "paid" ? (
+                        <StatusBadge status="paid" label="Paid" />
+                      ) : (
                       <button
                         type="button"
                         onClick={
@@ -213,6 +218,7 @@ export function MilestonesPanel({
                       >
                         <StatusBadge status={milestone.status} />
                       </button>
+                      )}
 
                       {isDropdownOpen &&
                       permissions.canChangeMilestoneProgress ? (
@@ -293,17 +299,24 @@ export function MilestonesPanel({
                   <button
                     type="button"
                     onClick={() => onToggleExpand(milestone.id)}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-3 py-1.5 text-sm font-medium text-primary transition hover:bg-primary/10"
+                    className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border/70 bg-background px-3 text-xs font-semibold text-foreground shadow-sm transition hover:bg-muted/60 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    aria-expanded={isOpen}
                   >
                     {isOpen ? (
                       <>
-                        <ChevronUp className="h-3.5 w-3.5" /> Hide Tasks (
-                        {milestone.tasks.length})
+                        <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span>Hide tasks</span>
+                        <span className="rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                          {milestone.tasks.length}
+                        </span>
                       </>
                     ) : (
                       <>
-                        <ChevronDown className="h-3.5 w-3.5" /> Show Tasks (
-                        {milestone.tasks.length})
+                        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span>Show tasks</span>
+                        <span className="rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                          {milestone.tasks.length}
+                        </span>
                       </>
                     )}
                   </button>
@@ -415,13 +428,21 @@ export function MilestonesPanel({
               value={msStatus}
               onChange={(e) => setMsStatus(e.target.value as MilestoneStatus)}
               className={selectCls}
-              disabled={milestoneModalMode === "edit" && msApprovalStatus !== "approved"}
+              disabled={
+                msStatus === "paid" ||
+                (milestoneModalMode === "edit" && msApprovalStatus !== "approved")
+              }
             >
               <option value="pending">Pending</option>
               <option value="in-progress">In Progress</option>
               <option value="completed">Completed</option>
+              {msStatus === "paid" ? <option value="paid">Paid</option> : null}
             </select>
-            {milestoneModalMode === "edit" && msApprovalStatus !== "approved" ? (
+            {msStatus === "paid" ? (
+              <p className="text-xs text-muted-foreground">
+                Locked after payment approval.
+              </p>
+            ) : milestoneModalMode === "edit" && msApprovalStatus !== "approved" ? (
               <p className="text-xs text-muted-foreground">
                 Available once approved.
               </p>

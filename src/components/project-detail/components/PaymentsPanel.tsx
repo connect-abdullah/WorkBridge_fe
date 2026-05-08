@@ -27,7 +27,7 @@ import { uploadPaymentProofOnly } from "@/lib/apis/files/upload";
 import { canShowFreelancerPaymentProof } from "@/lib/apis/payments/preview";
 import { InvoicePreviewModal } from "@/components/payment/InvoicePreviewModal";
 import { PaymentsPanelTableSkeleton } from "@/components/skeletons";
-import { queryKeys } from "@/lib/queryApi";
+import { getStoredUserId, queryKeys } from "@/lib/queryApi";
 import type { Permissions } from "@/lib/permissions";
 import {
   clientCanSubmitPaymentProof,
@@ -80,11 +80,21 @@ export function PaymentsPanel({
 }) {
   const queryClient = useQueryClient();
   const detailKey = queryKeys.projects.detail(projectId);
+  const userId = getStoredUserId() ?? 0;
 
   const invalidatePaymentData = async () => {
     await queryClient.invalidateQueries({
       queryKey: ["payments", "listByProjectId", projectId],
     });
+    // Keep the global /payments page in sync after actions (submit/request/approve/fail).
+    if (Number.isFinite(userId) && userId > 0) {
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.payments.received(userId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.payments.sentRequested(userId),
+      });
+    }
     await queryClient.invalidateQueries({ queryKey: detailKey });
   };
 
