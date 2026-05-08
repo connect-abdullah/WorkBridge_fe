@@ -1,10 +1,12 @@
 "use client";
 
-import { startTransition, useCallback, useMemo } from "react";
+import { startTransition, useCallback, useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { Bell, CheckCircle2, Loader2 } from "lucide-react";
 
+import { parseInviteTokenFromActionUrl } from "@/components/notifications/invite-url";
+import { ProjectClientInviteFromNotificationModal } from "@/components/notifications/ProjectClientInviteFromNotificationModal";
 import { NotificationsGroupedList } from "@/components/notifications/NotificationsGroupedList";
 import {
   flattenNotificationPages,
@@ -25,6 +27,12 @@ import { getStoredUserId, queryKeys, queryApi } from "@/lib/queryApi";
 
 export default function NotificationsPage() {
   const router = useRouter();
+  const [inviteModal, setInviteModal] = useState<{
+    open: boolean;
+    token: string | null;
+    fallbackTitle?: string | null;
+  }>({ open: false, token: null });
+
   const authReady = useAuthTokenReady();
   const hasToken =
     authReady === true && Boolean(localStorage.getItem("auth:token"));
@@ -70,6 +78,23 @@ export default function NotificationsPage() {
   const handleActivate = useCallback(
     (n: NotificationRead) => {
       if (!n.is_read) markReadMut.mutate([n.id]);
+      const isClientInvite =
+        n.notification_type.toLowerCase() === "project_client_invite";
+      const inviteToken = isClientInvite
+        ? parseInviteTokenFromActionUrl(n.action_url)
+        : null;
+      if (inviteToken) {
+        const rawTitle = n.notification_data?.project_title;
+        const fallbackTitle =
+          typeof rawTitle === "string" && rawTitle.trim() ? rawTitle.trim() : null;
+        setInviteModal({ open: true, token: inviteToken, fallbackTitle });
+        return;
+      }
+      if (isClientInvite) {
+        const url = n.action_url?.trim();
+        if (url) navigateFromNotificationActionUrl(url, router);
+        return;
+      }
       const projectId = getNotificationProjectId(n);
       if (projectId != null) {
         startTransition(() => router.push(`/projects/${projectId}`));
@@ -80,6 +105,10 @@ export default function NotificationsPage() {
     },
     [markReadMut, router],
   );
+
+  const closeInviteModal = useCallback(() => {
+    setInviteModal({ open: false, token: null });
+  }, []);
 
   const handleMarkAll = useCallback(() => {
     if (unreadCount === 0) return;
@@ -158,6 +187,12 @@ export default function NotificationsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 pb-6 sm:space-y-5 md:pb-8">
+      <ProjectClientInviteFromNotificationModal
+        open={inviteModal.open}
+        onClose={closeInviteModal}
+        token={inviteModal.token}
+        fallbackTitle={inviteModal.fallbackTitle}
+      />
       <header className="space-y-0.5">
         <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
           Notifications

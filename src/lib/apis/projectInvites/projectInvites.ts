@@ -7,6 +7,7 @@ import type {
   ProjectClientInviteAcceptRequest,
   ProjectClientInviteCreateRequest,
   ProjectClientInviteCreateResponse,
+  ProjectClientInvitePreviewResponse,
 } from "@/lib/apis/projectInvites/schema";
 import type { UserRead } from "@/lib/apis/auth/schema";
 
@@ -17,6 +18,13 @@ export async function acceptProjectClientInvite(body: ProjectClientInviteAcceptR
     `${BASE}/accept`,
     body,
   );
+}
+
+export async function previewProjectClientInvite(body: ProjectClientInviteAcceptRequest) {
+  return post<
+    APIResponse<ProjectClientInvitePreviewResponse>,
+    ProjectClientInviteAcceptRequest
+  >(`${BASE}/preview`, body);
 }
 
 export async function createProjectClientInvite(

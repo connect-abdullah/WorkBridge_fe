@@ -14,6 +14,13 @@ export type ProjectClientInviteAcceptRequest = {
   token: string;
 };
 
+export type ProjectClientInvitePreviewResponse = {
+  project_id: number;
+  title: string;
+  description?: string | null;
+  expires_at: string;
+};
+
 export type ClientEmailLookupRequest = {
   email: string;
 };
