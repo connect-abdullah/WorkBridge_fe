@@ -56,8 +56,7 @@ export function FreelancerClientInviteCard({
       {mode === "assign" && selectedClient ? (
         <p className="text-xs text-muted-foreground">
           Assigned client:{" "}
-          <span className="font-medium text-foreground">{selectedClient.name}</span>{" "}
-          ({selectedClient.email}, ID {selectedClient.id})
+          <span className="font-medium text-foreground">{selectedClient.name}</span>
         </p>
       ) : null}
 

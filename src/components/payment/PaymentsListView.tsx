@@ -339,7 +339,7 @@ export const PaymentsListView = memo(function PaymentsListView({
           </h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {isFreelancer
-              ? "Payments where you are the freelancer."
+              ? ""
               : "Pay milestones and track approval status."}
           </p>
         </div>

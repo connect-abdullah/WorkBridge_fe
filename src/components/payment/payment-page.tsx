@@ -283,8 +283,6 @@ export default function PaymentsPage() {
             <>
               Milestone payments where you are the{" "}
               <span className="font-medium text-foreground">freelancer</span>.
-              Actions match each project&apos;s Payments tab — open a project for
-              full context.
             </>
           ) : (
             <>

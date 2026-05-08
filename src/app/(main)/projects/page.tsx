@@ -389,8 +389,7 @@ export default function ProjectsPage() {
           <FreelancerClientInviteCard
             mode="assign"
             description="Choose a registered client for this project."
-            lookupLabel="Client (registered)"
-            lookupHint="Type after @ to search; pick one match (up to 3 shown)."
+            lookupLabel="Client email"
             resetKey={createClientLookupResetKey}
             lookupDisabled={createProjectMutation.isPending}
             selectedClient={selectedCreateClient}

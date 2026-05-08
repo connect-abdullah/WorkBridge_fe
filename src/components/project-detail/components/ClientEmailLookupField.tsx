@@ -8,6 +8,7 @@ import { lookupClientByEmail } from "@/lib/apis/projectInvites/projectInvites";
 import type { UserRead } from "@/lib/apis/auth/schema";
 
 const LOOKUP_DEBOUNCE_MS = 400;
+const LOOKUP_MIN_CHARS = 4;
 
 export type ClientEmailLookupFieldProps = {
   label: string;
@@ -64,7 +65,7 @@ export function ClientEmailLookupField({
 
   useEffect(() => {
     const q = email.trim();
-    if (!q.includes("@") || q.length < 2) {
+    if (q.length < LOOKUP_MIN_CHARS) {
       lookupSeqRef.current += 1;
       setLookupStatus("idle");
       setHits([]);
@@ -125,13 +126,13 @@ export function ClientEmailLookupField({
               blurTimerRef.current = null;
             }, 200);
           }}
-          placeholder="client@example.com"
+          placeholder="Start typing client email…"
           type="email"
           autoComplete="off"
           disabled={disabled}
           className={inputCls}
         />
-        {focused && email.includes("@") && email.trim().length >= 2 ? (
+        {focused && email.trim().length >= LOOKUP_MIN_CHARS ? (
           <div
             className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-md border border-border bg-card text-left shadow-lg"
             role="listbox"

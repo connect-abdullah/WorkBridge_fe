@@ -50,6 +50,7 @@ export default function NotificationsPage() {
 
   const notificationsQuery = useInfiniteQuery({
     ...queryApi.notifications.infiniteList(userId, NOTIFICATIONS_PAGE_SIZE),
+    refetchOnMount: "always",
   });
 
   const pages = notificationsQuery.data?.pages;

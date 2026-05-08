@@ -117,8 +117,12 @@ export function groupNotificationsForDisplay(
 export function getNotificationProjectId(
   notification: NotificationRead,
 ): number | null {
-  const id = notification.notification_data?.project_id;
-  if (typeof id === "number" && Number.isInteger(id) && id > 0) return id;
+  const raw = notification.notification_data?.project_id;
+  if (typeof raw === "number" && Number.isInteger(raw) && raw > 0) return raw;
+  if (typeof raw === "string") {
+    const n = Number(raw.trim());
+    if (Number.isInteger(n) && n > 0) return n;
+  }
   return null;
 }
 
