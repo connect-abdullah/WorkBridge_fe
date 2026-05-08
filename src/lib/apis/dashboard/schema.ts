@@ -31,6 +31,7 @@ export function isFreelancerDashboardKeyMetrics(
 }
 
 export type DashboardProject = {
+  id: number;
   title: string;
   description: string;
   total_amount: number;

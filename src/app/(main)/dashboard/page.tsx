@@ -196,15 +196,15 @@ export default function DashboardPage() {
                 </p>
               </div>
               <div className="flex flex-col space-y-3">
-                {projects.map((project, index) => (
+                {projects.map((project) => (
                   <DashboardProjectCard
-                    key={`${project.title}-${index}`}
+                    key={project.id}
                     title={project.title}
                     description={project.description}
                     totalAmount={project.total_amount}
                     progressPercentage={project.progress_percentage}
                     dueDate={project.due_date ?? undefined}
-                    href={`/projects/${index + 1}`}
+                    href={`/projects/${project.id}`}
                   />
                 ))}
               </div>
