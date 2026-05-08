@@ -1,7 +1,20 @@
 import {
   AlertCircle,
   Bell,
+  BadgeCheck,
+  BadgeDollarSign,
+  BadgeHelp,
+  BadgeX,
+  FileUp,
+  Flag,
+  FolderPlus,
+  FolderSync,
+  Info,
+  ListChecks,
+  Mail,
   MessageSquareText,
+  ShieldAlert,
+  UserPlus,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
@@ -120,9 +133,16 @@ export function notificationDestinationLabel(
 ): string | null {
   const projectId = getNotificationProjectId(notification);
   if (projectId != null) {
-    return isInvitationNotification(notification)
-      ? "Join the project"
-      : "View project";
+    const t = notification.notification_type.toLowerCase();
+    if (t === "project_client_invite" || isInvitationNotification(notification)) {
+      return "Join the project";
+    }
+    if (t.startsWith("milestone_")) return "View milestone";
+    if (t === "task_updated") return "View task";
+    if (t === "file_uploaded") return "View file";
+    if (t.startsWith("payment_")) return "View payment";
+    if (t.startsWith("message_") || t.includes("message")) return "View message";
+    return "View project";
   }
   if (notification.action_url?.trim()) {
     const label = notification.action_label?.trim();
@@ -157,20 +177,59 @@ export function formatNotificationTimestamp(iso: string): string {
 
 export function iconForNotificationType(notificationType: string): LucideIcon {
   const t = notificationType.toLowerCase();
-  if (t.includes("payment") || t.includes("pay") || t.includes("invoice"))
-    return Wallet;
-  if (
-    t.includes("message") ||
-    t.includes("chat") ||
-    t.includes("comment")
-  )
+  // Exact matches for known backend enum values.
+  switch (t) {
+    case "project_created":
+      return FolderPlus;
+    case "project_updated":
+      return FolderSync;
+    case "project_client_invite":
+      return UserPlus;
+    case "message_received":
+      return MessageSquareText;
+    case "milestone_created":
+      return Flag;
+    case "milestone_updated":
+      return Flag;
+    case "milestone_approved":
+      return BadgeCheck;
+    case "milestone_rejected":
+      return BadgeX;
+    case "milestone_completed":
+      return BadgeCheck;
+    case "milestone_in_progress":
+      return Flag;
+    case "file_uploaded":
+      return FileUp;
+    case "payment_requested":
+      return BadgeDollarSign;
+    case "payment_made":
+      return Wallet;
+    case "payment_received":
+      return Wallet;
+    // Backend currently uses value "payment_created" for PAYMENT_APPROVED.
+    case "payment_approved":
+    case "payment_created":
+      return BadgeCheck;
+    case "payment_disputed":
+      return ShieldAlert;
+    case "task_updated":
+      return ListChecks;
+    case "system":
+      return Info;
+    default:
+      break;
+  }
+
+  // Fallback heuristics for forward-compatible strings.
+  if (t.startsWith("payment_") || t.includes("invoice")) return Wallet;
+  if (t.startsWith("milestone_")) return Flag;
+  if (t.startsWith("project_")) return FolderSync;
+  if (t.includes("invite")) return Mail;
+  if (t.includes("message") || t.includes("chat") || t.includes("comment"))
     return MessageSquareText;
-  if (
-    t.includes("alert") ||
-    t.includes("warn") ||
-    t.includes("error") ||
-    t.includes("fail")
-  )
+  if (t.includes("dispute")) return ShieldAlert;
+  if (t.includes("alert") || t.includes("warn") || t.includes("error"))
     return AlertCircle;
-  return Bell;
+  return BadgeHelp;
 }

@@ -18,7 +18,7 @@ axiosInstance.interceptors.request.use(
 
     // Handle Client Side
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('auth:token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -29,7 +29,7 @@ axiosInstance.interceptors.request.use(
         // Dynamic import to avoid client-side bundling issues
         const { cookies } = await import('next/headers');
         const cookieStore = await cookies();
-        const token = cookieStore.get('accessToken')?.value;
+        const token = cookieStore.get('auth:token')?.value;
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -52,7 +52,7 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('accessToken');
+        localStorage.removeItem('auth:token');
         localStorage.removeItem('currentUser');
         // window.location.href = '/auth/login';
       }
