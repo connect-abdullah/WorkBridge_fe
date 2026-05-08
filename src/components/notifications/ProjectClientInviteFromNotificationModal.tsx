@@ -83,7 +83,7 @@ export function ProjectClientInviteFromNotificationModal({
     if (phase === "error" && !projectTitle) return "Invitation";
     if (phase === "joining") return "Joining project";
     if (phase === "loading") return "Project invitation";
-    return projectTitle || "Project invitation";
+    return "Project invitation";
   }, [phase, projectTitle]);
 
   const handleJoin = useCallback(async () => {
