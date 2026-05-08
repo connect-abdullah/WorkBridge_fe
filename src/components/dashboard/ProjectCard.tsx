@@ -62,7 +62,7 @@ export function ProjectCard({
               {progress}%
             </span>
           </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+          <div className="h-1.5 overflow-hidden rounded-full bg-border/80">
             <div
               className="h-full rounded-full bg-primary"
               style={{ width: `${progress}%` }}

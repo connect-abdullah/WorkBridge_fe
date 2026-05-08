@@ -196,17 +196,26 @@ export default function DashboardPage() {
                 </p>
               </div>
               <div className="flex flex-col space-y-3">
-                {projects.map((project) => (
-                  <DashboardProjectCard
-                    key={project.id}
-                    title={project.title}
-                    description={project.description}
-                    totalAmount={project.total_amount}
-                    progressPercentage={project.progress_percentage}
-                    dueDate={project.due_date ?? undefined}
-                    href={`/projects/${project.id}`}
-                  />
-                ))}
+                {projects.map((project) => {
+                  const projectId =
+                    typeof (project as { id?: unknown }).id === "number"
+                      ? (project as { id: number }).id
+                      : typeof (project as unknown as { project_id?: unknown })
+                              .project_id === "number"
+                        ? (project as unknown as { project_id: number }).project_id
+                        : null;
+                  return (
+                    <DashboardProjectCard
+                      key={projectId ?? project.title}
+                      title={project.title}
+                      description={project.description}
+                      totalAmount={project.total_amount}
+                      progressPercentage={project.progress_percentage}
+                      dueDate={project.due_date ?? undefined}
+                      href={projectId ? `/projects/${projectId}` : undefined}
+                    />
+                  );
+                })}
               </div>
             </div>
 
