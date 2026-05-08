@@ -301,13 +301,15 @@ export default function ProjectsPage() {
           </p>
         ) : (
           data!.map((project) => {
+            const rawId =
+              (project as { id?: unknown }).id ??
+              (project as unknown as { project_id?: unknown }).project_id;
             const projectId =
-              typeof (project as { id?: unknown }).id === "number"
-                ? (project as { id: number }).id
-                : typeof (project as unknown as { project_id?: unknown }).project_id ===
-                      "number"
-                  ? (project as unknown as { project_id: number }).project_id
-                  : null;
+              typeof rawId === "number"
+                ? rawId
+                : typeof rawId === "string"
+                  ? Number(rawId)
+                  : NaN;
             const ms = project.milestones ?? [];
             const total = ms.length || 0;
             const completed = ms.filter((m) => m.progress_status === "completed").length;
@@ -319,7 +321,7 @@ export default function ProjectsPage() {
 
             return (
               <ProjectCard
-                key={projectId ?? project.title}
+                key={Number.isFinite(projectId) ? projectId : project.title}
                 title={project.title}
                 description={project.description}
                 clientName={
@@ -343,7 +345,7 @@ export default function ProjectsPage() {
                 }
                 projectDueDate={formatLongDate(project.end_date)}
                 amount={formatMoney(project.total_amount)}
-                href={projectId ? `/projects/${projectId}` : undefined}
+                href={Number.isFinite(projectId) ? `/projects/${projectId}` : undefined}
               />
             );
           })
