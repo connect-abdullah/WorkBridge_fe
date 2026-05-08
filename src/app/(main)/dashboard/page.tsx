@@ -21,30 +21,9 @@ import {
   Activity as ActivityIcon,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { formatMoney, formatActivityTimestamp } from "@/components/dashboard/DashboardProjectCard";
 
-function formatMoney(amount: number) {
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(amount);
-  } catch {
-    return `$${amount}`;
-  }
-}
 
-function formatActivityTimestamp(isoLike: string) {
-  const d = new Date(isoLike);
-  if (Number.isNaN(d.getTime())) return isoLike;
-  return d.toLocaleString("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 export default function DashboardPage() {
   const role = useRole();

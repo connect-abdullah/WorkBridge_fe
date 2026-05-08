@@ -15,7 +15,6 @@ import {
 } from "@/components/notifications/notification-utils";
 import { navigateFromNotificationActionUrl } from "@/components/notifications/notification-navigation";
 import {
-  NOTIFICATIONS_BADGE_LIST_QUERY,
   NOTIFICATIONS_PAGE_SIZE,
 } from "@/lib/apis/notifications/constants";
 import { NotificationsPageSkeleton } from "@/components/skeletons";
@@ -42,15 +41,11 @@ export default function NotificationsPage() {
     userId,
     NOTIFICATIONS_PAGE_SIZE,
   );
-  const notifBadgeKey = queryKeys.notifications.list(
-    userId,
-    NOTIFICATIONS_BADGE_LIST_QUERY.offset,
-    NOTIFICATIONS_BADGE_LIST_QUERY.limit,
-  );
+  const notifUnreadCountKey = queryKeys.notifications.unreadCount(userId);
 
   const { markReadMut, markAllMut } = useNotificationMarkMutations({
     infiniteKey: notifInfiniteKey,
-    badgeKey: notifBadgeKey,
+    unreadCountKey: notifUnreadCountKey,
   });
 
   const notificationsQuery = useInfiniteQuery({

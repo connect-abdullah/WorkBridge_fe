@@ -32,6 +32,12 @@ export async function listNotifications(params?: {
   });
 }
 
+export async function getUnreadNotificationsCount() {
+  return get<APIResponse<NotificationCountResponse>>(
+    `${NOTIFICATIONS_BASE}/unread-count`,
+  );
+}
+
 export async function markNotificationsRead(notification_ids: number[]) {
   return put<APIResponse<NotificationCountResponse>, NotificationMarkReadBody>(
     `${NOTIFICATIONS_BASE}/mark-read`,

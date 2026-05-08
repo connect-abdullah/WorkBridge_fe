@@ -481,19 +481,25 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     };
   }
 
-  const meetingsQuery = useQuery(
-    queryApi.meetings.listByProjectId(numericProjectId, {
+  const meetingsQuery = useQuery({
+    ...queryApi.meetings.listByProjectId(numericProjectId, {
       staleTime: 15 * 60 * 1000, // 15 minutes
       gcTime: 30 * 60 * 1000, // 30 minutes
- 
     }),
-  );
+    enabled:
+      activeTab === "Meetings" &&
+      Number.isFinite(numericProjectId) &&
+      numericProjectId > 0 &&
+      !!projectDetail &&
+      (isProjectFreelancer || isProjectClient),
+  });
 
   const paymentsQuery = useQuery({
     ...queryApi.payments.listByProjectId(numericProjectId, {
       forClient: isProjectClient === true,
     }),
     enabled:
+      activeTab === "Payments" &&
       Number.isFinite(numericProjectId) &&
       numericProjectId > 0 &&
       !!projectDetail &&
@@ -509,6 +515,12 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         gcTime: 2 * 60 * 1000, // 2 minutes
       },
     ),
+    enabled:
+      activeTab === "Activity" &&
+      Number.isFinite(numericProjectId) &&
+      numericProjectId > 0 &&
+      !!projectDetail &&
+      (isProjectFreelancer || isProjectClient),
     refetchInterval: activeTab === "Activity" ? 15 * 1000 : false,
   });
 

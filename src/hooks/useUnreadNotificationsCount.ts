@@ -3,26 +3,19 @@
 import { useQuery } from "@tanstack/react-query";
 
 import type { APIResponse } from "@/lib/apis/apiResponse";
-import { NOTIFICATIONS_BADGE_LIST_QUERY } from "@/lib/apis/notifications/constants";
-import type { NotificationListResponse } from "@/lib/apis/notifications/schema";
+import type { NotificationCountResponse } from "@/lib/apis/notifications/schema";
 import { getStoredUserId, queryApi } from "@/lib/queryApi";
 
-function countUnread(res: APIResponse<NotificationListResponse> | undefined) {
-  if (!res || res.success === false || !res.data?.results) return 0;
-  return res.data.results.reduce(
-    (acc, n) => acc + (n.is_read ? 0 : 1),
-    0,
-  );
+function readCount(res: APIResponse<NotificationCountResponse> | undefined) {
+  if (!res || res.success === false || !res.data) return 0;
+  const c = res.data.count;
+  return typeof c === "number" && Number.isFinite(c) && c > 0 ? c : 0;
 }
 
-/**
- * Unread count from the same cached list as the notifications page.
- * Count may be a lower bound if there are more than `limit` unread items.
- */
 export function useUnreadNotificationsCount() {
   const userId = getStoredUserId() ?? 0;
   return useQuery({
-    ...queryApi.notifications.list(userId, NOTIFICATIONS_BADGE_LIST_QUERY),
-    select: countUnread,
+    ...queryApi.notifications.unreadCount(userId),
+    select: readCount,
   });
 }

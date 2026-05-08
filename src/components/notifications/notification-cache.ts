@@ -2,15 +2,20 @@ import type { QueryClient, QueryKey } from "@tanstack/react-query";
 import type { InfiniteData } from "@tanstack/react-query";
 
 import type { APIResponse } from "@/lib/apis/apiResponse";
-import type { NotificationListResponse } from "@/lib/apis/notifications/schema";
+import type {
+  NotificationCountResponse,
+  NotificationListResponse,
+} from "@/lib/apis/notifications/schema";
 
 export type NotificationListQueryData = APIResponse<NotificationListResponse>;
 export type NotificationInfiniteQueryData =
   InfiniteData<NotificationListQueryData>;
+export type NotificationUnreadCountQueryData =
+  APIResponse<NotificationCountResponse>;
 
 export type NotificationCachesSnapshot = {
   infinite: NotificationInfiniteQueryData | undefined;
-  badge: NotificationListQueryData | undefined;
+  unreadCount: NotificationUnreadCountQueryData | undefined;
 };
 
 type ReadPatch = { ids: number[] } | { all: true };
@@ -48,39 +53,53 @@ export function mapInfiniteReadPages(
 export function readNotificationCachesSnapshot(
   queryClient: QueryClient,
   infiniteKey: QueryKey,
-  badgeKey: QueryKey,
+  unreadCountKey: QueryKey,
 ): NotificationCachesSnapshot {
   return {
     infinite: queryClient.getQueryData<NotificationInfiniteQueryData>(
       infiniteKey,
     ),
-    badge: queryClient.getQueryData<NotificationListQueryData>(badgeKey),
+    unreadCount:
+      queryClient.getQueryData<NotificationUnreadCountQueryData>(unreadCountKey),
   };
+}
+
+function patchUnreadCount(
+  old: NotificationUnreadCountQueryData | undefined,
+  opts: ReadPatch,
+): NotificationUnreadCountQueryData | undefined {
+  if (!old || old.success === false || !old.data) return old;
+  const prev = old.data.count;
+  if (typeof prev !== "number" || !Number.isFinite(prev) || prev <= 0) return old;
+  const next =
+    "all" in opts ? 0 : Math.max(0, prev - (opts.ids?.length ?? 0));
+  if (next === prev) return old;
+  return { ...old, data: { ...old.data, count: next } };
 }
 
 export function writeOptimisticMarkRead(
   queryClient: QueryClient,
   infiniteKey: QueryKey,
-  badgeKey: QueryKey,
+  unreadCountKey: QueryKey,
   opts: ReadPatch,
 ) {
   queryClient.setQueryData<NotificationInfiniteQueryData | undefined>(
     infiniteKey,
     (old) => mapInfiniteReadPages(old, opts),
   );
-  queryClient.setQueryData<NotificationListQueryData | undefined>(
-    badgeKey,
-    (old) => (old ? applyReadToPage(old, opts) : old),
+  queryClient.setQueryData<NotificationUnreadCountQueryData | undefined>(
+    unreadCountKey,
+    (old) => patchUnreadCount(old, opts),
   );
 }
 
 export function restoreNotificationCaches(
   queryClient: QueryClient,
   infiniteKey: QueryKey,
-  badgeKey: QueryKey,
+  unreadCountKey: QueryKey,
   snapshot: NotificationCachesSnapshot | undefined,
 ) {
   if (!snapshot) return;
   queryClient.setQueryData(infiniteKey, snapshot.infinite);
-  queryClient.setQueryData(badgeKey, snapshot.badge);
+  queryClient.setQueryData(unreadCountKey, snapshot.unreadCount);
 }

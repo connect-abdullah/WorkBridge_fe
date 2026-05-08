@@ -19,7 +19,7 @@ import { queryApi } from "@/lib/queryApi";
 
 const NOTIFICATIONS_ROOT: QueryKey = ["notifications"];
 
-type Keys = { infiniteKey: QueryKey; badgeKey: QueryKey };
+type Keys = { infiniteKey: QueryKey; unreadCountKey: QueryKey };
 
 function useMarkReadMutation(keys: Keys) {
   const queryClient = useQueryClient();
@@ -36,9 +36,9 @@ function useMarkReadMutation(keys: Keys) {
       const snapshot = readNotificationCachesSnapshot(
         queryClient,
         keys.infiniteKey,
-        keys.badgeKey,
+        keys.unreadCountKey,
       );
-      writeOptimisticMarkRead(queryClient, keys.infiniteKey, keys.badgeKey, {
+      writeOptimisticMarkRead(queryClient, keys.infiniteKey, keys.unreadCountKey, {
         ids,
       });
       return snapshot;
@@ -48,7 +48,7 @@ function useMarkReadMutation(keys: Keys) {
         restoreNotificationCaches(
           queryClient,
           keys.infiniteKey,
-          keys.badgeKey,
+          keys.unreadCountKey,
           snapshot,
         );
         toast.error(res.message || "Could not mark as read");
@@ -58,7 +58,7 @@ function useMarkReadMutation(keys: Keys) {
       restoreNotificationCaches(
         queryClient,
         keys.infiniteKey,
-        keys.badgeKey,
+        keys.unreadCountKey,
         snapshot,
       );
       toast.error("Could not mark as read");
@@ -81,9 +81,9 @@ function useMarkAllReadMutation(keys: Keys) {
       const snapshot = readNotificationCachesSnapshot(
         queryClient,
         keys.infiniteKey,
-        keys.badgeKey,
+        keys.unreadCountKey,
       );
-      writeOptimisticMarkRead(queryClient, keys.infiniteKey, keys.badgeKey, {
+      writeOptimisticMarkRead(queryClient, keys.infiniteKey, keys.unreadCountKey, {
         all: true,
       });
       return snapshot;
@@ -93,7 +93,7 @@ function useMarkAllReadMutation(keys: Keys) {
         restoreNotificationCaches(
           queryClient,
           keys.infiniteKey,
-          keys.badgeKey,
+          keys.unreadCountKey,
           snapshot,
         );
         toast.error(res.message || "Could not mark all as read");
@@ -103,7 +103,7 @@ function useMarkAllReadMutation(keys: Keys) {
       restoreNotificationCaches(
         queryClient,
         keys.infiniteKey,
-        keys.badgeKey,
+        keys.unreadCountKey,
         snapshot,
       );
       toast.error("Could not mark all as read");

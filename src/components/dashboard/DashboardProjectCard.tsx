@@ -10,7 +10,7 @@ type DashboardProjectCardProps = {
   href?: string;
 };
 
-function formatMoney(amount: number) {
+export function formatMoney(amount: number) {
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -22,7 +22,7 @@ function formatMoney(amount: number) {
   }
 }
 
-function formatLongDate(dateStr?: string) {
+export function formatLongDate(dateStr?: string) {
   if (!dateStr) return "—";
   const d = new Date(dateStr);
   if (Number.isNaN(d.getTime())) return dateStr;
@@ -33,6 +33,15 @@ function formatLongDate(dateStr?: string) {
   });
 }
 
+export function formatActivityTimestamp(isoLike: string) {
+  const d = new Date(isoLike);
+  if (Number.isNaN(d.getTime())) return isoLike;
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  });
+}
 export function DashboardProjectCard({
   title,
   description,

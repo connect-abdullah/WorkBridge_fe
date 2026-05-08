@@ -56,6 +56,7 @@ import {
 } from "@/lib/apis/payments/payments";
 import type { PaymentRead } from "@/lib/apis/payments/schema";
 import {
+  getUnreadNotificationsCount,
   listNotifications,
   markAllNotificationsRead,
   markNotificationsRead,
@@ -153,6 +154,8 @@ export const queryKeys = {
       ["notifications", "list", userId, offset, limit] as const,
     infiniteList: (userId: number, pageSize: number) =>
       ["notifications", "infinite", userId, pageSize] as const,
+    unreadCount: (userId: number) =>
+      ["notifications", "unreadCount", userId] as const,
   },
 };
 
@@ -302,7 +305,7 @@ export const queryApi = {
         queryFn: () => listNotifications({ offset, limit }),
         ...cache(cacheConfig),
         staleTime: 30 * 1000, // 30 seconds
-        gcTime: 1 * 60 * 1000, // 1 minute
+        gcTime: 5 * 60 * 1000, // 5 minutes
         enabled:
           typeof window !== "undefined" &&
           Number.isFinite(userId) &&
@@ -310,6 +313,24 @@ export const queryApi = {
           Boolean(localStorage.getItem("auth:token")),
       };
     },
+
+    unreadCount: (
+      userId: number,
+      cacheConfig?: CacheConfig,
+    ): UseQueryOptions<APIResponse<NotificationCountResponse>, Error> => ({
+      queryKey: queryKeys.notifications.unreadCount(userId),
+      queryFn: () => getUnreadNotificationsCount(),
+      ...cache(cacheConfig),
+      staleTime: 15 * 1000,
+      gcTime: 5 * 60 * 1000,
+      refetchInterval: 15 * 1000,
+      refetchIntervalInBackground: true,
+      enabled:
+        typeof window !== "undefined" &&
+        Number.isFinite(userId) &&
+        userId > 0 &&
+        Boolean(localStorage.getItem("auth:token")),
+    }),
 
     infiniteList: (
       userId: number,
