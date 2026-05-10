@@ -39,7 +39,39 @@ function hasSomeAuthCookie(req: NextRequest): boolean {
   );
 }
 
+/**
+ * Pre-launch “landing lock”: block both `/auth/*` and all protected app routes so
+ * visitors stay on the marketing site. Re-enable by uncommenting the call in
+ * `middleware()` below.
+ *
+ * Does not delete or replace normal auth middleware — when disabled, login and
+ * dashboard behave as usual.
+ */
+// Unused while landing lock is off; uncomment the call in `middleware()` to reactivate.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- preserved pre-launch guard
+function landingLockRedirect(req: NextRequest): NextResponse | null {
+  const { pathname } = req.nextUrl;
+
+  const isProtected = PROTECTED.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+  const isAuthRoute = AUTH_ROUTES.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+
+  if (!isProtected && !isAuthRoute) return null;
+
+  const url = req.nextUrl.clone();
+  url.pathname = "/";
+  url.search = "";
+  return NextResponse.redirect(url);
+}
+
 export function middleware(req: NextRequest) {
+  // Landing lock (pre-launch) — disabled; uncomment to send `/auth/*` + protected routes to `/`.
+  // const landingLocked = landingLockRedirect(req);
+  // if (landingLocked) return landingLocked;
+
   const { pathname, search } = req.nextUrl;
 
   const isProtected = PROTECTED.some(

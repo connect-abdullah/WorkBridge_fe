@@ -8,28 +8,28 @@ import {
 const faqs = [
   {
     q: "Who is WorkBridge for?",
-    a: "Freelancers and small teams who manage client work in milestones and want a structured way to deliver work, get approvals, and track payments without constant follow-ups.",
+    a: "Freelancers and small teams who run client work in milestones and want one place to deliver work, get approvals, and track milestone payment status without constant follow-ups.",
   },
   {
     q: "Is this a project management tool?",
-    a: "No — WorkBridge is built specifically for the freelancer-client workflow. It focuses on deliverables, approvals, and payments, not internal task or team management.",
+    a: "No, WorkBridge is built for the freelancer–client loop: deliverables, approvals, and visibility into milestone payment tracking, not internal task or team management.",
   },
   {
-    q: "How does payment tracking work?",
-    a: "Payments are tied directly to milestones. When work is approved, you can clearly see what’s due, what’s pending, and what’s already paid — all in one place.",
+    q: "How does milestone payment tracking work?",
+    a: "Each milestone has a clear status. After approval, you can see what’s pending or paid at a glance — it’s tracking and workflow visibility, not processing payments for you.",
   },
   {
     q: "Do clients need to learn a new system?",
-    a: "No — clients only see a simple interface to review work, give feedback, and approve milestones. No complexity, no onboarding friction.",
+    a: "No, clients only see a simple interface to review work, give feedback, and approve milestones. No complexity, no onboarding friction.",
   },
   {
     q: "When will WorkBridge launch?",
     a: "We’re currently onboarding early users. Join the waitlist to get access as soon as spots open.",
   },
-  {
-    q: "Will there be pricing?",
-    a: "Yes — pricing will be introduced at launch. Early users on the waitlist will get priority access and updates.",
-  },
+  // {
+  //   q: "Will there be pricing?",
+  //   a: "Yes, pricing will be introduced at launch. Early users on the waitlist will get priority access and updates.",
+  // },
 ];
 
 export function FaqSection() {

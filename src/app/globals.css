@@ -32,6 +32,41 @@ body {
   }
 }
 
+/* Landing: infinite review marquee (duplicated track; translate -50% = one full set). */
+@keyframes wb-review-marquee-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes wb-review-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.wb-review-marquee-left {
+  animation: wb-review-marquee-left 85s linear infinite;
+}
+
+.wb-review-marquee-right {
+  animation: wb-review-marquee-right 95s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wb-review-marquee-left,
+  .wb-review-marquee-right {
+    animation: none;
+    transform: none;
+  }
+}
+
 .wb-toast::after {
   content: "";
   position: absolute;

@@ -3,27 +3,36 @@ import { ArrowRight } from "lucide-react";
 const steps = [
   {
     step: "01",
-    title: "Create project & milestones",
-    description:
-      "Define scope, break work into clear deliverables, and set approval checkpoints from the start.",
+    title: "Sign up as a Freelancer",
+    description: "Create your account and set up your profile.",
   },
   {
     step: "02",
-    title: "Upload deliverables",
-    description:
-      "Submit files and updates directly within milestones so everything stays organized and traceable.",
+    title: "Create a Project",
+    description: "Define the project and break it into milestones.",
   },
   {
     step: "03",
-    title: "Client reviews & approves",
-    description:
-      "Clients review work in context, request revisions, or approve — without scattered feedback.",
+    title: "Add Your Client",
+    description: "Invite or attach the client to the project workspace.",
   },
   {
     step: "04",
-    title: "Payment gets released",
+    title: "Collaborate in One Place",
     description:
-      "Once approved, payments follow automatically — no chasing, no ambiguity.",
+      "Upload files, deliver work, and share updates. Your client can review, request rework, and give feedback.",
+  },
+  {
+    step: "05",
+    title: "Track Progress & Activity",
+    description:
+      "View activity logs, notes, and project history in real time.",
+  },
+  {
+    step: "06",
+    title: "Monitor Milestone Payments",
+    description:
+      "Track milestone approval status and payment readiness once milestones are approved.",
   },
 ];
 
@@ -37,8 +46,8 @@ export function HowItWorksSection() {
               How it works
             </h2>
             <p className="text-sm text-muted-foreground sm:text-base">
-              A simple, structured workflow that keeps projects, approvals, and
-              payments aligned from start to finish.
+              A straight path from setup to delivery — milestones, collaboration,
+              and tracking in one workspace.
             </p>
           </div>
 

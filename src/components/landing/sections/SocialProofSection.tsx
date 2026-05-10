@@ -1,73 +1,174 @@
-const stats = [
-  { label: "Approvals tracked", value: "All in one timeline" },
-  { label: "Milestones", value: "Clear scope per delivery" },
-  { label: "Payments", value: "Tied to approvals" },
-];
+"use client";
 
-const testimonials = [
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
+
+const reviews = [
   {
-    quote:
-      "Finally a workflow my clients actually follow. No more digging through chats.",
-    name: "Emily Carter",
-    title: "Product Designer, Northwind Studio",
+    quote: "Great for keeping track of project milestones; simple, clear, and effective.",
+    name: "Brett R.",
+    title: "Contract Developer",
   },
   {
     quote:
-      "Milestones and approvals in one place makes client work predictable and easy to manage.",
-    name: "Daniel Brooks",
-    title: "Full-stack Developer, Freelance Collective",
+      "I was juggling Figma comments, a Notion page, and email for the same sprint. Stupid. Now there's one link to point people at, still chaos some weeks but less.",
+    name: "Sanae M.",
+    title: "Frontend dev",
   },
-];
+  {
+    quote: "Fewer duplicate uploads. That alone helped.",
+    name: "Dmitri H.",
+    title: "Backend, remote",
+  },
+  {
+    quote:
+      "DevOps clients want a paper trail. Having approvals and what shipped in one row beats re-writing the recap in Slack every time.",
+    name: "Elias K.",
+    title: "DevOps consultant",
+  },
+  {
+    quote: "Does what it says. Doesn't fix bad clients.",
+    name: "Tanya V.",
+    title: "Backend engineer",
+  },
+  {
+    quote:
+      "Got a ‘where did we land on that?’ message last month. Opened the activity log, screenshot, done. Would’ve been twenty minutes of scrolling before.",
+    name: "Priya N.",
+    title: "PM, contracting",
+  },
+  {
+    quote: "Milestones keep my UX clients oriented. They still ghost me sometimes though.",
+    name: "Marco W.",
+    title: "Designer",
+  },
+  {
+    quote:
+      "Change requests used to hit WhatsApp, email, and a shared doc. I still miss things occasionally, just not as often.",
+    name: "Maya F.",
+    title: "Full-stack",
+  },
+  {
+    quote: "Stopped rebuilding a ‘project status’ doc every Sunday night.",
+    name: "Lucas G.",
+    title: "WordPress stuff",
+  },
+  {
+    quote:
+      "Picky about tools. This one stuck because I'm not doing freelance admin in my head after dinner anymore.",
+    name: "Ola S.",
+    title: "Backend contractor",
+  },
+] as const;
+
+function reviewCardWidthClass(quote: string) {
+  const n = quote.length;
+  if (n < 95) {
+    return "w-[min(100vw-2rem,260px)] shrink-0 sm:w-[280px]";
+  }
+  if (n > 210) {
+    return "w-[min(100vw-2rem,380px)] shrink-0 sm:w-[420px]";
+  }
+  return "w-[min(100vw-2rem,320px)] shrink-0 sm:w-[360px]";
+}
+
+function ReviewCard({
+  quote,
+  name,
+  title: role,
+}: {
+  quote: string;
+  name: string;
+  title: string;
+}) {
+  return (
+    <figure
+      className={cn(
+        "rounded-2xl border border-border/80 bg-card/60 px-5 py-4 shadow-sm sm:px-6 sm:py-5",
+        reviewCardWidthClass(quote),
+      )}
+    >
+      <blockquote className="text-sm leading-relaxed text-foreground sm:text-[15px]">
+        “{quote}”
+      </blockquote>
+      <figcaption className="mt-3 border-t border-border/60 pt-3 text-xs text-muted-foreground sm:text-sm">
+        <span className="font-medium text-foreground">{name}</span>
+        <span className="text-muted-foreground"> · {role}</span>
+      </figcaption>
+    </figure>
+  );
+}
+
+function MarqueeRow({ direction }: { direction: "left" | "right" }) {
+  const loop = [...reviews, ...reviews];
+
+  return (
+    <div
+      className={cn(
+        "flex w-max gap-4 pb-1 hover:[animation-play-state:paused]",
+        direction === "left" ? "wb-review-marquee-left" : "wb-review-marquee-right",
+      )}
+    >
+      {loop.map((r, i) => (
+        <ReviewCard
+          key={`${direction}-${i}-${r.name}`}
+          quote={r.quote}
+          name={r.name}
+          title={r.title}
+        />
+      ))}
+    </div>
+  );
+}
 
 export function SocialProofSection() {
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduceMotion(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
   return (
-    <section className="px-4 pt-16 sm:pt-20">
+    <section
+      id="reviews"
+      aria-label="Freelancer reviews"
+      className="px-4 pt-16 sm:pt-20"
+    >
       <div className="mx-auto max-w-6xl">
-        <div className="rounded-3xl border border-border bg-gradient-to-b from-card/40 to-card/20 p-8 sm:p-10">
-          <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-muted-foreground">
-                Built for freelancers
-              </p>
-              <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                Professional projects deserve a professional system.
-              </h2>
+        <div className="mb-8 max-w-2xl space-y-2">
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            What freelancers say
+          </h2>
+        </div>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                {stats.map((s) => (
-                  <div
-                    key={s.label}
-                    className="rounded-2xl border border-border bg-background/40 p-4"
-                  >
-                    <p className="text-xs text-muted-foreground">{s.label}</p>
-                    <p className="mt-1 text-sm font-semibold text-foreground">
-                      {s.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid gap-4">
-              {testimonials.map((t) => (
-                <figure
-                  key={t.quote}
-                  className="rounded-2xl border border-border bg-background/40 p-6"
-                >
-                  <blockquote className="text-sm text-foreground">
-                    “{t.quote}”
-                  </blockquote>
-                  <figcaption className="mt-4 text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground">
-                      {t.name}
-                    </span>{" "}
-                    — {t.title}
-                  </figcaption>
-                </figure>
-              ))}
+        {reduceMotion ? (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {reviews.map((r, i) => (
+              <ReviewCard
+                key={`${r.name}-${i}`}
+                quote={r.quote}
+                name={r.name}
+                title={r.title}
+              />
+            ))}
+          </div>
+        ) : (
+          <div
+            className={cn(
+              "relative -mx-4 overflow-hidden py-2 sm:mx-0",
+              "[mask-image:linear-gradient(to_right,transparent_0%,black_5%,black_95%,transparent_100%)]",
+            )}
+          >
+            <div className="flex flex-col gap-4">
+              <MarqueeRow direction="left" />
+              <MarqueeRow direction="right" />
             </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

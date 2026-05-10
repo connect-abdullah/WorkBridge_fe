@@ -1,16 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Highlighter } from "@/components/ui/highlighter";
 import { landingCopy } from "@/components/landing/landingCopy";
+import { landingLoginCtaClassNames } from "@/components/landing/landingCtaStyles";
 
-export function HeroSection({
-  onJoinWaitlist,
-}: {
-  onJoinWaitlist: () => void;
-}) {
+export function HeroSection() {
   return (
     <section className="px-4 pt-10 sm:pt-14">
       <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1fr_1.25fr]">
@@ -24,18 +22,22 @@ export function HeroSection({
             {landingCopy.hero.headline}
           </h1>
           <p className="text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
-            WorkBridge gives freelancers a structured workspace where clients
-            review work, approve milestones, and release payments{" - "}
+            {landingCopy.hero.subheadline}{" "}
             <Highlighter action="underline" color="#FF9800" strokeWidth={2}>
               All In One Place
             </Highlighter>
             .
           </p>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Button className="h-11 rounded-full px-6" onClick={onJoinWaitlist}>
-              {landingCopy.hero.primaryCta}
-              <ArrowRight className="ml-2 h-4 w-4" />
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <Button
+              asChild
+              className={landingLoginCtaClassNames.heroAndBand}
+            >
+              <Link href="/auth/login">
+                {landingCopy.auth.login}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
             </Button>
             <Button
               asChild

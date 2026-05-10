@@ -1,9 +1,7 @@
 "use client";
 
-import { useCallback, useState } from "react";
 import {
   LandingNavbar,
-  WaitlistModal,
   HeroSection,
   ProblemSection,
   SolutionSection,
@@ -17,28 +15,23 @@ import {
 } from "@/components/landing/__init__";
 
 export default function LandingPage() {
-  const [waitlistOpen, setWaitlistOpen] = useState(false);
-  const openWaitlist = useCallback(() => setWaitlistOpen(true), []);
-
   return (
     <div className="min-h-screen scroll-smooth bg-background text-foreground">
-      <LandingNavbar onJoinWaitlist={openWaitlist} />
+      <LandingNavbar />
 
       <main className="pb-10">
-        <HeroSection onJoinWaitlist={openWaitlist} />
+        <HeroSection />
         <ProblemSection />
         <SolutionSection />
         <FeaturesSection />
         <ChannelUnificationSection />
         <HowItWorksSection />
         <SocialProofSection />
-        <FinalCtaSection onJoinWaitlist={openWaitlist} />
+        <FinalCtaSection />
         <FaqSection />
       </main>
 
       <LandingFooter />
-
-      <WaitlistModal open={waitlistOpen} onOpenChange={setWaitlistOpen} />
     </div>
   );
 }

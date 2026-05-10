@@ -1,12 +1,10 @@
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { landingCopy } from "@/components/landing/landingCopy";
+import { landingLoginCtaClassNames } from "@/components/landing/landingCtaStyles";
 
-export function FinalCtaSection({
-  onJoinWaitlist,
-}: {
-  onJoinWaitlist: () => void;
-}) {
+export function FinalCtaSection() {
   return (
     <section className="px-4 pb-10 pt-16 sm:pb-14 sm:pt-20">
       <div className="mx-auto max-w-6xl">
@@ -20,17 +18,23 @@ export function FinalCtaSection({
                 {landingCopy.finalCta.headline}
               </h2>
               <p className="text-sm text-muted-foreground sm:text-base">
-                Join the waitlist to get launch updates and early access.
+                {landingCopy.finalCta.subtitle}
               </p>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
+              <Button asChild className={landingLoginCtaClassNames.heroAndBand}>
+                <Link href="/auth/login">
+                  {landingCopy.auth.login}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
               <Button
-                onClick={onJoinWaitlist}
-                className="h-11 rounded-full px-6"
+                asChild
+                variant="outline"
+                className="h-11 rounded-full px-6 font-semibold"
               >
-                {landingCopy.finalCta.cta}
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <Link href="/auth/signup">{landingCopy.auth.signUp}</Link>
               </Button>
             </div>
           </div>

@@ -4,7 +4,7 @@ const steps = [
   "Milestones",
   "Deliverables",
   "Client approval",
-  "Payment",
+  "Payment tracking",
 ] as const;
 
 export function SolutionSection() {
@@ -18,7 +18,8 @@ export function SolutionSection() {
             </h2>
             <p className="text-sm text-muted-foreground sm:text-base">
               Move from scattered communication to a structured loop: plan work,
-              ship deliverables, get approvals, and release payments on time.
+              ship deliverables, get approvals, and keep milestone payment
+              tracking visible as you go.
             </p>
           </div>
 
@@ -52,8 +53,8 @@ export function SolutionSection() {
 
             <div className="mt-6 rounded-xl border border-border bg-muted/20 p-4">
               <p className="text-sm text-muted-foreground">
-                Outcome: faster approvals + clearer expectations + payments tied
-                to milestones.
+                Outcome: faster approvals, clearer expectations, and milestone
+                payment status you can actually follow.
               </p>
             </div>
           </div>

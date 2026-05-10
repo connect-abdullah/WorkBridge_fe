@@ -32,9 +32,9 @@ const features = [
     Icon: BadgeCheck,
   },
   {
-    title: "Milestone-based payments",
+    title: "Milestone payment tracking",
     description:
-      "Track payments tied directly to completed work so you always know what’s pending and what’s paid.",
+      "See milestone payment status in one view; what’s approved, pending, or paid, without juggling spreadsheets or threads.",
     Icon: Wallet,
   },
   {
@@ -54,7 +54,7 @@ export function FeaturesSection() {
             Built for real freelancer workflows.
           </h2>
           <p className="text-sm text-muted-foreground sm:text-base">
-            Everything you need to run client projects with structure — without
+            Everything you need to run client projects with structure, without
             adding complexity.
           </p>
         </div>

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { ArrowRight, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import {
@@ -15,14 +15,9 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { landingCopy } from "@/components/landing/landingCopy";
+import { landingLoginCtaClassNames } from "@/components/landing/landingCtaStyles";
 
-export function LandingNavbar({
-  onJoinWaitlist,
-  className,
-}: {
-  onJoinWaitlist: () => void;
-  className?: string;
-}) {
+export function LandingNavbar({ className }: { className?: string }) {
   return (
     <header className={cn("sticky top-4 z-50 w-full px-4", className)}>
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 rounded-full border border-border/60 bg-background/60 px-4 py-2 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/45">
@@ -118,18 +113,21 @@ export function LandingNavbar({
 
               <div className="mt-6 grid gap-2">
                 <SheetClose asChild>
-                  <Button onClick={onJoinWaitlist} className="h-11 w-full">
-                    {landingCopy.hero.primaryCta}
+                  <Button asChild className="h-11 w-full shadow-md">
+                    <Link href="/auth/login">
+                      {landingCopy.auth.login}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
                   </Button>
                 </SheetClose>
               </div>
             </SheetContent>
           </Sheet>
-          <Button
-            onClick={onJoinWaitlist}
-            className="h-10 rounded-full px-4 min-[425px]:inline-flex"
-          >
-            {landingCopy.hero.primaryCta}
+          <Button asChild className={landingLoginCtaClassNames.nav}>
+            <Link href="/auth/login">
+              {landingCopy.auth.login}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
           </Button>
         </div>
       </div>

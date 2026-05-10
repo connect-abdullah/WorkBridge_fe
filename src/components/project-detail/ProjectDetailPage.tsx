@@ -1361,9 +1361,9 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
                   <button
                     type="button"
                     onClick={openProjectModal}
-                    className="inline-flex h-9 items-center gap-2 rounded-full border border-border bg-card px-3 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                    className="inline-flex h-7 items-center gap-2 rounded-full border border-border bg-card px-3 text-sm text-foreground transition hover:bg-muted hover:text-muted-foreground"
                   >
-                    <Pencil className="h-4 w-4" />
+                    <Pencil className="h-3 w-3" />
                     Edit
                   </button>
                 ) : null}
@@ -1649,14 +1649,10 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
           <div className="md:col-span-2 flex flex-wrap justify-between gap-2 pt-1">
             <Button
               type="button"
+              variant="destructive"
               className="h-10"
               onClick={handleProjectDelete}
-              variant="outline"
               aria-label="Delete project"
-              style={{
-                borderColor: "var(--destructive)",
-                color: "var(--destructive)",
-              }}
             >
               Delete Project
             </Button>

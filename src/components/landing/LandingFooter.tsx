@@ -27,7 +27,7 @@ export function LandingFooter() {
             © {new Date().getFullYear()} {landingCopy.brand}. All rights
             reserved.
           </p>
-          <p>Built for freelancers.</p>
+          <p>Milestones, collaboration, and tracking.</p>
         </div>
 
         <div id="contact" className="mt-6 text-xs text-muted-foreground">

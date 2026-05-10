@@ -83,11 +83,10 @@ export function ChannelUnificationSection() {
               Bring every client into one structured workflow.
             </h2>
             <p className="text-sm text-muted-foreground sm:text-base">
-              Clients come from everywhere; messages, referrals, platforms, and
-              emails. WorkBridge centralizes everything into one structured
-              system; so you can manage projects, handle approvals, deliver
-              files, and track payments without scattered communication or
-              constant follow-ups.
+              Clients come from everywhere — messages, referrals, platforms, and
+              email. WorkBridge centralizes the workflow so you can manage
+              projects, run approvals, share files, and track milestone payment
+              status without scattered communication or constant follow-ups.
             </p>
           </div>
 
