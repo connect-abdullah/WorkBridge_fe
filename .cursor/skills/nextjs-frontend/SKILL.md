@@ -1,6 +1,6 @@
 ---
 name: nextjs-frontend
-description: Implements and extends the ProjectSetups/NextJS_Template starter (Next.js 15 + TypeScript + Tailwind + React Query + Supabase + Axios). Use when building new features from this template, wiring API/auth flows with src/lib/https.ts, adding routes/layouts in src/app, and keeping template-specific conventions aligned.
+description: Next.js 15 App Router + TypeScript + Tailwind + React Query + Axios patterns, with production-oriented SSR (server components, cookie auth via BFF proxy, server axios, server actions, Edge middleware). Use when adding routes/layouts, API clients, auth/session, React Query, and client “islands.”
 ---
 
 # Next.js Frontend
@@ -23,75 +23,125 @@ description: Implements and extends the ProjectSetups/NextJS_Template starter (N
   - Present now: `src/components/layout/MainShell.tsx`, `src/components/ui/button.tsx`.
 - **Lib utilities**
   - Present now: `src/lib/https.ts`, `src/lib/supabase.ts`, `src/lib/forceLogout.tsx`, `src/lib/providers/query-provider.tsx`, `src/lib/utils.ts`.
-- **Not scaffolded yet**
-  - No `src/lib/api/**`, `src/views/**`, `src/store/**`, `src/hooks/**`, or `src/types/**` currently in this template.
-  - When adding them, keep them intentionally minimal and domain-first.
+- **Styling / UX**
+  - Design tokens in `globals.css`; use `cn(...)` for class composition.
+- **React Query defaults**
+  - Configure once in `QueryProvider` (`staleTime`, `gcTime`, refetch flags). Tune per product; SSR pages often use `force-dynamic` regardless.
+- **SSR-oriented additions (pattern to replicate)**
+  - `src/app/api/[...path]/route.ts` — catch-all proxy to internal API
+  - `src/lib/api/server.ts` — server-only Axios + `cookies()` forwarding
+  - `src/lib/auth/session.ts`, `actions.ts`, `user-context.tsx` — session + server actions + client context
 
-## Hard conventions from this template
+## Hard conventions (cookie auth + SSR)
 
-- **HTTP and auth**
-  - Use `src/lib/https.ts` helpers: `get/post/put/patch/del`.
-  - Do not bypass `withPrefix`; endpoint calls should pass relative paths and let `API_PREFIX` (`/api/v1`) apply automatically.
-  - Keep token source compatible with current key: `localStorage["auth:token"]`.
-  - Keep logout compatibility with current clear keys:
-    - `auth:token`, `auth:user`, `auth:refreshToken`, `persist:root`
-  - Keep 401 behavior centralized (interceptor -> `forceLogout()`).
-- **Query behavior**
-  - Reuse QueryClient defaults from `query-provider.tsx`:
-    - `staleTime: 30m`, `gcTime: 45m`, `retry: 1`
-    - `refetchOnWindowFocus: false`
-    - `refetchOnMount: false`
-    - `refetchOnReconnect: false`
-- **Styling**
-  - Use design tokens from `globals.css` (`--background`, `--foreground`, etc.).
-  - Use `cn(...)` helper for composed class names.
-  - Reuse existing container/shell pattern from `MainShell`.
-- **Path aliases**
-  - Prefer `@/*` imports (configured in `tsconfig.json`).
+- **No localStorage/sessionStorage for access tokens or user identity.**
+- **Browser HTTP** uses same-origin `API_PREFIX` (e.g. `/api/v1`) so cookies are first-party; use `withCredentials: true` on Axios/fetch.
+- **Server HTTP** uses `INTERNAL_API_URL` (or equivalent **server-only** env var)—never `NEXT_PUBLIC_*` for the internal API base.
+- **Two HTTP clients:**
+  - **Client:** `src/lib/https.ts` (or `src/lib/api/client.ts`) — relative `/api/v1`, CSRF header on unsafe methods, refresh-on-401 once.
+  - **Server:** `import "server-only"` module — Axios/fetch to internal API, attach `Cookie` from `next/headers` and `X-CSRF-Token` from `csrf_token` cookie on mutations.
+- **Auth forms:** `loginAction` / `signupAction` server actions call API directly, then **`cookies().set`** from parsed `Set-Cookie` headers (or use a small parser for each cookie line).
+- **Layouts:** protected route group `layout.tsx` is `async`; `await requireSession()`; pass serializable user into a thin **client** shell wrapped in `<UserProvider user={...}>`.
+- **Middleware:** **presence-only** check (`access_token` and/or `refresh_token` cookie); no JWT decode on Edge. Real auth = RSC + API.
+- **Caching:** per-user pages `export const dynamic = "force-dynamic"` (or fetch `cache: "no-store"`). After login/logout: `revalidatePath("/", "layout")` in server actions.
 
-## Repo conventions 
+### Request flow (mental model)
 
-These reflect how API + React Query is implemented in this repo right now. When adding new endpoints or hooks, match this shape for consistency.
+```mermaid
+flowchart LR
+  Browser["Browser"]
+  Edge["Next.js middleware"]
+  RSC["Server Components"]
+  Actions["Server Actions"]
+  Proxy["Route Handler /api/*"]
+  API["API service"]
+
+  Browser --> Edge
+  Edge --> RSC
+  Edge --> Actions
+  Browser -->|"same-origin HTTP"| Proxy
+  RSC -->|"server axios + Cookie"| API
+  Actions -->|"fetch + apply Set-Cookie"| Browser
+  Proxy -->|"INTERNAL_API_URL"| API
+```
+
+- **Browser XHR/fetch:** only to the Next origin (`/api/v1/...`); cookies are set for that origin.
+- **RSC / server actions:** may bypass the proxy and call the API directly with forwarded `Cookie` (faster, no double hop for SSR).
+
+## Deprecated for new work
+
+- Storing `auth:token` / `auth:user` in localStorage
+- A separate `axios.ts` that reads tokens from localStorage for browser calls
+- `enabled: !!localStorage.getItem("auth:token")` in React Query — use session user id from context or assume layout already gated auth
+
+## Repo conventions
 
 - **API response envelope**
-  - Use `src/lib/apis/apiResponse.ts`:
-    - `APIResponse<T> { success: boolean; message: string; data?: T | null; errors?: any | null }`
-    - `API_PREFIX = "/api/v1"` as the centralized prefix constant.
+  - Centralize `APIResponse<T>` and `API_PREFIX` (e.g. `/api/v1`).
 
-- **Axios instance + auth token behavior**
-  - Use `src/lib/axios.ts` as the shared Axios client.
-  - Base URL comes from `process.env.NEXT_PUBLIC_API_URL` (fallback to empty string).
-  - Request interceptor:
-    - If sending `FormData`, delete `Content-Type` so Axios/browser set correct multipart boundary.
-    - Auth header reads `accessToken`:
-      - Client: `localStorage.getItem("accessToken")`
-      - Server: `cookies().get("accessToken")?.value` via dynamic import of `next/headers` (to avoid client bundling).
-  - Response interceptor:
-    - On `401` (client-side only), clear `accessToken` and `currentUser` from `localStorage`.
+- **Catch-all Route Handler proxy** (`src/app/api/[...path]/route.ts`)
+  - **Purpose:** Browser calls `https://app.example.com/api/v1/...`; Next forwards to `INTERNAL_API_URL/api/v1/...` so `Set-Cookie` from the API is applied to the **app origin**.
+  - Forward method, body (streaming), query string, and **Cookie** header.
+  - Copy response status/body; forward **all** `Set-Cookie` headers (`getSetCookie()` in Node, not a single merged string).
+  - Strip hop-by-hop headers (`host`, `connection`, …).
+  - `export const dynamic = "force-dynamic"` (or equivalent) so caching does not cache authenticated responses at the edge.
+  - Implement `GET`, `POST`, `PUT`, `PATCH`, `DELETE` (and `OPTIONS` if preflight needed).
 
-- **React Query “options builder” layer**
-  - Keep HTTP details inside `src/lib/apis/**` modules; `src/lib/queryApi.ts` composes query/mutation option objects only.
-  - Single source of truth for query keys: `queryKeys` in `src/lib/queryApi.ts`.
-    - Include stable partitions (e.g. `userId`) **for cache identity only** even if the API resolves user from JWT.
-  - Prefer `queryApi.<domain>.<operation>(...) => UseQueryOptions<APIResponse<...>, Error>` (and similarly for mutations).
-  - Use a small cache helper with defaults:
-    - `DEFAULT_CACHE`: `staleTime: 15m`, `gcTime: 30m`
-    - Allow per-call overrides via `cacheConfig`.
-  - Use `enabled` guards to prevent invalid calls (e.g. `projectId > 0`, `userId > 0`, client-only requirements).
+- **Client Axios** (`src/lib/https.ts` pattern)
+  - `baseURL: ""` or relative; paths prefixed with `API_PREFIX`.
+  - `withCredentials: true`.
+  - Request interceptor: for unsafe methods, read **non-HttpOnly** `csrf_token` from `document.cookie` and set `X-CSRF-Token`.
+  - For `FormData`, drop `Content-Type` so the browser sets the boundary.
+  - Response interceptor: on **401**, **once** `POST /api/v1/auth/refresh` with `credentials: "include"`, then retry original request; if refresh fails, call logout redirect helper.
+  - **Never** read JWT from localStorage.
+
+- **Server axios** (`src/lib/api/server.ts` pattern)
+  - First line: `import "server-only"`.
+  - `baseURL: process.env.INTERNAL_API_URL` (with safe dev fallback only if you accept that risk).
+  - Interceptor: `import("next/headers").then(({ cookies }) => …)` — build `Cookie` header from `cookies().getAll()`; for POST/PUT/PATCH/DELETE add `X-CSRF-Token` from `csrf_token` cookie.
+  - Default to **no caching** for per-user fetches (`cache: "no-store"` on fetch, or Axios equivalents).
+  - Helpers: `serverGet`, `serverPost`, … that unwrap envelopes and optionally `swallow401` for optional session reads.
+
+- **Session helpers** (`src/lib/auth/session.ts`)
+  - `getSession`: `React.cache(async () => { … })` calling `GET /auth/me` via **server** client; return `null` if unauthenticated.
+  - `requireSession(redirectTo?)`: if no session, `redirect()` to login (and optionally preserve `?next=`).
+  - `requireRole(role)`: compose with `requireSession`.
+
+- **Server actions** (`src/lib/auth/actions.ts` with `"use server"`)
+  - Post to internal `…/api/v1/auth/login` (and signup) with `fetch`, `cache: "no-store"`.
+  - Parse upstream `Set-Cookie` lines into structured fields and `cookies().set({ name, value, path, maxAge, … })` for each.
+  - Logout: forward cookies to API logout, apply clearing `Set-Cookie`, delete cookies locally, `revalidatePath("/", "layout")`, `redirect("/login")`.
+  - Login/signup success: `revalidatePath("/", "layout")` so the next RSC read sees cookies.
+
+- **User context for client islands** (`user-context.tsx`)
+  - `UserProvider` receives **server-resolved** user (id, name, email, role, …).
+  - Export `useSessionUser`, `useRole`, `usePermissions` — **do not** read `localStorage`.
+  - Pure `getPermissionsFor(role)` stays in a small `permissions.ts` module.
+
+- **React Query**
+  - Keep HTTP in `src/lib/apis/**`; option builders + `queryKeys` in `src/lib/queryApi.ts`.
+  - `enabled` should use **numeric ids** or route context — not `localStorage` token checks.
+  - For SSR + hydration: wrap client subtree in `<HydrationBoundary state={dehydrate(queryClient)}>` after `queryClient.setQueryData` in a **server** page.
+
+- **WebSockets**
+  - URL: same origin as the page, e.g. `wss://host/api/v1/ws/chat` — **no** `?token=` if the API accepts cookies on upgrade.
+  - On close code policy violation (e.g. 1008), optionally trigger one refresh before reconnect.
+
+- **Third-party uploads (e.g. Supabase)**
+  - If storage paths include `userId`, pass `userId` from `useSessionUser()` into `handleUpload(file, userId)` — do not read identity from localStorage.
 
 ## Notifications implementation (React Query + optimistic cache)
 
-This repo implements Notifications with React Query infinite pagination, option builders from `src/lib/queryApi.ts`, and optimistic cache updates with rollback support.
+Pattern: infinite pagination, option builders, optimistic updates with rollback.
 
 - **Where code lives**
-  - UI and helpers: `src/components/notifications/*`
-  - Query keys + option builders: `src/lib/queryApi.ts` (`queryKeys.notifications.*`, `queryApi.notifications.*`)
-  - Domain types/envelope: `APIResponse<NotificationListResponse>`
+  - UI and helpers under `src/components/notifications/*`
+  - `queryKeys.notifications.*`, `queryApi.notifications.*`
+  - Types: `APIResponse<NotificationListResponse>`
 
 - **Query option builders**
-  - Infinite list: `queryApi.notifications.infiniteList(userId, pageSize)` with key `queryKeys.notifications.infiniteList(userId, pageSize)`.
-  - Badge list: `queryApi.notifications.list(userId, offset, limit)` with key `queryKeys.notifications.list(userId, offset, limit)`.
-  - Keys must include stable partitions (`userId`, `pageSize`, `offset`, `limit`) to prevent cache collisions.
+  - Infinite list: `queryApi.notifications.infiniteList(userId, pageSize)` — `userId` from `useSessionUser().id` (or props), not localStorage.
+  - Keys must include stable partitions (`userId`, `pageSize`, …) for cache identity.
 
 - **Infinite pagination rules**
   - `getNextPageParam` uses the API paging envelope (`total`, `offset`, `results.length`) to compute next offset and stop at end-of-list.
@@ -113,49 +163,41 @@ This repo implements Notifications with React Query infinite pagination, option 
     - `applyReadToPage(...)` sets `is_read: true` and fills `read_at` with “now” when missing.
     - `mapInfiniteReadPages(...)` applies the patch across all infinite pages.
 
-## Additional conventions (preferred patterns)
+## Middleware (Edge) pattern
 
-Use these patterns when expanding the template into a full app (they match how you’ve already built production code):
+- Match only routes that need redirects (auth + protected prefixes).
+- If path is **auth** (`/auth/...`) and auth cookies present → redirect to app home (e.g. `/dashboard`).
+- If path is **protected** and **no** access or refresh cookie → redirect to `/auth/login?next=<encoded path>`.
+- Cookie names must match the API (`access_token`, `refresh_token`, etc.).
+- Do not rely on middleware for RBAC—only cookie **presence**.
 
-- **API module layout**
-  - Prefer per-domain modules under `src/lib/Apis/<Domain>/*` (or `src/lib/api/<domain>/*` if you want a lowercase convention), exporting a `service` object of functions.
-  - Keep API response envelope types close to the domain (example pattern: `ApiResponse<T> { success, message, data, errors }`).
-- **HTTP base URL**
-  - In larger apps, you may choose `NEXT_PUBLIC_API_BASE_URL` (used by `haba-o-jumla-fe`) instead of `NEXT_PUBLIC_BACKEND_URL`.
-  - If you keep `API_PREFIX` in the template, keep it centralized and never string-concatenate `/api/v1` throughout the UI.
-- **Auth redirect on 401**
-  - Template uses `forceLogout()` (redirects to `/`).
-  - `haba-o-jumla-fe` redirects to `/auth/login` and avoids redirect loops; use that behavior if you add an auth section.
-- **Query defaults (tunable)**
-  - Template defaults are more cache-friendly (30m stale).
-  - `haba-o-jumla-fe` uses shorter cache (1m stale, 5m gc) for ecommerce-like freshness. Adjust per product needs.
-- **Quality workflow**
-  - Stronger validate pattern used in `haba-o-jumla-fe`: `lint + type-check + build`.
-  - Adopt “no `console.log`” in production code and prefer typed errors/toasts.
+## Additional conventions
+
+- **Per-domain API modules:** `src/lib/apis/<domain>/*.ts` for client-side `get/post/...` wrappers.
+- **Per-domain server wrappers:** `src/lib/api/server/<domain>.ts` with `import "server-only"` reusing envelope types.
+- **Centralize `API_PREFIX`** — avoid scattering `/api/v1` string literals.
+- **Logout:** `forceLogout()` calls `POST /api/v1/auth/logout` with credentials + CSRF header, then `window.location` to login (full navigation clears in-memory state).
 
 ## Environment/config touchpoints
 
-- `NEXT_PUBLIC_BACKEND_URL` (fallback in code: `http://localhost:8000/`)
-- `NEXT_PUBLIC_API_BASE_URL` (pattern used in `haba-o-jumla-fe`)
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `NEXT_PUBLIC_SUPABASE_MENU_BUCKET` (defaults to `public`)
+- **`INTERNAL_API_URL`** (server-only): direct base URL to the API for Route Handler proxy + server axios + server actions. **Never** prefix with `NEXT_PUBLIC_`.
+- **Optional:** `NEXT_PUBLIC_DEV_URL` / `NEXT_PUBLIC_BACKEND_URL` for legacy fallbacks or non-proxy tooling only.
+- **Supabase (or similar):** public URL + anon key remain `NEXT_PUBLIC_*` by design.
 
-## Feature-add workflow for this skeleton
+## Feature-add workflow (SSR-first)
 
-1. Add/extend route in `src/app/(main)` (or create a new route group if needed).
-2. Keep page shell in layout components (`MainShell`-style) and UI primitives in `components/ui`.
-3. If backend data is needed:
-   - create `src/lib/api/<domain>/index.ts` (or `.tsx` if JSX needed),
-   - export typed wrappers built on `get/post/put/patch/del`.
-4. If runtime validation is needed, add colocated Zod schemas in `src/lib/api/<domain>/schema.ts`.
-5. Use React Query hooks in client components, relying on shared `QueryProvider`.
-6. Run `format`, `lint`, `test`, then `build` (or `validate`).
+1. **Data ownership:** default to a **Server Component** page; fetch with `serverGet` / domain server wrapper; `export const dynamic = "force-dynamic"` when data is per-user.
+2. **Auth gate:** protected segment `layout.tsx` calls `requireSession()` and passes user into `UserProvider` + shell.
+3. **Interactivity:** extract a `"use client"` island; use `useSessionUser()` for id/role; use React Query for mutations, optimistic UI, infinite scroll.
+4. **Hydration (optional):** in the server page, `new QueryClient()` → `setQueryData` → `<HydrationBoundary state={dehydrate(queryClient)}>` around the client island.
+5. **New API surface:** add client wrappers under `src/lib/apis/…` (browser) and optionally `src/lib/api/server/…` (RSC).
+6. Run `lint`, `tsc --noEmit`, `build`.
 
 ## Quality gate before handoff
 
-- [ ] New API calls use `src/lib/https.ts` helpers and API prefix flow
-- [ ] No duplicate auth/logout logic outside `https.ts` + `forceLogout.tsx`
-- [ ] Route/layout additions preserve current `app` + `MainShell` structure
-- [ ] Any new env var is documented near usage
-- [ ] `bun run validate` passes
+- [ ] No JWT or user identity in localStorage for auth
+- [ ] Browser uses same-origin `/api/v1` + `withCredentials`; mutations send CSRF header
+- [ ] Server-only code imports `server-only` and uses `INTERNAL_API_URL`
+- [ ] Protected layouts use `requireSession`; middleware aligns with cookie names
+- [ ] Login/logout server actions update cookies and call `revalidatePath`
+- [ ] `build` passes; new env vars documented
