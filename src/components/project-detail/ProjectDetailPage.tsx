@@ -1370,7 +1370,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
       {/* ── Tab Nav ────────────────────────────────────── */}
       <div className="sticky top-0 z-20 border-b border-border backdrop-blur">
-        <div className="flex gap-0.5 overflow-x-auto py-1.5">
+        <div className="wb-scrollbar-x flex gap-0.5 overflow-x-auto py-1.5">
           {tabs.map((tab) => (
             <button
               key={tab}

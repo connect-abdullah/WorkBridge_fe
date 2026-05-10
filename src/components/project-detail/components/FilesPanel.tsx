@@ -711,7 +711,7 @@ export function FilesPanel({
               })}
             </div>
 
-            <div className="hidden overflow-x-auto md:block">
+            <div className="wb-scrollbar-x hidden overflow-x-auto md:block">
               <div className="grid min-w-[640px] items-center gap-3 border-b border-border bg-muted/30 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground md:grid-cols-[1.4fr_0.6fr_0.9fr_0.9fr_auto]">
                 <div className="flex min-w-0 items-center gap-2">
                   <span

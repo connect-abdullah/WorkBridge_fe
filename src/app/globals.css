@@ -43,3 +43,37 @@ body {
   background: hsl(var(--primary) / 0.55);
   animation: wb-toast-progress 3000ms linear forwards;
 }
+
+/**
+ * Minimal horizontal scrollbar (pill track + thumb), theme-aware via
+ * `--foreground` so dark mode reads as soft gray-on-charcoal like the product UI.
+ */
+@layer utilities {
+  .wb-scrollbar-x {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--foreground) / 0.36) hsl(var(--foreground) / 0.1);
+  }
+
+  .wb-scrollbar-x::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .wb-scrollbar-x::-webkit-scrollbar-track {
+    margin: 0 2px;
+    background: hsl(var(--foreground) / 0.1);
+    border-radius: 9999px;
+  }
+
+  .wb-scrollbar-x::-webkit-scrollbar-thumb {
+    background: hsl(var(--foreground) / 0.32);
+    border-radius: 9999px;
+  }
+
+  .wb-scrollbar-x::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground) / 0.46);
+  }
+
+  .wb-scrollbar-x::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}

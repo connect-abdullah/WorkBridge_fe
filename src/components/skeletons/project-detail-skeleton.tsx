@@ -48,7 +48,7 @@ export const MilestoneStepTrackerSkeleton = memo(function MilestoneStepTrackerSk
 
 export const ProjectDetailTabsSkeleton = memo(function ProjectDetailTabsSkeleton() {
   return (
-    <div className="flex gap-1 overflow-x-auto py-1.5">
+    <div className="wb-scrollbar-x flex gap-1 overflow-x-auto py-1.5">
       {Array.from({ length: 8 }).map((_, i) => (
         <Skeleton key={i} className="h-9 w-24 shrink-0 rounded-md" />
       ))}
