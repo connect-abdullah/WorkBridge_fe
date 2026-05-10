@@ -31,6 +31,9 @@ const HOP_BY_HOP_HEADERS = new Set([
   "accept-encoding",
 ]);
 
+/** Undici/Node fetch decompresses the body but may still expose Content-Encoding. */
+const STRIP_FROM_PROXY_RESPONSE = new Set(["content-encoding"]);
+
 function getBackendBase(): string {
   const internal = process.env.INTERNAL_API_URL;
   if (internal && internal.length > 0) return internal.replace(/\/$/, "");
@@ -108,8 +111,10 @@ async function forward(
 
   const responseHeaders = new Headers();
   upstream.headers.forEach((value, key) => {
-    if (HOP_BY_HOP_HEADERS.has(key.toLowerCase())) return;
-    if (key.toLowerCase() === "set-cookie") return;
+    const lower = key.toLowerCase();
+    if (HOP_BY_HOP_HEADERS.has(lower)) return;
+    if (STRIP_FROM_PROXY_RESPONSE.has(lower)) return;
+    if (lower === "set-cookie") return;
     responseHeaders.set(key, value);
   });
 
