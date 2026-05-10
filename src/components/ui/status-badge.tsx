@@ -16,8 +16,7 @@ const toneClasses: Record<StatusTone, string> = {
     "bg-[var(--status-completed-bg)] text-[var(--status-completed-fg)]",
   paid: "bg-[var(--status-paid-bg)] text-[var(--status-paid-fg)]",
   issue: "bg-[var(--status-issue-bg)] text-[var(--status-issue-fg)]",
-  neutral:
-    "bg-[var(--status-neutral-bg)] text-[var(--status-neutral-fg)]",
+  neutral: "bg-[var(--status-neutral-bg)] text-[var(--status-neutral-fg)]",
 };
 
 export function StatusBadge({

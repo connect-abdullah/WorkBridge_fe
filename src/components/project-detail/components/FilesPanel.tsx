@@ -592,8 +592,8 @@ export function FilesPanel({
       <div className="rounded-xl border border-dashed border-border bg-card p-4 text-center shadow-sm sm:p-8">
         {!permissions.canEditProject ? (
           <p className="text-sm text-muted-foreground">
-            Files shared on this project are listed below. Uploads are managed by
-            the freelancer.
+            Files shared on this project are listed below. Uploads are managed
+            by the freelancer.
           </p>
         ) : !pendingFile ? (
           <>
@@ -748,7 +748,9 @@ export function FilesPanel({
                       {file.file_name}
                     </p>
                   </div>
-                  <p className="text-muted-foreground capitalize">{file.file_type}</p>
+                  <p className="text-muted-foreground capitalize">
+                    {file.file_type}
+                  </p>
                   <p className="text-muted-foreground">
                     {formatDate(file.created_at)}
                   </p>

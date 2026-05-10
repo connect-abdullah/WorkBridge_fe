@@ -20,7 +20,11 @@ export function NotesEditor({
   meetingId?: number | null;
   scope: "project" | "meeting";
 }) {
-  const { data: res, isLoading, error } = useQuery(
+  const {
+    data: res,
+    isLoading,
+    error,
+  } = useQuery(
     queryApi.notes.list(projectId, meetingId, {
       staleTime: 2 * 60 * 1000, // 2 minutes
       gcTime: 10 * 60 * 1000, // 10 minutes
@@ -63,7 +67,7 @@ export function NotesEditor({
         type: "private",
         project_id: projectId,
         user_id: userId,
-        meeting_id: scope === "meeting" ? meetingId ?? undefined : undefined,
+        meeting_id: scope === "meeting" ? (meetingId ?? undefined) : undefined,
       };
       return createNote(payload);
     },
@@ -93,7 +97,7 @@ export function NotesEditor({
         type: "shared",
         project_id: projectId,
         user_id: userId,
-        meeting_id: scope === "meeting" ? meetingId ?? undefined : undefined,
+        meeting_id: scope === "meeting" ? (meetingId ?? undefined) : undefined,
       };
       return createNote(payload);
     },
@@ -203,4 +207,3 @@ export function NotesEditor({
     </div>
   );
 }
-

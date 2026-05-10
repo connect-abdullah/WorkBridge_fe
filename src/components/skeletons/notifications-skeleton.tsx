@@ -37,21 +37,23 @@ function GroupSkeleton({ rows }: { rows: number }) {
 }
 
 /** Matches notifications page: header, toolbar, grouped list. */
-export const NotificationsPageSkeleton = memo(function NotificationsPageSkeleton() {
-  return (
-    <div className="mx-auto max-w-2xl space-y-4 pb-6 sm:space-y-5 md:pb-8">
-      <div className="space-y-1.5">
-        <Skeleton className="h-7 w-40 rounded-lg sm:h-8 sm:w-48" />
-        <Skeleton className="h-3 w-full max-w-md rounded sm:h-4 sm:max-w-lg" />
+export const NotificationsPageSkeleton = memo(
+  function NotificationsPageSkeleton() {
+    return (
+      <div className="mx-auto max-w-2xl space-y-4 pb-6 sm:space-y-5 md:pb-8">
+        <div className="space-y-1.5">
+          <Skeleton className="h-7 w-40 rounded-lg sm:h-8 sm:w-48" />
+          <Skeleton className="h-3 w-full max-w-md rounded sm:h-4 sm:max-w-lg" />
+        </div>
+        <div className="flex flex-col gap-2 rounded-xl border border-border/80 bg-card px-3 py-2.5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:px-3.5 sm:py-2.5">
+          <Skeleton className="h-3.5 w-24 rounded sm:h-4 sm:w-28" />
+          <Skeleton className="h-9 w-full rounded-md sm:h-8 sm:w-32" />
+        </div>
+        <div className="space-y-5 sm:space-y-6">
+          <GroupSkeleton rows={3} />
+          <GroupSkeleton rows={2} />
+        </div>
       </div>
-      <div className="flex flex-col gap-2 rounded-xl border border-border/80 bg-card px-3 py-2.5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:px-3.5 sm:py-2.5">
-        <Skeleton className="h-3.5 w-24 rounded sm:h-4 sm:w-28" />
-        <Skeleton className="h-9 w-full rounded-md sm:h-8 sm:w-32" />
-      </div>
-      <div className="space-y-5 sm:space-y-6">
-        <GroupSkeleton rows={3} />
-        <GroupSkeleton rows={2} />
-      </div>
-    </div>
-  );
-});
+    );
+  },
+);

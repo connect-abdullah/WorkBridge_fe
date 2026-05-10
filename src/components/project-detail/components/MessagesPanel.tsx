@@ -37,10 +37,7 @@ import {
   markMessagesRead,
   sendMessage,
 } from "@/lib/apis/messages/messages";
-import type {
-  MessageRead,
-  MessageWsEvent,
-} from "@/lib/apis/messages/schema";
+import type { MessageRead, MessageWsEvent } from "@/lib/apis/messages/schema";
 import { useChatSocket } from "@/hooks/useChatSocket";
 import { useSessionUser } from "@/lib/auth/user-context";
 import { queryKeys } from "@/lib/queryApi";
@@ -302,7 +299,9 @@ export function MessagesPanel({
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setLoadError(err instanceof Error ? err.message : "Failed to load messages.");
+        setLoadError(
+          err instanceof Error ? err.message : "Failed to load messages.",
+        );
       })
       .finally(() => {
         if (!cancelled) setIsInitialLoading(false);
@@ -326,10 +325,7 @@ export function MessagesPanel({
   );
 
   useChatSocket({
-    enabled:
-      messagingEnabled &&
-      Number.isFinite(projectId) &&
-      projectId > 0,
+    enabled: messagingEnabled && Number.isFinite(projectId) && projectId > 0,
     onMessage: handleSocketMessage,
   });
 
@@ -374,10 +370,7 @@ export function MessagesPanel({
 
   // ── Send (idempotent)
   const sendMutation = useMutation({
-    mutationFn: (vars: {
-      content: string;
-      clientKey: string;
-    }) =>
+    mutationFn: (vars: { content: string; clientKey: string }) =>
       sendMessage({
         project_id: projectId,
         content: vars.content,
@@ -424,7 +417,9 @@ export function MessagesPanel({
               p.clientKey === clientKey ? { ...p, status: "failed" } : p,
             ),
           );
-          toast.error(err instanceof Error ? err.message : "Failed to send message.");
+          toast.error(
+            err instanceof Error ? err.message : "Failed to send message.",
+          );
         },
       },
     );
@@ -439,7 +434,9 @@ export function MessagesPanel({
     const target = pending.find((p) => p.clientKey === clientKey);
     if (!target) return;
     setPending((prev) =>
-      prev.map((p) => (p.clientKey === clientKey ? { ...p, status: "pending" } : p)),
+      prev.map((p) =>
+        p.clientKey === clientKey ? { ...p, status: "pending" } : p,
+      ),
     );
     sendMutation.mutate(
       { content: target.content, clientKey },
@@ -573,222 +570,239 @@ export function MessagesPanel({
 
         {messagingEnabled ? (
           <>
-        <div
-          ref={messagesContainerRef}
-          className="min-h-0 flex-1 space-y-2.5 overflow-y-auto bg-muted/20 p-3 sm:p-4"
-        >
-          {nextCursor != null ? (
-            <div className="flex justify-center pb-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={loadOlder}
-                disabled={isLoadingOlder}
-              >
-                {isLoadingOlder ? (
-                  <>
-                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                    Loading…
-                  </>
-                ) : (
-                  "Load older messages"
-                )}
-              </Button>
-            </div>
-          ) : null}
-
-          {isInitialLoading ? (
-            <MessagesPanelSkeleton />
-          ) : loadError ? (
-            <p className="py-6 text-center text-sm text-destructive">
-              {loadError}
-            </p>
-          ) : messages.length === 0 && pending.length === 0 ? (
-            <p className="py-8 text-center text-xs text-muted-foreground">
-              No messages yet. Start the conversation.
-            </p>
-          ) : null}
-
-          {messages.map((item) => {
-            const isSelf =
-              currentUserId > 0 && item.sender_id === currentUserId;
-            return (
-              <div
-                key={item.id}
-                className={`flex w-full ${isSelf ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={cn(
-                    "max-w-[min(78%,15rem)] rounded-2xl px-3 py-2 text-sm leading-relaxed sm:max-w-[min(78%,520px)] sm:px-3.5 sm:py-2.5",
-                    isSelf
-                      ? "rounded-br-md bg-primary text-primary-foreground shadow-md"
-                      : "rounded-bl-md border border-border/80 bg-card text-foreground shadow-md ring-1 ring-black/[0.04] dark:ring-white/[0.06]",
-                  )}
-                >
-                  <p
-                    className={cn(
-                      "whitespace-pre-wrap break-words",
-                      isSelf ? "text-primary-foreground" : "text-foreground",
-                    )}
+            <div
+              ref={messagesContainerRef}
+              className="min-h-0 flex-1 space-y-2.5 overflow-y-auto bg-muted/20 p-3 sm:p-4"
+            >
+              {nextCursor != null ? (
+                <div className="flex justify-center pb-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={loadOlder}
+                    disabled={isLoadingOlder}
                   >
-                    <MessageWithFileTokens
-                      message={item.content}
-                      files={cachedFiles}
-                      variant={isSelf ? "sent" : "received"}
-                      onFileClick={openMessageAttachment}
-                    />
-                  </p>
+                    {isLoadingOlder ? (
+                      <>
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        Loading…
+                      </>
+                    ) : (
+                      "Load older messages"
+                    )}
+                  </Button>
+                </div>
+              ) : null}
+
+              {isInitialLoading ? (
+                <MessagesPanelSkeleton />
+              ) : loadError ? (
+                <p className="py-6 text-center text-sm text-destructive">
+                  {loadError}
+                </p>
+              ) : messages.length === 0 && pending.length === 0 ? (
+                <p className="py-8 text-center text-xs text-muted-foreground">
+                  No messages yet. Start the conversation.
+                </p>
+              ) : null}
+
+              {messages.map((item) => {
+                const isSelf =
+                  currentUserId > 0 && item.sender_id === currentUserId;
+                return (
+                  <div
+                    key={item.id}
+                    className={`flex w-full ${isSelf ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={cn(
+                        "max-w-[min(78%,15rem)] rounded-2xl px-3 py-2 text-sm leading-relaxed sm:max-w-[min(78%,520px)] sm:px-3.5 sm:py-2.5",
+                        isSelf
+                          ? "rounded-br-md bg-primary text-primary-foreground shadow-md"
+                          : "rounded-bl-md border border-border/80 bg-card text-foreground shadow-md ring-1 ring-black/[0.04] dark:ring-white/[0.06]",
+                      )}
+                    >
+                      <p
+                        className={cn(
+                          "whitespace-pre-wrap break-words",
+                          isSelf
+                            ? "text-primary-foreground"
+                            : "text-foreground",
+                        )}
+                      >
+                        <MessageWithFileTokens
+                          message={item.content}
+                          files={cachedFiles}
+                          variant={isSelf ? "sent" : "received"}
+                          onFileClick={openMessageAttachment}
+                        />
+                      </p>
+                      <div
+                        className={cn(
+                          "mt-1.5 flex items-center gap-1 text-[11px]",
+                          isSelf
+                            ? "justify-end text-primary-foreground/75"
+                            : "justify-end text-muted-foreground",
+                        )}
+                      >
+                        <span>{formatTime(item.created_at)}</span>
+                        {isSelf ? (
+                          item.status === "READ" ? (
+                            <CheckCheck className="h-3 w-3" aria-label="Read" />
+                          ) : item.status === "DELIVERED" ? (
+                            <CheckCheck
+                              className="h-3 w-3 opacity-60"
+                              aria-label="Delivered"
+                            />
+                          ) : (
+                            <Check
+                              className="h-3 w-3 opacity-60"
+                              aria-label="Sent"
+                            />
+                          )
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {pending.map((item) => (
+                <div
+                  key={item.clientKey}
+                  className="flex w-full flex-col items-end gap-1"
+                >
                   <div
                     className={cn(
-                      "mt-1.5 flex items-center gap-1 text-[11px]",
-                      isSelf ? "justify-end text-primary-foreground/75" : "justify-end text-muted-foreground",
+                      "max-w-[min(78%,15rem)] rounded-2xl rounded-br-md px-3 py-2 text-sm leading-relaxed shadow-md sm:max-w-[min(78%,520px)] sm:px-3.5 sm:py-2.5",
+                      item.status === "failed"
+                        ? "bg-destructive/10 text-foreground ring-1 ring-destructive/40"
+                        : "bg-primary text-primary-foreground",
                     )}
                   >
-                    <span>{formatTime(item.created_at)}</span>
-                    {isSelf ? (
-                      item.status === "READ" ? (
-                        <CheckCheck className="h-3 w-3" aria-label="Read" />
-                      ) : item.status === "DELIVERED" ? (
-                        <CheckCheck className="h-3 w-3 opacity-60" aria-label="Delivered" />
-                      ) : (
-                        <Check className="h-3 w-3 opacity-60" aria-label="Sent" />
-                      )
-                    ) : null}
+                    <p className="whitespace-pre-wrap break-words">
+                      <MessageWithFileTokens
+                        message={item.content}
+                        files={cachedFiles}
+                        variant="sent"
+                        onFileClick={openMessageAttachment}
+                      />
+                    </p>
+                    <div className="mt-1 flex items-center justify-end gap-2 text-[11px] opacity-80">
+                      <span>{formatTime(item.createdAt)}</span>
+                      {item.status === "failed" ? (
+                        <button
+                          type="button"
+                          onClick={() => retryPending(item.clientKey)}
+                          className="font-medium underline"
+                        >
+                          Retry
+                        </button>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
-
-          {pending.map((item) => (
-            <div key={item.clientKey} className="flex w-full flex-col items-end gap-1">
-              <div
-                className={cn(
-                  "max-w-[min(78%,15rem)] rounded-2xl rounded-br-md px-3 py-2 text-sm leading-relaxed shadow-md sm:max-w-[min(78%,520px)] sm:px-3.5 sm:py-2.5",
-                  item.status === "failed"
-                    ? "bg-destructive/10 text-foreground ring-1 ring-destructive/40"
-                    : "bg-primary text-primary-foreground",
-                )}
-              >
-                <p className="whitespace-pre-wrap break-words">
-                  <MessageWithFileTokens
-                    message={item.content}
-                    files={cachedFiles}
-                    variant="sent"
-                    onFileClick={openMessageAttachment}
-                  />
-                </p>
-                <div className="mt-1 flex items-center justify-end gap-2 text-[11px] opacity-80">
-                  <span>{formatTime(item.createdAt)}</span>
-                  {item.status === "failed" ? (
-                    <button
-                      type="button"
-                      onClick={() => retryPending(item.clientKey)}
-                      className="font-medium underline"
-                    >
-                      Retry
-                    </button>
+                  {item.status === "pending" ? (
+                    <span className="pr-1 text-[11px] text-muted-foreground">
+                      Sending…
+                    </span>
                   ) : null}
                 </div>
-              </div>
-              {item.status === "pending" ? (
-                <span className="pr-1 text-[11px] text-muted-foreground">Sending…</span>
+              ))}
+            </div>
+
+            <form
+              onSubmit={onSubmit}
+              className="relative shrink-0 border-t border-border p-2 sm:p-3"
+            >
+              {fileMenuOpen && slashState ? (
+                <div className="absolute bottom-[56px] left-2 right-2 z-20 w-auto overflow-hidden rounded-xl border border-border bg-card shadow-lg sm:bottom-[64px] sm:left-3 sm:right-auto sm:w-[min(420px,calc(100%-24px))]">
+                  <div className="flex items-center justify-between border-b border-border px-3 py-2">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Files
+                    </span>
+                    {isFetchingFiles ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                    ) : null}
+                  </div>
+                  {isFetchingFiles && matchingFiles.length === 0 ? (
+                    <div className="flex items-center gap-2 px-3 py-3 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Loading files…
+                    </div>
+                  ) : matchingFiles.length === 0 ? (
+                    <div className="px-3 py-3 text-sm text-muted-foreground">
+                      No files found for this project.
+                    </div>
+                  ) : (
+                    matchingFiles.map((file) => (
+                      <button
+                        key={file.id}
+                        type="button"
+                        onClick={() => insertFileToken(file)}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-muted"
+                      >
+                        {file.file_type === "link" ? (
+                          <Link2 className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                        )}
+                        <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+                          {file.file_name}
+                        </span>
+                        <span className="text-xs capitalize text-muted-foreground">
+                          {file.file_type}
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
               ) : null}
-            </div>
-          ))}
-        </div>
 
-        <form
-          onSubmit={onSubmit}
-          className="relative shrink-0 border-t border-border p-2 sm:p-3"
-        >
-          {fileMenuOpen && slashState ? (
-            <div className="absolute bottom-[56px] left-2 right-2 z-20 w-auto overflow-hidden rounded-xl border border-border bg-card shadow-lg sm:bottom-[64px] sm:left-3 sm:right-auto sm:w-[min(420px,calc(100%-24px))]">
-              <div className="flex items-center justify-between border-b border-border px-3 py-2">
-                <span className="text-xs font-medium text-muted-foreground">Files</span>
-                {isFetchingFiles ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                ) : null}
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={onUploadFile}
+              />
+
+              <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10 shrink-0"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadFileMutation.isPending}
+                  aria-label="Attach file"
+                >
+                  {uploadFileMutation.isPending ? (
+                    <Upload className="h-4 w-4 animate-pulse" />
+                  ) : (
+                    <Paperclip className="h-4 w-4" />
+                  )}
+                </Button>
+                <input
+                  ref={inputRef}
+                  value={draft}
+                  onChange={(e) => onDraftChange(e.target.value)}
+                  onFocus={() => {
+                    if (getSlashQuery(draft, cachedFiles)) openFileMenu();
+                  }}
+                  placeholder="Message… type / to tag a file"
+                  className="h-10 min-w-0 flex-1 rounded-full border border-input bg-input-background px-3 text-sm text-input-foreground outline-none transition placeholder:text-neutral-500 dark:placeholder:text-neutral-600 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/35 sm:px-4"
+                />
+                <Button
+                  type="submit"
+                  className="h-10 shrink-0 rounded-full px-3 sm:px-4"
+                  disabled={!draft.trim()}
+                  aria-label="Send message"
+                >
+                  <Send className="h-4 w-4 sm:mr-1.5" />
+                  <span className="hidden sm:inline">Send</span>
+                </Button>
               </div>
-              {isFetchingFiles && matchingFiles.length === 0 ? (
-                <div className="flex items-center gap-2 px-3 py-3 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Loading files…
-                </div>
-              ) : matchingFiles.length === 0 ? (
-                <div className="px-3 py-3 text-sm text-muted-foreground">
-                  No files found for this project.
-                </div>
-              ) : (
-                matchingFiles.map((file) => (
-                  <button
-                    key={file.id}
-                    type="button"
-                    onClick={() => insertFileToken(file)}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-muted"
-                  >
-                    {file.file_type === "link" ? (
-                      <Link2 className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                    )}
-                    <span className="min-w-0 flex-1 truncate font-medium text-foreground">
-                      {file.file_name}
-                    </span>
-                    <span className="text-xs capitalize text-muted-foreground">
-                      {file.file_type}
-                    </span>
-                  </button>
-                ))
-              )}
-            </div>
-          ) : null}
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="hidden"
-            onChange={onUploadFile}
-          />
-
-          <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="h-10 w-10 shrink-0"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploadFileMutation.isPending}
-              aria-label="Attach file"
-            >
-              {uploadFileMutation.isPending ? (
-                <Upload className="h-4 w-4 animate-pulse" />
-              ) : (
-                <Paperclip className="h-4 w-4" />
-              )}
-            </Button>
-            <input
-              ref={inputRef}
-              value={draft}
-              onChange={(e) => onDraftChange(e.target.value)}
-              onFocus={() => {
-                if (getSlashQuery(draft, cachedFiles)) openFileMenu();
-              }}
-              placeholder="Message… type / to tag a file"
-              className="h-10 min-w-0 flex-1 rounded-full border border-input bg-input-background px-3 text-sm text-input-foreground outline-none transition placeholder:text-neutral-500 dark:placeholder:text-neutral-600 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/35 sm:px-4"
-            />
-            <Button
-              type="submit"
-              className="h-10 shrink-0 rounded-full px-3 sm:px-4"
-              disabled={!draft.trim()}
-              aria-label="Send message"
-            >
-              <Send className="h-4 w-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">Send</span>
-            </Button>
-          </div>
-        </form>
+            </form>
           </>
         ) : access === "loading" ? (
           <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 bg-muted/20 p-6 text-sm text-muted-foreground">
@@ -803,7 +817,8 @@ export function MessagesPanel({
           <div className="relative flex min-h-0 flex-1 flex-col">
             <div className="min-h-0 flex-1 overflow-y-auto bg-muted/20 p-4 opacity-40">
               <p className="py-8 text-center text-xs text-muted-foreground">
-                Messages will be available after a client is assigned to this project.
+                Messages will be available after a client is assigned to this
+                project.
               </p>
             </div>
             <form
@@ -839,11 +854,15 @@ export function MessagesPanel({
             </form>
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/85 p-4 text-center backdrop-blur-[1px]">
               <Lock className="h-9 w-9 text-muted-foreground" aria-hidden />
-              <p className="mt-3 text-sm font-medium text-foreground">Messaging is locked</p>
+              <p className="mt-3 text-sm font-medium text-foreground">
+                Messaging is locked
+              </p>
               <p className="mt-1 max-w-xs text-xs text-muted-foreground">
                 Assign a client in{" "}
-                <span className="font-medium text-foreground">Edit project</span>, then return
-                here to send and receive messages.
+                <span className="font-medium text-foreground">
+                  Edit project
+                </span>
+                , then return here to send and receive messages.
               </p>
             </div>
           </div>

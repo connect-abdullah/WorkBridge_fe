@@ -338,9 +338,7 @@ export const PaymentsListView = memo(function PaymentsListView({
             Milestone payments
           </h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {isFreelancer
-              ? ""
-              : "Pay milestones and track approval status."}
+            {isFreelancer ? "" : "Pay milestones and track approval status."}
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground sm:text-sm">
@@ -399,9 +397,7 @@ export const PaymentsListView = memo(function PaymentsListView({
               <th className="px-4 py-3.5">Project / milestone</th>
               <th className="px-4 py-3.5">Amount</th>
               <th className="px-4 py-3.5">Status</th>
-              {!isFreelancer ? (
-                <th className="px-4 py-3.5">Note</th>
-              ) : null}
+              {!isFreelancer ? <th className="px-4 py-3.5">Note</th> : null}
               <th className="px-4 py-3.5">Activity</th>
               <th className="px-4 py-3.5">Actions</th>
             </tr>

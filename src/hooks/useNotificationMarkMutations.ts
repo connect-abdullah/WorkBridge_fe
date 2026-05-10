@@ -38,9 +38,14 @@ function useMarkReadMutation(keys: Keys) {
         keys.infiniteKey,
         keys.unreadCountKey,
       );
-      writeOptimisticMarkRead(queryClient, keys.infiniteKey, keys.unreadCountKey, {
-        ids,
-      });
+      writeOptimisticMarkRead(
+        queryClient,
+        keys.infiniteKey,
+        keys.unreadCountKey,
+        {
+          ids,
+        },
+      );
       return snapshot;
     },
     onSuccess: (res, _ids, snapshot) => {
@@ -83,9 +88,14 @@ function useMarkAllReadMutation(keys: Keys) {
         keys.infiniteKey,
         keys.unreadCountKey,
       );
-      writeOptimisticMarkRead(queryClient, keys.infiniteKey, keys.unreadCountKey, {
-        all: true,
-      });
+      writeOptimisticMarkRead(
+        queryClient,
+        keys.infiniteKey,
+        keys.unreadCountKey,
+        {
+          all: true,
+        },
+      );
       return snapshot;
     },
     onSuccess: (res, _void, snapshot) => {

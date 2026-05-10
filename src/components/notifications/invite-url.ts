@@ -17,9 +17,7 @@ export function parseInviteTokenFromActionUrl(
       const token = u.searchParams.get("token")?.trim();
       return token || null;
     }
-    const pathAndQuery = trimmed.startsWith("/")
-      ? trimmed
-      : `/${trimmed}`;
+    const pathAndQuery = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
     const u = new URL(pathAndQuery, "http://_local.invalid");
     const path = u.pathname.replace(/\/$/, "");
     if (!path.endsWith("/join-project") && path !== "/join-project") {

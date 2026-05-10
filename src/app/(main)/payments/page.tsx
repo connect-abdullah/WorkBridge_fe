@@ -1,4 +1,8 @@
-import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
 
 import PaymentsPage from "@/components/payment/payment-page";
 import {
@@ -22,10 +26,7 @@ export default async function PaymentsRoute() {
   } else if (user.role === "client") {
     const sent = await fetchPaymentsSentRequested();
     if (sent) {
-      queryClient.setQueryData(
-        queryKeys.payments.sentRequested(user.id),
-        sent,
-      );
+      queryClient.setQueryData(queryKeys.payments.sentRequested(user.id), sent);
     }
   }
 

@@ -83,7 +83,11 @@ export default function PaymentsPage() {
   const requestMut = useMutation({
     mutationFn: (vars: {
       paymentId: number;
-      body: { payment_method: PaymentMethod; payment_link: string; currency: string };
+      body: {
+        payment_method: PaymentMethod;
+        payment_link: string;
+        currency: string;
+      };
     }) => requestPayment(vars.paymentId, vars.body),
     onSuccess: async (res) => {
       if (res.success === false) {
@@ -97,7 +101,11 @@ export default function PaymentsPage() {
   });
 
   const submitMut = useMutation({
-    mutationFn: (vars: { paymentId: number; proof: string; transactionId: string }) =>
+    mutationFn: (vars: {
+      paymentId: number;
+      proof: string;
+      transactionId: string;
+    }) =>
       submitPayment(vars.paymentId, {
         proof_of_payment: vars.proof,
         transaction_id: vars.transactionId,
@@ -441,7 +449,10 @@ export default function PaymentsPage() {
               onClick={() => {
                 if (failPaymentId == null) return;
                 failMut.mutate(
-                  { paymentId: failPaymentId, reason: failReason.trim() || null },
+                  {
+                    paymentId: failPaymentId,
+                    reason: failReason.trim() || null,
+                  },
                   { onSuccess: () => setFailOpen(false) },
                 );
               }}

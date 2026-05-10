@@ -38,4 +38,3 @@ export type UploadedFileData = {
   mime_type: string;
   size: number;
 };
-

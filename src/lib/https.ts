@@ -110,7 +110,10 @@ http.interceptors.response.use(
 
     const status = error.response?.status;
     const original = error.config as
-      | (InternalAxiosRequestConfig & { _retry?: boolean; _isRefresh?: boolean })
+      | (InternalAxiosRequestConfig & {
+          _retry?: boolean;
+          _isRefresh?: boolean;
+        })
       | undefined;
 
     if (status === 401 && !isServer && original && !original._retry) {

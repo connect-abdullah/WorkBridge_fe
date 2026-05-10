@@ -195,8 +195,9 @@ export function SignupForm() {
 
       {inviteToken ? (
         <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-          You are signing up as a <span className="font-medium text-foreground">client</span> to
-          accept a project invitation.
+          You are signing up as a{" "}
+          <span className="font-medium text-foreground">client</span> to accept
+          a project invitation.
         </p>
       ) : (
         <div className="space-y-2">

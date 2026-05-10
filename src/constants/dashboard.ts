@@ -176,7 +176,8 @@ export const clientDashboardActivities = [
   {
     id: "c2",
     icon: ReceiptText,
-    message: "Payment submitted for Sprint 2 — awaiting freelancer confirmation.",
+    message:
+      "Payment submitted for Sprint 2 — awaiting freelancer confirmation.",
     timestamp: "1 hour ago",
   },
   {

@@ -8,9 +8,10 @@ export function getDateValue(iso: string | null | undefined) {
   return Number.isNaN(t) ? 0 : t;
 }
 
-export function paymentStatusToBadge(
-  status: PaymentStatus,
-): { tone: StatusTone; label: string } {
+export function paymentStatusToBadge(status: PaymentStatus): {
+  tone: StatusTone;
+  label: string;
+} {
   switch (status) {
     case "pending":
       return { tone: "pending", label: "Pending" };

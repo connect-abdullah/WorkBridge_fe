@@ -26,4 +26,3 @@ export const listActivityLogsByProjectId = async (
   );
   return response;
 };
-

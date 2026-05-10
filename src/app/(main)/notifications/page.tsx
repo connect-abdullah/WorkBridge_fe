@@ -1,4 +1,8 @@
-import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
 
 import NotificationsPage from "@/components/notifications/notification-page";
 import { fetchNotifications } from "@/lib/server-api/server/notifications";

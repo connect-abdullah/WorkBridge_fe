@@ -73,16 +73,15 @@ export async function deleteMessage(messageId: number) {
  * site for both); for local dev with a separate backend port, we fall back
  * to the configured backend URL with `withCredentials`-style cookie behaviour
  * — that requires `SameSite=None; Secure`, so it only works behind HTTPS.
- * 
+ *
  * One-Line Summary
  * The comment basically says:
- * "WebSocket auth works using cookies automatically, 
+ * "WebSocket auth works using cookies automatically,
  * but cookies behave properly only when frontend and backend appear to come from the same site."
  */
 export function getChatSocketUrl(): string {
   if (typeof window !== "undefined") {
-    const wsScheme =
-      window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsScheme = window.location.protocol === "https:" ? "wss:" : "ws:";
     return `${wsScheme}//${window.location.host}${API_PREFIX}/ws/chat`;
   }
   const isDev = process.env.NEXT_PUBLIC_DEVELOPMENT === "true";

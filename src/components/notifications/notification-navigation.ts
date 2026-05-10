@@ -13,7 +13,10 @@ export function navigateFromNotificationActionUrl(
   if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
     try {
       const u = new URL(trimmed);
-      if (typeof window !== "undefined" && u.origin === window.location.origin) {
+      if (
+        typeof window !== "undefined" &&
+        u.origin === window.location.origin
+      ) {
         push(`${u.pathname}${u.search}${u.hash}`);
         return;
       }

@@ -35,7 +35,7 @@ const REFRESH_COOKIE = "refresh_token";
 function hasSomeAuthCookie(req: NextRequest): boolean {
   return Boolean(
     req.cookies.get(ACCESS_COOKIE)?.value ??
-      req.cookies.get(REFRESH_COOKIE)?.value,
+    req.cookies.get(REFRESH_COOKIE)?.value,
   );
 }
 

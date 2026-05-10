@@ -20,9 +20,7 @@ export async function fetchNotifications(params?: {
   });
 }
 
-export async function fetchUnreadNotificationsCount(): Promise<
-  APIResponse<NotificationCountResponse> | null
-> {
+export async function fetchUnreadNotificationsCount(): Promise<APIResponse<NotificationCountResponse> | null> {
   return serverGet<APIResponse<NotificationCountResponse>>(
     "/notifications/unread-count",
     { swallow401: true },

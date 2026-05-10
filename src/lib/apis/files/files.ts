@@ -36,4 +36,3 @@ export const deleteFile = async (fileId: number) => {
   );
   return response;
 };
-

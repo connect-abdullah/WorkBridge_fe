@@ -16,17 +16,17 @@ export async function fetchPaymentsByProjectId(
   );
 }
 
-export async function fetchPaymentsReceived(): Promise<
-  APIResponse<PaymentRead[]> | null
-> {
+export async function fetchPaymentsReceived(): Promise<APIResponse<
+  PaymentRead[]
+> | null> {
   return serverGet<APIResponse<PaymentRead[]>>("/payments/received", {
     swallow401: true,
   });
 }
 
-export async function fetchPaymentsSentRequested(): Promise<
-  APIResponse<PaymentRead[]> | null
-> {
+export async function fetchPaymentsSentRequested(): Promise<APIResponse<
+  PaymentRead[]
+> | null> {
   return serverGet<APIResponse<PaymentRead[]>>("/payments/sent", {
     swallow401: true,
   });

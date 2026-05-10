@@ -2,7 +2,11 @@
 
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
-import { getPermissionsFor, type Permissions, type Role } from "@/lib/permissions";
+import {
+  getPermissionsFor,
+  type Permissions,
+  type Role,
+} from "@/lib/permissions";
 
 export type SessionUser = {
   id: number;

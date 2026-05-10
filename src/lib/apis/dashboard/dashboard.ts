@@ -10,4 +10,3 @@ export async function getDashboardSummary() {
   // GET /api/v1/dashboard/ (FastAPI redirects /dashboard -> /dashboard/)
   return await get<APIResponse<DashboardSummary>>(dashboardApi);
 }
-

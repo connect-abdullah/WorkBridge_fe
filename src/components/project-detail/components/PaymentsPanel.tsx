@@ -46,9 +46,10 @@ const PAYMENT_METHOD_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
-function paymentStatusBadge(
-  status: PaymentRead["payment_status"],
-): { tone: StatusTone; label: string } {
+function paymentStatusBadge(status: PaymentRead["payment_status"]): {
+  tone: StatusTone;
+  label: string;
+} {
   switch (status) {
     case "pending":
       return { tone: "pending", label: "Pending" };
@@ -103,7 +104,11 @@ export function PaymentsPanel({
   const requestMut = useMutation({
     mutationFn: (vars: {
       paymentId: number;
-      body: { payment_method: PaymentMethod; payment_link: string; currency: string };
+      body: {
+        payment_method: PaymentMethod;
+        payment_link: string;
+        currency: string;
+      };
     }) => requestPayment(vars.paymentId, vars.body),
     onSuccess: async (res) => {
       if (res.success === false) {
@@ -117,7 +122,11 @@ export function PaymentsPanel({
   });
 
   const submitMut = useMutation({
-    mutationFn: (vars: { paymentId: number; proof: string; transactionId: string }) =>
+    mutationFn: (vars: {
+      paymentId: number;
+      proof: string;
+      transactionId: string;
+    }) =>
       submitPayment(vars.paymentId, {
         proof_of_payment: vars.proof,
         transaction_id: vars.transactionId,
@@ -218,8 +227,8 @@ export function PaymentsPanel({
   if (!permissions.canPayPayment && !permissions.canRequestPayment) {
     return (
       <section className="overflow-hidden rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground shadow-sm">
-        Only the freelancer or assigned client can manage milestone payments for this
-        project.
+        Only the freelancer or assigned client can manage milestone payments for
+        this project.
       </section>
     );
   }
@@ -243,9 +252,13 @@ export function PaymentsPanel({
                 <PaymentsPanelTableSkeleton />
               ) : payments.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-12 text-center text-muted-foreground">
-                    No payments yet. When the freelancer requests payment for a completed
-                    milestone, it will show here with status updates as you pay.
+                  <td
+                    colSpan={5}
+                    className="px-4 py-12 text-center text-muted-foreground"
+                  >
+                    No payments yet. When the freelancer requests payment for a
+                    completed milestone, it will show here with status updates
+                    as you pay.
                   </td>
                 </tr>
               ) : (
@@ -271,7 +284,9 @@ export function PaymentsPanel({
                       </td>
                       <td className="max-w-xs px-4 py-3 text-xs text-muted-foreground">
                         {p.last_failure_reason ? (
-                          <span className="text-destructive">{p.last_failure_reason}</span>
+                          <span className="text-destructive">
+                            {p.last_failure_reason}
+                          </span>
                         ) : (
                           "—"
                         )}
@@ -284,7 +299,9 @@ export function PaymentsPanel({
                             disabled={busy}
                           />
                         ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
+                          <span className="text-xs text-muted-foreground">
+                            —
+                          </span>
                         )}
                       </td>
                     </tr>
@@ -303,7 +320,9 @@ export function PaymentsPanel({
           maxWidth="max-w-lg"
         >
           <ol className="mb-4 list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
-            <li>Complete the payment using the method the freelancer shared.</li>
+            <li>
+              Complete the payment using the method the freelancer shared.
+            </li>
             <li>Save a screenshot of the confirmation.</li>
             <li>Upload the screenshot and enter the transaction ID.</li>
           </ol>
@@ -335,7 +354,9 @@ export function PaymentsPanel({
               </Button>
               <Button
                 type="button"
-                disabled={payBusy || !payFile || !payTxn.trim() || payPaymentId == null}
+                disabled={
+                  payBusy || !payFile || !payTxn.trim() || payPaymentId == null
+                }
                 onClick={async () => {
                   if (!payFile || payPaymentId == null) return;
                   setPayBusy(true);
@@ -368,230 +389,244 @@ export function PaymentsPanel({
   /* Freelancer view */
   return (
     <>
-    <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-      <div className="overflow-x-auto">
-        <table className="min-w-[720px] w-full text-left text-sm">
-          <thead className="border-b border-border bg-muted/40 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <tr>
-              <th className="px-4 py-3">Milestone</th>
-              <th className="px-4 py-3">Amount</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Date</th>
-              <th className="px-4 py-3">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paymentsLoading ? (
-              <PaymentsPanelTableSkeleton />
-            ) : completedMilestones.length === 0 ? (
+      <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="min-w-[720px] w-full text-left text-sm">
+            <thead className="border-b border-border bg-muted/40 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <tr>
-                <td colSpan={5} className="px-4 py-12 text-center text-muted-foreground">
-                  No completed milestones yet. Mark a milestone as completed to enable
-                  payment.
-                </td>
+                <th className="px-4 py-3">Milestone</th>
+                <th className="px-4 py-3">Amount</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Date</th>
+                <th className="px-4 py-3">Action</th>
               </tr>
-            ) : (
-              completedMilestones.map((ms) => {
-                const mid = Number(ms.id);
-                const p = paymentByMilestone.get(mid);
-                const badge = p
-                  ? paymentStatusBadge(p.payment_status)
-                  : { tone: "pending" as const, label: "No record" };
-                return (
-                  <tr key={ms.id} className="border-t border-border">
-                    <td className="px-4 py-3 font-medium">{ms.title}</td>
-                    <td className="px-4 py-3">{ms.amount}</td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={badge.tone} label={badge.label} />
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">{ms.dueDate}</td>
-                    <td className="px-4 py-3">
-                      {!p ? (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      ) : p.payment_status === "pending" ? (
-                        permissions.canRequestPayment ? (
-                          <PaymentActionButton
-                            label="Request Payment"
-                            onClick={() => openRequest(p.id)}
-                            disabled={busy}
-                          />
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        )
-                      ) : (
-                        <div className="flex flex-wrap items-center gap-2">
-                          {canShowFreelancerPaymentProof(p) ? (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8 shrink-0"
+            </thead>
+            <tbody>
+              {paymentsLoading ? (
+                <PaymentsPanelTableSkeleton />
+              ) : completedMilestones.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-4 py-12 text-center text-muted-foreground"
+                  >
+                    No completed milestones yet. Mark a milestone as completed
+                    to enable payment.
+                  </td>
+                </tr>
+              ) : (
+                completedMilestones.map((ms) => {
+                  const mid = Number(ms.id);
+                  const p = paymentByMilestone.get(mid);
+                  const badge = p
+                    ? paymentStatusBadge(p.payment_status)
+                    : { tone: "pending" as const, label: "No record" };
+                  return (
+                    <tr key={ms.id} className="border-t border-border">
+                      <td className="px-4 py-3 font-medium">{ms.title}</td>
+                      <td className="px-4 py-3">{ms.amount}</td>
+                      <td className="px-4 py-3">
+                        <StatusBadge status={badge.tone} label={badge.label} />
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {ms.dueDate}
+                      </td>
+                      <td className="px-4 py-3">
+                        {!p ? (
+                          <span className="text-xs text-muted-foreground">
+                            —
+                          </span>
+                        ) : p.payment_status === "pending" ? (
+                          permissions.canRequestPayment ? (
+                            <PaymentActionButton
+                              label="Request Payment"
+                              onClick={() => openRequest(p.id)}
                               disabled={busy}
-                              aria-label="Preview submitted proof"
-                              title="Preview proof"
-                              onClick={() =>
-                                setInvoicePreview({
-                                  url: p.proof_of_payment!.trim(),
-                                  title: ms.title,
-                                })
-                              }
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          ) : null}
-                          {p.payment_status === "submitted" ? (
-                            <>
-                              {permissions.canApprovePayment ? (
-                                <PaymentActionButton
-                                  label="Approve"
-                                  onClick={() => approveMut.mutate(p.id)}
-                                  disabled={busy}
-                                />
-                              ) : null}
-                              {permissions.canFailPayment ? (
-                                <PaymentActionButton
-                                  label="Not approve"
-                                  variant="destructive"
-                                  onClick={() => openFail(p.id)}
-                                  disabled={busy}
-                                />
-                              ) : null}
-                            </>
-                          ) : !canShowFreelancerPaymentProof(p) ? (
-                            <span className="text-xs text-muted-foreground">—</span>
-                          ) : null}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <Modal
-        open={requestOpen}
-        onClose={() => !requestMut.isPending && setRequestOpen(false)}
-        title="Request payment"
-        subtitle="Share how the client should pay you."
-        maxWidth="max-w-lg"
-      >
-        <form
-          className="space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (requestPaymentId == null) return;
-            requestMut.mutate(
-              {
-                paymentId: requestPaymentId,
-                body: {
-                  payment_method: reqMethod,
-                  payment_link: reqLink.trim(),
-                  currency: reqCurrency.trim().toUpperCase(),
-                },
-              },
-              {
-                onSuccess: () => setRequestOpen(false),
-              },
-            );
-          }}
-        >
-          <Field label="Payment method">
-            <select
-              className={selectCls}
-              value={reqMethod}
-              onChange={(e) => setReqMethod(e.target.value as PaymentMethod)}
-            >
-              {PAYMENT_METHOD_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Payment link">
-            <input
-              className={inputCls}
-              required
-              value={reqLink}
-              onChange={(e) => setReqLink(e.target.value)}
-              placeholder="https://…"
-            />
-          </Field>
-          <Field label="Currency">
-            <PaymentRequestCurrencyField
-              value={reqCurrency}
-              onChange={setReqCurrency}
-            />
-          </Field>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setRequestOpen(false)}
-              disabled={requestMut.isPending}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={requestMut.isPending}>
-              {requestMut.isPending ? "Saving…" : "Request"}
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
-      <Modal
-        open={failOpen}
-        onClose={() => !failMut.isPending && setFailOpen(false)}
-        title="Not approve payment"
-        subtitle="Add an optional note for the client. They can submit payment proof again; previous proof stays in history."
-        maxWidth="max-w-lg"
-      >
-        <div className="space-y-4">
-          <Field label="Note for client (optional)">
-            <textarea
-              className={`${inputCls} min-h-[88px]`}
-              value={failReason}
-              onChange={(e) => setFailReason(e.target.value)}
-              placeholder="e.g. wrong account, amount mismatch, proof unclear…"
-            />
-          </Field>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setFailOpen(false)}
-              disabled={failMut.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={failMut.isPending || failPaymentId == null}
-              onClick={() => {
-                if (failPaymentId == null) return;
-                failMut.mutate(
-                  { paymentId: failPaymentId, reason: failReason.trim() || null },
-                  { onSuccess: () => setFailOpen(false) },
-                );
-              }}
-            >
-              {failMut.isPending ? "Saving…" : "Confirm"}
-            </Button>
-          </div>
+                            />
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              —
+                            </span>
+                          )
+                        ) : (
+                          <div className="flex flex-wrap items-center gap-2">
+                            {canShowFreelancerPaymentProof(p) ? (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8 shrink-0"
+                                disabled={busy}
+                                aria-label="Preview submitted proof"
+                                title="Preview proof"
+                                onClick={() =>
+                                  setInvoicePreview({
+                                    url: p.proof_of_payment!.trim(),
+                                    title: ms.title,
+                                  })
+                                }
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            ) : null}
+                            {p.payment_status === "submitted" ? (
+                              <>
+                                {permissions.canApprovePayment ? (
+                                  <PaymentActionButton
+                                    label="Approve"
+                                    onClick={() => approveMut.mutate(p.id)}
+                                    disabled={busy}
+                                  />
+                                ) : null}
+                                {permissions.canFailPayment ? (
+                                  <PaymentActionButton
+                                    label="Not approve"
+                                    variant="destructive"
+                                    onClick={() => openFail(p.id)}
+                                    disabled={busy}
+                                  />
+                                ) : null}
+                              </>
+                            ) : !canShowFreelancerPaymentProof(p) ? (
+                              <span className="text-xs text-muted-foreground">
+                                —
+                              </span>
+                            ) : null}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
-      </Modal>
-    </section>
 
-    <InvoicePreviewModal
-      open={invoicePreview != null}
-      onClose={() => setInvoicePreview(null)}
-      url={invoicePreview?.url ?? null}
-      title={invoicePreview?.title}
-    />
+        <Modal
+          open={requestOpen}
+          onClose={() => !requestMut.isPending && setRequestOpen(false)}
+          title="Request payment"
+          subtitle="Share how the client should pay you."
+          maxWidth="max-w-lg"
+        >
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (requestPaymentId == null) return;
+              requestMut.mutate(
+                {
+                  paymentId: requestPaymentId,
+                  body: {
+                    payment_method: reqMethod,
+                    payment_link: reqLink.trim(),
+                    currency: reqCurrency.trim().toUpperCase(),
+                  },
+                },
+                {
+                  onSuccess: () => setRequestOpen(false),
+                },
+              );
+            }}
+          >
+            <Field label="Payment method">
+              <select
+                className={selectCls}
+                value={reqMethod}
+                onChange={(e) => setReqMethod(e.target.value as PaymentMethod)}
+              >
+                {PAYMENT_METHOD_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Payment link">
+              <input
+                className={inputCls}
+                required
+                value={reqLink}
+                onChange={(e) => setReqLink(e.target.value)}
+                placeholder="https://…"
+              />
+            </Field>
+            <Field label="Currency">
+              <PaymentRequestCurrencyField
+                value={reqCurrency}
+                onChange={setReqCurrency}
+              />
+            </Field>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setRequestOpen(false)}
+                disabled={requestMut.isPending}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={requestMut.isPending}>
+                {requestMut.isPending ? "Saving…" : "Request"}
+              </Button>
+            </div>
+          </form>
+        </Modal>
+
+        <Modal
+          open={failOpen}
+          onClose={() => !failMut.isPending && setFailOpen(false)}
+          title="Not approve payment"
+          subtitle="Add an optional note for the client. They can submit payment proof again; previous proof stays in history."
+          maxWidth="max-w-lg"
+        >
+          <div className="space-y-4">
+            <Field label="Note for client (optional)">
+              <textarea
+                className={`${inputCls} min-h-[88px]`}
+                value={failReason}
+                onChange={(e) => setFailReason(e.target.value)}
+                placeholder="e.g. wrong account, amount mismatch, proof unclear…"
+              />
+            </Field>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setFailOpen(false)}
+                disabled={failMut.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={failMut.isPending || failPaymentId == null}
+                onClick={() => {
+                  if (failPaymentId == null) return;
+                  failMut.mutate(
+                    {
+                      paymentId: failPaymentId,
+                      reason: failReason.trim() || null,
+                    },
+                    { onSuccess: () => setFailOpen(false) },
+                  );
+                }}
+              >
+                {failMut.isPending ? "Saving…" : "Confirm"}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      </section>
+
+      <InvoicePreviewModal
+        open={invoicePreview != null}
+        onClose={() => setInvoicePreview(null)}
+        url={invoicePreview?.url ?? null}
+        title={invoicePreview?.title}
+      />
     </>
   );
 }

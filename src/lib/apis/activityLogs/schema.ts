@@ -9,4 +9,3 @@ export type ActivityLogBase = {
 export type ActivityLogRead = ActivityLogBase & {
   id: number;
 };
-

@@ -56,11 +56,12 @@ export function readNotificationCachesSnapshot(
   unreadCountKey: QueryKey,
 ): NotificationCachesSnapshot {
   return {
-    infinite: queryClient.getQueryData<NotificationInfiniteQueryData>(
-      infiniteKey,
-    ),
+    infinite:
+      queryClient.getQueryData<NotificationInfiniteQueryData>(infiniteKey),
     unreadCount:
-      queryClient.getQueryData<NotificationUnreadCountQueryData>(unreadCountKey),
+      queryClient.getQueryData<NotificationUnreadCountQueryData>(
+        unreadCountKey,
+      ),
   };
 }
 
@@ -70,9 +71,9 @@ function patchUnreadCount(
 ): NotificationUnreadCountQueryData | undefined {
   if (!old || old.success === false || !old.data) return old;
   const prev = old.data.count;
-  if (typeof prev !== "number" || !Number.isFinite(prev) || prev <= 0) return old;
-  const next =
-    "all" in opts ? 0 : Math.max(0, prev - (opts.ids?.length ?? 0));
+  if (typeof prev !== "number" || !Number.isFinite(prev) || prev <= 0)
+    return old;
+  const next = "all" in opts ? 0 : Math.max(0, prev - (opts.ids?.length ?? 0));
   if (next === prev) return old;
   return { ...old, data: { ...old.data, count: next } };
 }

@@ -31,11 +31,7 @@ export function notificationTimeBucket(iso: string): NotificationTimeBucket {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "earlier";
   const now = new Date();
-  const startToday = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-  );
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startYesterday = new Date(startToday);
   startYesterday.setDate(startYesterday.getDate() - 1);
   if (d >= startToday) return "today";
@@ -138,14 +134,18 @@ export function notificationDestinationLabel(
   const projectId = getNotificationProjectId(notification);
   if (projectId != null) {
     const t = notification.notification_type.toLowerCase();
-    if (t === "project_client_invite" || isInvitationNotification(notification)) {
+    if (
+      t === "project_client_invite" ||
+      isInvitationNotification(notification)
+    ) {
       return "Join the project";
     }
     if (t.startsWith("milestone_")) return "View milestone";
     if (t === "task_updated") return "View task";
     if (t === "file_uploaded") return "View file";
     if (t.startsWith("payment_")) return "View payment";
-    if (t.startsWith("message_") || t.includes("message")) return "View message";
+    if (t.startsWith("message_") || t.includes("message"))
+      return "View message";
     return "View project";
   }
   if (notification.action_url?.trim()) {
@@ -175,7 +175,9 @@ export function formatNotificationTimestamp(iso: string): string {
   return d.toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
-    ...(d.getFullYear() !== now.getFullYear() ? { year: "numeric" as const } : {}),
+    ...(d.getFullYear() !== now.getFullYear()
+      ? { year: "numeric" as const }
+      : {}),
   });
 }
 

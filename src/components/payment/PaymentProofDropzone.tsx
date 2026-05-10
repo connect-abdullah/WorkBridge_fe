@@ -104,7 +104,9 @@ export function PaymentProofDropzone({
             <Upload
               className={cn(
                 "h-6 w-6 transition-colors",
-                dragOver ? "text-primary" : "text-muted-foreground group-hover:text-primary",
+                dragOver
+                  ? "text-primary"
+                  : "text-muted-foreground group-hover:text-primary",
               )}
             />
           </div>

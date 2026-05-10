@@ -15,8 +15,7 @@ export async function listPaymentsByProjectId(
   projectId: number,
   options?: { forClient?: boolean },
 ) {
-  const q =
-    options?.forClient === true ? "?for_client=true" : "";
+  const q = options?.forClient === true ? "?for_client=true" : "";
   return get<APIResponse<PaymentRead[]>>(`${base}/project/${projectId}${q}`);
 }
 
@@ -30,14 +29,20 @@ export async function listPaymentsSentRequested() {
   return get<APIResponse<PaymentRead[]>>(`${base}/sent`);
 }
 
-export async function requestPayment(paymentId: number, body: PaymentRequestBody) {
+export async function requestPayment(
+  paymentId: number,
+  body: PaymentRequestBody,
+) {
   return post<APIResponse<PaymentRead>, PaymentRequestBody>(
     `${base}/${paymentId}/request`,
     body,
   );
 }
 
-export async function submitPayment(paymentId: number, body: PaymentSubmitBody) {
+export async function submitPayment(
+  paymentId: number,
+  body: PaymentSubmitBody,
+) {
   return post<APIResponse<PaymentRead>, PaymentSubmitBody>(
     `${base}/${paymentId}/submit`,
     body,

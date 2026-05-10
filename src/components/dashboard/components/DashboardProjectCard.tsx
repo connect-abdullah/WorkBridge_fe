@@ -68,7 +68,9 @@ export function DashboardProjectCard({
           <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Progress
           </span>
-          <span className="text-sm font-medium text-foreground">{progress}%</span>
+          <span className="text-sm font-medium text-foreground">
+            {progress}%
+          </span>
         </div>
         <div className="h-1.5 overflow-hidden rounded-full bg-border/80">
           <div
@@ -98,4 +100,3 @@ export function DashboardProjectCard({
   if (href) return <Link href={href}>{card}</Link>;
   return card;
 }
-

@@ -14,9 +14,7 @@ import {
   groupNotificationsForDisplay,
 } from "@/components/notifications/notification-utils";
 import { navigateFromNotificationActionUrl } from "@/components/notifications/notification-navigation";
-import {
-  NOTIFICATIONS_PAGE_SIZE,
-} from "@/lib/apis/notifications/constants";
+import { NOTIFICATIONS_PAGE_SIZE } from "@/lib/apis/notifications/constants";
 import { NotificationsPageSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import type { NotificationRead } from "@/lib/apis/notifications/schema";
@@ -55,10 +53,7 @@ export default function NotificationsPage() {
   const pages = notificationsQuery.data?.pages;
   const firstPage = pages?.[0];
 
-  const results = useMemo(
-    () => flattenNotificationPages(pages),
-    [pages],
-  );
+  const results = useMemo(() => flattenNotificationPages(pages), [pages]);
 
   const groups = useMemo(
     () => groupNotificationsForDisplay(results),
@@ -81,7 +76,9 @@ export default function NotificationsPage() {
       if (inviteToken) {
         const rawTitle = n.notification_data?.project_title;
         const fallbackTitle =
-          typeof rawTitle === "string" && rawTitle.trim() ? rawTitle.trim() : null;
+          typeof rawTitle === "string" && rawTitle.trim()
+            ? rawTitle.trim()
+            : null;
         setInviteModal({ open: true, token: inviteToken, fallbackTitle });
         return;
       }
@@ -91,7 +88,8 @@ export default function NotificationsPage() {
         return;
       }
       const t = n.notification_type.toLowerCase();
-      const isPaymentNotification = t.startsWith("payment_") || t.includes("payment");
+      const isPaymentNotification =
+        t.startsWith("payment_") || t.includes("payment");
       if (isPaymentNotification) {
         startTransition(() => router.push("/payments"));
         return;
@@ -140,7 +138,8 @@ export default function NotificationsPage() {
             Couldn&apos;t load notifications
           </p>
           <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-            {firstPage.message || "Something went wrong. Try again in a moment."}
+            {firstPage.message ||
+              "Something went wrong. Try again in a moment."}
           </p>
           <Button
             type="button"
@@ -186,7 +185,10 @@ export default function NotificationsPage() {
           disabled={unreadCount === 0 || markAllMut.isPending}
           onClick={handleMarkAll}
         >
-          <CheckCircle2 className="mr-2 h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" aria-hidden />
+          <CheckCircle2
+            className="mr-2 h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4"
+            aria-hidden
+          />
           Mark all read
         </Button>
       </div>

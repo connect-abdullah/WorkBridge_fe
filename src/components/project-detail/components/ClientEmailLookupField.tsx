@@ -163,8 +163,12 @@ export function ClientEmailLookupField({
                         setFocused(false);
                       }}
                     >
-                      <span className="font-medium text-foreground">{hit.name}</span>
-                      <span className="text-xs text-muted-foreground">{hit.email}</span>
+                      <span className="font-medium text-foreground">
+                        {hit.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {hit.email}
+                      </span>
                     </button>
                   </li>
                 ))}

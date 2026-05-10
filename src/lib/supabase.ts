@@ -3,7 +3,10 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
-export const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+export const supabase =
+  supabaseUrl && supabaseAnonKey
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null;
 
 // Define a more accurate TypeScript type for responses if needed
 type SupabaseUploadResult = {
@@ -52,12 +55,12 @@ export const handleUpload = async (
 ): Promise<string> => {
   if (!supabase) {
     throw new Error(
-      "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local"
+      "Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local",
     );
   }
 
   const file =
-    input instanceof File ? input : (input.target.files && input.target.files[0]);
+    input instanceof File ? input : input.target.files && input.target.files[0];
   if (!file) throw new Error("No file selected.");
 
   if (userId == null || userId === "" || userId === 0) {
@@ -70,8 +73,8 @@ export const handleUpload = async (
   // Upload the file
   const { data: uploadData, error } = await supabase.storage
     .from("WorkBridge")
-    .upload(filePath, file,{
-      cacheControl: '3600', // 1 hour
+    .upload(filePath, file, {
+      cacheControl: "3600", // 1 hour
       upsert: false, // Don't overwrite existing files,
       contentType: file.type,
     });
@@ -89,7 +92,9 @@ export const handleUpload = async (
   }
 
   // Get the public URL
-  const { data: {publicUrl} } = supabase.storage
+  const {
+    data: { publicUrl },
+  } = supabase.storage
     .from("WorkBridge")
     .getPublicUrl(normalizeStoragePath("WorkBridge", rawPath));
 

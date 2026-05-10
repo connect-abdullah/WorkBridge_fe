@@ -39,7 +39,9 @@ export async function requireRole(
   role: Role,
   options?: { unauthorizedTo?: string; forbiddenTo?: string },
 ): Promise<Session> {
-  const session = await requireSession(options?.unauthorizedTo ?? "/auth/login");
+  const session = await requireSession(
+    options?.unauthorizedTo ?? "/auth/login",
+  );
   if (session.user.role !== role) {
     redirect(options?.forbiddenTo ?? "/dashboard");
   }

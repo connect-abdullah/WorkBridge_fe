@@ -11,10 +11,11 @@ import {
   notificationDestinationLabel,
 } from "@/components/notifications/notification-utils";
 
-function priorityBadgeMeta(priorityRaw: unknown):
-  | { label: "High" | "Urgent"; className: string }
-  | null {
-  const p = typeof priorityRaw === "string" ? priorityRaw.trim().toLowerCase() : "";
+function priorityBadgeMeta(
+  priorityRaw: unknown,
+): { label: "High" | "Urgent"; className: string } | null {
+  const p =
+    typeof priorityRaw === "string" ? priorityRaw.trim().toLowerCase() : "";
   if (p === "high") {
     return {
       label: "High",

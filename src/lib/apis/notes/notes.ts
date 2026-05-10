@@ -16,13 +16,19 @@ export const createNote = async (note: NoteCreate) => {
   return response;
 };
 
-export const getNotes = async (args: { projectId: number; meetingId?: number | null }) => {
-  const response = await get<APIResponse<NoteListResponse>>(`${notes_api_endpoint}`, {
-    params: {
-      project_id: args.projectId,
-      ...(args.meetingId ? { meeting_id: args.meetingId } : {}),
+export const getNotes = async (args: {
+  projectId: number;
+  meetingId?: number | null;
+}) => {
+  const response = await get<APIResponse<NoteListResponse>>(
+    `${notes_api_endpoint}`,
+    {
+      params: {
+        project_id: args.projectId,
+        ...(args.meetingId ? { meeting_id: args.meetingId } : {}),
+      },
     },
-  });
+  );
   return response;
 };
 
@@ -35,6 +41,8 @@ export const updateNote = async (noteId: number, note: NoteUpdate) => {
 };
 
 export const deleteNote = async (noteId: number) => {
-  const response = await del<APIResponse<boolean>>(`${notes_api_endpoint}/${noteId}`);
+  const response = await del<APIResponse<boolean>>(
+    `${notes_api_endpoint}/${noteId}`,
+  );
   return response;
 };

@@ -128,4 +128,3 @@ export function PaginatedTable<T>({
     </section>
   );
 }
-

@@ -1,4 +1,8 @@
-import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
 
 import { ProjectDetailPage } from "@/components/project-detail/ProjectDetailPage";
 import { fetchProjectWithMilestones } from "@/lib/server-api/server/projects";

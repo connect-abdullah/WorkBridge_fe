@@ -152,7 +152,7 @@ Pattern: infinite pagination, option builders, optimistic updates with rollback.
   - `groupNotificationsForDisplay(items)` buckets by `"today" | "yesterday" | "earlier"` and keeps newest-first ordering.
 
 - **Optimistic mark-as-read with rollback**
-  - Optimistic updates patch *both* caches:
+  - Optimistic updates patch _both_ caches:
     - Infinite list cache
     - Badge list cache
   - Helpers in `src/components/notifications/notification-cache.ts`:

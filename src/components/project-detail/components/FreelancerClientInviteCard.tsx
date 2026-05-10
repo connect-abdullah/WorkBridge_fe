@@ -56,7 +56,9 @@ export function FreelancerClientInviteCard({
       {mode === "assign" && selectedClient ? (
         <p className="text-xs text-muted-foreground">
           Assigned client:{" "}
-          <span className="font-medium text-foreground">{selectedClient.name}</span>
+          <span className="font-medium text-foreground">
+            {selectedClient.name}
+          </span>
         </p>
       ) : null}
 
@@ -65,7 +67,9 @@ export function FreelancerClientInviteCard({
           <div>
             <p className="text-xs text-muted-foreground">Selected for invite</p>
             <p className="font-medium text-foreground">{selectedClient.name}</p>
-            <p className="text-xs text-muted-foreground">{selectedClient.email}</p>
+            <p className="text-xs text-muted-foreground">
+              {selectedClient.email}
+            </p>
           </div>
           <Button
             type="button"
@@ -90,7 +94,8 @@ export function FreelancerClientInviteCard({
             Copy invite link
           </Button>
           <p className="mt-1.5 text-[11px] text-muted-foreground">
-            Single-use link (7 days). Opens join flow; client must log in or sign up.
+            Single-use link (7 days). Opens join flow; client must log in or
+            sign up.
           </p>
         </div>
       ) : null}

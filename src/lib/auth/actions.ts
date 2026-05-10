@@ -39,19 +39,17 @@ function getInternalBase(): string {
  * We need this because Next's cookies().set() expects a structured object,
  * not a raw header line.
  */
-function parseSetCookie(line: string):
-  | {
-      name: string;
-      value: string;
-      maxAge?: number;
-      expires?: Date;
-      path?: string;
-      domain?: string;
-      secure: boolean;
-      httpOnly: boolean;
-      sameSite?: "lax" | "strict" | "none";
-    }
-  | null {
+function parseSetCookie(line: string): {
+  name: string;
+  value: string;
+  maxAge?: number;
+  expires?: Date;
+  path?: string;
+  domain?: string;
+  secure: boolean;
+  httpOnly: boolean;
+  sameSite?: "lax" | "strict" | "none";
+} | null {
   const parts = line.split(";").map((p) => p.trim());
   if (parts.length === 0) return null;
   const [head, ...attrs] = parts;
@@ -124,7 +122,11 @@ async function clearAuthCookies(): Promise<void> {
 async function callAuthEndpoint<TBody extends object>(
   path: "/auth/login" | "/auth/signup" | "/auth/logout" | "/auth/refresh",
   body?: TBody,
-): Promise<{ status: number; data: APIResponse<UserRead> | null; cookies: string[] }> {
+): Promise<{
+  status: number;
+  data: APIResponse<UserRead> | null;
+  cookies: string[];
+}> {
   const base = getInternalBase();
   const res = await fetch(`${base}/api/v1${path}`, {
     method: "POST",
@@ -160,10 +162,11 @@ async function callAuthEndpoint<TBody extends object>(
 export async function loginAction(
   payload: LoginSchema,
 ): Promise<AuthActionResult> {
-  const { status, data, cookies: upstreamCookies } = await callAuthEndpoint(
-    "/auth/login",
-    payload,
-  );
+  const {
+    status,
+    data,
+    cookies: upstreamCookies,
+  } = await callAuthEndpoint("/auth/login", payload);
   if (status >= 200 && status < 300 && data?.success) {
     await applyUpstreamCookies(upstreamCookies);
     // Bust every cached server render so the next navigation reflects the
@@ -184,10 +187,11 @@ export async function loginAction(
 export async function signupAction(
   payload: RegisterSchema,
 ): Promise<AuthActionResult> {
-  const { status, data, cookies: upstreamCookies } = await callAuthEndpoint(
-    "/auth/signup",
-    payload,
-  );
+  const {
+    status,
+    data,
+    cookies: upstreamCookies,
+  } = await callAuthEndpoint("/auth/signup", payload);
   if (status >= 200 && status < 300 && data?.success) {
     await applyUpstreamCookies(upstreamCookies);
     revalidatePath("/", "layout");
@@ -207,7 +211,9 @@ export async function signupAction(
  * Logout the current session and redirect to /auth/login. Best-effort: the
  * browser cookies are cleared even if the upstream call fails.
  */
-export async function logoutAction(redirectTo: string = "/auth/login"): Promise<never> {
+export async function logoutAction(
+  redirectTo: string = "/auth/login",
+): Promise<never> {
   try {
     const { cookies: upstreamCookies } = await callUpstreamLogout();
     await applyUpstreamCookies(upstreamCookies);

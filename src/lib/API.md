@@ -130,13 +130,13 @@ Helper functions `ok(data=..., message=...)` and `fail(message=..., errors=...)`
 
 ## Messages — `/api/v1/messages`
 
-| Method   | Path              | Description |
-| -------- | ----------------- | ----------- |
+| Method   | Path              | Description                                                                                                        |
+| -------- | ----------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `POST`   | `/send`           | **Body:** `MessageSend` (`project_id`, `content`, optional `idempotency_key`). **Response `data`:** `MessageRead`. |
-| `GET`    | `/`               | **Query:** `project_id`, optional `cursor`, `limit`. **Response `data`:** `MessageListResponse`. |
-| `POST`   | `/mark-read`      | **Body:** `MessageMarkRead`. **Response `data`:** `int`. |
-| `PUT`    | `/update-message` | **Body:** `MessageUpdate`. **Query:** `message_id`. **Response `data`:** `MessageRead`. |
-| `DELETE` | `/delete-message` | **Query:** `message_id`. **Response `data`:** `bool`. |
+| `GET`    | `/`               | **Query:** `project_id`, optional `cursor`, `limit`. **Response `data`:** `MessageListResponse`.                   |
+| `POST`   | `/mark-read`      | **Body:** `MessageMarkRead`. **Response `data`:** `int`.                                                           |
+| `PUT`    | `/update-message` | **Body:** `MessageUpdate`. **Query:** `message_id`. **Response `data`:** `MessageRead`.                            |
+| `DELETE` | `/delete-message` | **Query:** `message_id`. **Response `data`:** `bool`.                                                              |
 
 **WebSocket:** `GET /api/v1/ws/chat?token=<JWT>` — `{ "type": "message", "data": <MessageRead> }`.
 

@@ -49,10 +49,7 @@ export function AuthShell({
       </section>
 
       <section className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden px-4 py-10 lg:min-h-screen">
-        <div
-          className="pointer-events-none absolute inset-0"
-          aria-hidden
-        >
+        <div className="pointer-events-none absolute inset-0" aria-hidden>
           <Image
             src="/auth_bg_image.png"
             alt=""

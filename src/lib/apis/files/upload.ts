@@ -10,7 +10,6 @@ import type {
   FileRead,
 } from "@/lib/apis/files/schema";
 
-
 export function inferFileType(mimeType: string): FileType {
   const mt = (mimeType || "").toLowerCase();
   if (mt.startsWith("image/")) return "image";
@@ -25,9 +24,9 @@ export function inferFileType(mimeType: string): FileType {
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "application/vnd.ms-powerpoint",
       "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    ].some(type => mt === type) ||
-    ["text/", "msword", "officedocument", "spreadsheet", "presentation"].some(sub =>
-      mt.startsWith(sub) || mt.includes(sub)
+    ].some((type) => mt === type) ||
+    ["text/", "msword", "officedocument", "spreadsheet", "presentation"].some(
+      (sub) => mt.startsWith(sub) || mt.includes(sub),
     )
   ) {
     return "document";

@@ -121,10 +121,10 @@ async function forward(
       ? (
           upstream.headers as unknown as { getSetCookie: () => string[] }
         ).getSetCookie()
-      : upstream.headers
+      : (upstream.headers
           .get("set-cookie")
           ?.split(/,(?=[^;]+=[^;]+)/)
-          .map((s) => s.trim()) ?? [];
+          .map((s) => s.trim()) ?? []);
   for (const cookie of setCookies) {
     responseHeaders.append("set-cookie", cookie);
   }

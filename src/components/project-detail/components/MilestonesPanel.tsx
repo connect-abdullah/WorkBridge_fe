@@ -208,28 +208,28 @@ export function MilestonesPanel({
                       {milestone.status === "paid" ? (
                         <StatusBadge status="paid" label="Paid" />
                       ) : (
-                      <button
-                        type="button"
-                        onClick={
-                          permissions.canChangeMilestoneProgress &&
-                          !milestoneUpdateBusy
-                            ? () => onStatusDropdownToggle(milestone.id)
-                            : undefined
-                        }
-                        disabled={
-                          !permissions.canChangeMilestoneProgress ||
-                          milestoneUpdateBusy
-                        }
-                        className={`rounded-full focus:outline-none ${
-                          permissions.canChangeMilestoneProgress &&
-                          !milestoneUpdateBusy
-                            ? "cursor-pointer"
-                            : "cursor-default"
-                        }`}
-                        aria-label="Change progress status"
-                      >
-                        <StatusBadge status={milestone.status} />
-                      </button>
+                        <button
+                          type="button"
+                          onClick={
+                            permissions.canChangeMilestoneProgress &&
+                            !milestoneUpdateBusy
+                              ? () => onStatusDropdownToggle(milestone.id)
+                              : undefined
+                          }
+                          disabled={
+                            !permissions.canChangeMilestoneProgress ||
+                            milestoneUpdateBusy
+                          }
+                          className={`rounded-full focus:outline-none ${
+                            permissions.canChangeMilestoneProgress &&
+                            !milestoneUpdateBusy
+                              ? "cursor-pointer"
+                              : "cursor-default"
+                          }`}
+                          aria-label="Change progress status"
+                        >
+                          <StatusBadge status={milestone.status} />
+                        </button>
                       )}
 
                       {isDropdownOpen &&
@@ -363,7 +363,8 @@ export function MilestonesPanel({
                             </p>
                           ) : null}
                         </div>
-                        {permissions.canEditTask || permissions.canDeleteTask ? (
+                        {permissions.canEditTask ||
+                        permissions.canDeleteTask ? (
                           <div className="flex shrink-0 items-center justify-end gap-1.5 sm:justify-start">
                             {permissions.canEditTask ? (
                               <button
@@ -440,29 +441,33 @@ export function MilestonesPanel({
 
           <Field label="Status">
             <div className="space-y-1.5">
-            <select
-              value={msStatus}
-              onChange={(e) => setMsStatus(e.target.value as MilestoneStatus)}
-              className={selectCls}
-              disabled={
-                msStatus === "paid" ||
-                (milestoneModalMode === "edit" && msApprovalStatus !== "approved")
-              }
-            >
-              <option value="pending">Pending</option>
-              <option value="in-progress">In Progress</option>
-              <option value="completed">Completed</option>
-              {msStatus === "paid" ? <option value="paid">Paid</option> : null}
-            </select>
-            {msStatus === "paid" ? (
-              <p className="text-xs text-muted-foreground">
-                Locked after payment approval.
-              </p>
-            ) : milestoneModalMode === "edit" && msApprovalStatus !== "approved" ? (
-              <p className="text-xs text-muted-foreground">
-                Available once approved.
-              </p>
-            ) : null}
+              <select
+                value={msStatus}
+                onChange={(e) => setMsStatus(e.target.value as MilestoneStatus)}
+                className={selectCls}
+                disabled={
+                  msStatus === "paid" ||
+                  (milestoneModalMode === "edit" &&
+                    msApprovalStatus !== "approved")
+                }
+              >
+                <option value="pending">Pending</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+                {msStatus === "paid" ? (
+                  <option value="paid">Paid</option>
+                ) : null}
+              </select>
+              {msStatus === "paid" ? (
+                <p className="text-xs text-muted-foreground">
+                  Locked after payment approval.
+                </p>
+              ) : milestoneModalMode === "edit" &&
+                msApprovalStatus !== "approved" ? (
+                <p className="text-xs text-muted-foreground">
+                  Available once approved.
+                </p>
+              ) : null}
             </div>
           </Field>
 

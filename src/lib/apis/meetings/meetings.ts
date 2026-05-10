@@ -40,4 +40,3 @@ export async function deleteMeeting(meetingId: number) {
   );
   return res;
 }
-

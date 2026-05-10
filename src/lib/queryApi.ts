@@ -38,16 +38,35 @@ import {
 
 import type { TaskCreate, TaskRead, TaskUpdate } from "@/lib/apis/tasks/schema";
 import { createTask, deleteTask, updateTask } from "@/lib/apis/tasks/tasks";
-import { createNote, updateNote, deleteNote, getNotes } from "@/lib/apis/notes/notes";
+import {
+  createNote,
+  updateNote,
+  deleteNote,
+  getNotes,
+} from "@/lib/apis/notes/notes";
 import type { NoteListResponse } from "@/lib/apis/notes/schema";
 import type { NoteCreate, NoteRead, NoteUpdate } from "@/lib/apis/notes/schema";
-import { createMeeting, deleteMeeting, listMeetingsByProject, updateMeeting } from "@/lib/apis/meetings/meetings";
-import type { MeetingCreate, MeetingRead, MeetingUpdate } from "@/lib/apis/meetings/schema";
+import {
+  createMeeting,
+  deleteMeeting,
+  listMeetingsByProject,
+  updateMeeting,
+} from "@/lib/apis/meetings/meetings";
+import type {
+  MeetingCreate,
+  MeetingRead,
+  MeetingUpdate,
+} from "@/lib/apis/meetings/schema";
 import { listActivityLogsByProjectId } from "@/lib/apis/activityLogs/activityLogs";
 import type { ActivityLogRead } from "@/lib/apis/activityLogs/schema";
 import { getDashboardSummary } from "@/lib/apis/dashboard/dashboard";
 import type { DashboardSummary } from "@/lib/apis/dashboard/schema";
-import { createFile, listFilesByProjectId, updateFile, deleteFile } from "@/lib/apis/files/files";
+import {
+  createFile,
+  listFilesByProjectId,
+  updateFile,
+  deleteFile,
+} from "@/lib/apis/files/files";
 import type { FileCreate, FileRead, FileUpdate } from "@/lib/apis/files/schema";
 import {
   listPaymentsByProjectId,
@@ -144,7 +163,8 @@ export const queryKeys = {
     listByProjectId: (projectId: number, forClient: boolean) =>
       ["payments", "listByProjectId", projectId, forClient] as const,
     received: (userId: number) => ["payments", "received", userId] as const,
-    sentRequested: (userId: number) => ["payments", "sentRequested", userId] as const,
+    sentRequested: (userId: number) =>
+      ["payments", "sentRequested", userId] as const,
   },
   notifications: {
     /** `userId` partitions cache per account (API still resolves user from JWT). */
@@ -440,7 +460,11 @@ export const queryApi = {
       ): UseMutationOptions<APIResponse<NoteRead>, Error, NoteUpdate> => ({
         mutationFn: (data) => updateNote(noteId, data),
       }),
-      delete: (): UseMutationOptions<APIResponse<boolean>, Error, { noteId: number }> => ({
+      delete: (): UseMutationOptions<
+        APIResponse<boolean>,
+        Error,
+        { noteId: number }
+      > => ({
         mutationFn: ({ noteId }) => deleteNote(noteId),
       }),
     },
@@ -454,7 +478,11 @@ export const queryApi = {
       }),
       update: (
         meetingId: number,
-      ): UseMutationOptions<APIResponse<MeetingRead>, Error, MeetingUpdate> => ({
+      ): UseMutationOptions<
+        APIResponse<MeetingRead>,
+        Error,
+        MeetingUpdate
+      > => ({
         mutationFn: (data) => updateMeeting(meetingId, data),
       }),
       delete: (): UseMutationOptions<
@@ -494,7 +522,8 @@ export const queryApi = {
         Error,
         number[]
       > => ({
-        mutationFn: (notification_ids) => markNotificationsRead(notification_ids),
+        mutationFn: (notification_ids) =>
+          markNotificationsRead(notification_ids),
       }),
       markAllRead: (): UseMutationOptions<
         APIResponse<NotificationCountResponse>,

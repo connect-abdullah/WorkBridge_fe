@@ -32,7 +32,9 @@ export function ProjectClientInviteFromNotificationModal({
   const [phase, setPhase] = useState<Phase>("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [projectTitle, setProjectTitle] = useState("");
-  const [projectDescription, setProjectDescription] = useState<string | null>(null);
+  const [projectDescription, setProjectDescription] = useState<string | null>(
+    null,
+  );
   const [joinedProjectId, setJoinedProjectId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -147,7 +149,9 @@ export function ProjectClientInviteFromNotificationModal({
         {phase === "ready" ? (
           <>
             <div className="space-y-2">
-              <p className="text-sm font-medium text-foreground">{projectTitle}</p>
+              <p className="text-sm font-medium text-foreground">
+                {projectTitle}
+              </p>
               <p className="text-sm leading-relaxed text-muted-foreground">
                 {projectDescription ?? "No description provided."}
               </p>
@@ -161,7 +165,11 @@ export function ProjectClientInviteFromNotificationModal({
               >
                 Cancel
               </Button>
-              <Button type="button" className="h-11 sm:w-auto" onClick={handleJoin}>
+              <Button
+                type="button"
+                className="h-11 sm:w-auto"
+                onClick={handleJoin}
+              >
                 Join project
               </Button>
             </div>
@@ -205,7 +213,12 @@ export function ProjectClientInviteFromNotificationModal({
           <div className="space-y-4">
             <p className="text-sm text-destructive">{errorMessage}</p>
             <div className="flex justify-end">
-              <Button type="button" variant="outline" className="h-11" onClick={onClose}>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11"
+                onClick={onClose}
+              >
                 Close
               </Button>
             </div>

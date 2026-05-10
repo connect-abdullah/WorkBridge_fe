@@ -1,10 +1,6 @@
 import "server-only";
 
-import axios, {
-  AxiosError,
-  AxiosInstance,
-  AxiosRequestConfig,
-} from "axios";
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 
 import { API_PREFIX } from "@/lib/apis/apiResponse";
 

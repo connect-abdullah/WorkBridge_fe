@@ -4,7 +4,9 @@ import type * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/project-detail/components/Modal";
 
-type ActionVariant = NonNullable<React.ComponentProps<typeof Button>["variant"]>;
+type ActionVariant = NonNullable<
+  React.ComponentProps<typeof Button>["variant"]
+>;
 
 type AlertModalProps = {
   actionVariant?: ActionVariant;
@@ -79,4 +81,3 @@ export function AlertModal({
     </Modal>
   );
 }
-

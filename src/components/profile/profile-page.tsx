@@ -39,7 +39,7 @@ type ProfileFormValues = {
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? "" : "";
+  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
   const initials = `${first}${last}`.toUpperCase();
   return initials || "U";
 }
@@ -230,8 +230,7 @@ export default function ProfilePage() {
     }
   };
 
-  const showProfileSkeleton =
-    profileQuery.isFetching && !profileQuery.data;
+  const showProfileSkeleton = profileQuery.isFetching && !profileQuery.data;
 
   if (showProfileSkeleton) {
     return <ProfilePageSkeleton />;
@@ -294,13 +293,19 @@ export default function ProfilePage() {
                 {displayName}
               </h1>
               <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-muted-foreground sm:justify-start">
-                <Mail className="hidden h-4 w-4 shrink-0 sm:inline" aria-hidden />
+                <Mail
+                  className="hidden h-4 w-4 shrink-0 sm:inline"
+                  aria-hidden
+                />
                 <span className="truncate">{user?.email ?? form.email}</span>
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
               <span className="inline-flex items-center rounded-full border border-border bg-background/80 px-3 py-1 text-xs font-medium text-foreground shadow-sm backdrop-blur-sm">
-                <Shield className="mr-1.5 h-3.5 w-3.5 text-primary" aria-hidden />
+                <Shield
+                  className="mr-1.5 h-3.5 w-3.5 text-primary"
+                  aria-hidden
+                />
                 {roleLabel}
               </span>
               {user?.paid_user ? (

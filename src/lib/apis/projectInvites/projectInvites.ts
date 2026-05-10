@@ -13,14 +13,18 @@ import type { UserRead } from "@/lib/apis/auth/schema";
 
 const BASE = `${API_PREFIX}/invite`;
 
-export async function acceptProjectClientInvite(body: ProjectClientInviteAcceptRequest) {
+export async function acceptProjectClientInvite(
+  body: ProjectClientInviteAcceptRequest,
+) {
   return post<APIResponse<ProjectRead>, ProjectClientInviteAcceptRequest>(
     `${BASE}/accept`,
     body,
   );
 }
 
-export async function previewProjectClientInvite(body: ProjectClientInviteAcceptRequest) {
+export async function previewProjectClientInvite(
+  body: ProjectClientInviteAcceptRequest,
+) {
   return post<
     APIResponse<ProjectClientInvitePreviewResponse>,
     ProjectClientInviteAcceptRequest

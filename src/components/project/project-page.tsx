@@ -262,10 +262,8 @@ export function ProjectPage({
       milestones: (milestones ?? []).map((m) => ({
         title: String(m.title ?? "").trim(),
         description: String(m.description ?? "").trim(),
-        progress_status: ((
-          (m as { progress_status?: string | null }).progress_status ??
-          "pending"
-        ) as MilestoneStatus),
+        progress_status: ((m as { progress_status?: string | null })
+          .progress_status ?? "pending") as MilestoneStatus,
         price: Number(m.price) || 0,
         due_date: m.due_date || new Date().toISOString(),
         tasks: (m.tasks ?? []).map((t) => ({
@@ -358,7 +356,7 @@ export function ProjectPage({
                 milestoneTitle={
                   allCompleted
                     ? "All milestones completed"
-                    : next?.title ?? "No milestones yet"
+                    : (next?.title ?? "No milestones yet")
                 }
                 milestoneDueDate={
                   allCompleted ? "—" : formatShortDate(next?.due_date)
@@ -762,9 +760,7 @@ export function ProjectPage({
               className="h-10"
               disabled={createProjectMutation.isPending}
             >
-              {createProjectMutation.isPending
-                ? "Creating…"
-                : "Create Project"}
+              {createProjectMutation.isPending ? "Creating…" : "Create Project"}
             </Button>
           </div>
         </form>

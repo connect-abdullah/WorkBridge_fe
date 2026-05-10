@@ -58,10 +58,7 @@ export function Modal({
       >
         <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
           <div>
-            <h3
-              id={titleId}
-              className="text-lg font-semibold text-foreground"
-            >
+            <h3 id={titleId} className="text-lg font-semibold text-foreground">
               {title}
             </h3>
             {subtitle ? (

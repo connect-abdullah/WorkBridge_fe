@@ -60,7 +60,8 @@ export function InvoicePreviewModal({
       ) : (
         <div className="space-y-3 text-sm">
           <p className="text-muted-foreground">
-            This proof is not an inline image or PDF. Open it in a new tab to review.
+            This proof is not an inline image or PDF. Open it in a new tab to
+            review.
           </p>
           <Button variant="outline" asChild>
             <a href={src} target="_blank" rel="noopener noreferrer">

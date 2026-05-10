@@ -18,7 +18,10 @@ import { queryApi, queryKeys } from "@/lib/queryApi";
 import { getPermissionsFor } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/auth/user-context";
 import type { MilestoneRead } from "@/lib/apis/milestones/schema";
-import type { ProjectRead, ProjectReadWithMilestones } from "@/lib/apis/projects/schema";
+import type {
+  ProjectRead,
+  ProjectReadWithMilestones,
+} from "@/lib/apis/projects/schema";
 import type { ProjectUpdate } from "@/lib/apis/projects/schema";
 import { FreelancerClientInviteCard } from "@/components/project-detail/components/FreelancerClientInviteCard";
 import { Modal } from "@/components/project-detail/components/Modal";
@@ -187,7 +190,9 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     undefined,
   );
   const [alertActionLabel, setAlertActionLabel] = useState("Delete");
-  type AlertButtonVariant = NonNullable<ComponentProps<typeof Button>["variant"]>;
+  type AlertButtonVariant = NonNullable<
+    ComponentProps<typeof Button>["variant"]
+  >;
   const [alertActionVariant, setAlertActionVariant] = useState<
     AlertButtonVariant | undefined
   >(undefined);
@@ -371,12 +376,16 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
   const endDateInputRef = useRef<HTMLInputElement | null>(null);
   const [clientInviteBusy, setClientInviteBusy] = useState(false);
   const [inviteLookupResetKey, setInviteLookupResetKey] = useState(0);
-  const [selectedInviteClient, setSelectedInviteClient] = useState<UserRead | null>(null);
+  const [selectedInviteClient, setSelectedInviteClient] =
+    useState<UserRead | null>(null);
 
   const [assignedClientModalOpen, setAssignedClientModalOpen] = useState(false);
   const [assignedClientLoading, setAssignedClientLoading] = useState(false);
-  const [assignedClientError, setAssignedClientError] = useState<string | null>(null);
-  const [assignedClientDetails, setAssignedClientDetails] = useState<UserRead | null>(null);
+  const [assignedClientError, setAssignedClientError] = useState<string | null>(
+    null,
+  );
+  const [assignedClientDetails, setAssignedClientDetails] =
+    useState<UserRead | null>(null);
 
   // ── Milestone state (populated from API)
   const [milestoneState, setMilestoneState] = useState<Milestone[]>([]);
@@ -538,7 +547,13 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       const byId = new Map(incoming.map((m) => [m.id, m]));
       const merged = prev.map((m) => {
         const next = byId.get(m.id);
-        return next ? { ...next, privateNotes: m.privateNotes, sharedNotes: m.sharedNotes } : m;
+        return next
+          ? {
+              ...next,
+              privateNotes: m.privateNotes,
+              sharedNotes: m.sharedNotes,
+            }
+          : m;
       });
       const prevIds = new Set(prev.map((m) => m.id));
       const appended = incoming.filter((m) => !prevIds.has(m.id));
@@ -546,13 +561,17 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     });
   }, [meetingsQuery.data]);
 
-  const createMeetingMutation = useMutation(queryApi.mutations.meetings.create());
+  const createMeetingMutation = useMutation(
+    queryApi.mutations.meetings.create(),
+  );
   const updateMeetingMutation = useMutation({
     mutationFn: async (vars: { meetingId: number; data: unknown }) => {
       const opts = queryApi.mutations.meetings.update(vars.meetingId);
-      return (opts.mutationFn as unknown as (d: unknown) => ReturnType<
-        NonNullable<typeof opts.mutationFn>
-      >)(vars.data);
+      return (
+        opts.mutationFn as unknown as (
+          d: unknown,
+        ) => ReturnType<NonNullable<typeof opts.mutationFn>>
+      )(vars.data);
     },
   });
 
@@ -638,7 +657,17 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
           }
           if (res.data) {
             const ui = toUiMeeting(res.data);
-            setMeetings((prev) => prev.map((m) => (m.id === ui.id ? { ...ui, privateNotes: m.privateNotes, sharedNotes: m.sharedNotes } : m)));
+            setMeetings((prev) =>
+              prev.map((m) =>
+                m.id === ui.id
+                  ? {
+                      ...ui,
+                      privateNotes: m.privateNotes,
+                      sharedNotes: m.sharedNotes,
+                    }
+                  : m,
+              ),
+            );
           }
           queryClient.invalidateQueries({
             queryKey: queryKeys.meetings.listByProjectId(numericProjectId),
@@ -747,7 +776,9 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         toast.error(res.message || "Could not create invite.");
         return;
       }
-      toast.success("Invitation sent — they will see a notification with a join link.");
+      toast.success(
+        "Invitation sent — they will see a notification with a join link.",
+      );
       await queryClient.invalidateQueries({
         queryKey: projectDetailQueryKey,
       });
@@ -805,16 +836,10 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
     if (!projectDetail) return;
 
-    if (
-      milestoneModalMode === "edit" &&
-      updateMilestoneMutation.isPending
-    ) {
+    if (milestoneModalMode === "edit" && updateMilestoneMutation.isPending) {
       return;
     }
-    if (
-      milestoneModalMode === "create" &&
-      createMilestoneMutation.isPending
-    ) {
+    if (milestoneModalMode === "create" && createMilestoneMutation.isPending) {
       return;
     }
 
@@ -1108,7 +1133,10 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
     });
   };
 
-  const deleteTaskForMilestoneConfirmed = (milestoneId: string, taskId: string) => {
+  const deleteTaskForMilestoneConfirmed = (
+    milestoneId: string,
+    taskId: string,
+  ) => {
     setMilestoneState((prev) =>
       prev.map((m) =>
         m.id === milestoneId
@@ -1158,7 +1186,9 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       title: data.title ?? prev.title,
       description: data.description ?? prev.description,
       status: toUiProjectStatus(data.status),
-      startDate: data.start_date ? formatLongDate(data.start_date) : prev.startDate,
+      startDate: data.start_date
+        ? formatLongDate(data.start_date)
+        : prev.startDate,
       endDate: data.end_date ? formatLongDate(data.end_date) : prev.endDate,
       totalAmount:
         typeof data.total_amount === "number"
@@ -1510,7 +1540,9 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
                     variant="destructive"
                     size="sm"
                     className="shrink-0 font-medium shadow-sm"
-                    disabled={clientInviteBusy || updateProjectMutation.isPending}
+                    disabled={
+                      clientInviteBusy || updateProjectMutation.isPending
+                    }
                     onClick={() => promptRemoveAssignedClient()}
                   >
                     Remove client
@@ -1663,17 +1695,27 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
         ) : assignedClientDetails ? (
           <dl className="space-y-3 text-sm">
             <div>
-              <dt className="text-xs font-medium text-muted-foreground">Name</dt>
+              <dt className="text-xs font-medium text-muted-foreground">
+                Name
+              </dt>
               <dd className="text-foreground">{assignedClientDetails.name}</dd>
             </div>
             <div>
-              <dt className="text-xs font-medium text-muted-foreground">Email</dt>
-              <dd className="break-all text-foreground">{assignedClientDetails.email}</dd>
+              <dt className="text-xs font-medium text-muted-foreground">
+                Email
+              </dt>
+              <dd className="break-all text-foreground">
+                {assignedClientDetails.email}
+              </dd>
             </div>
           </dl>
         ) : null}
         <div className="mt-6 flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={closeAssignedClientModal}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={closeAssignedClientModal}
+          >
             Close
           </Button>
         </div>

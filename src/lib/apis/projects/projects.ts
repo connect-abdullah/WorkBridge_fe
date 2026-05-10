@@ -31,7 +31,6 @@ export async function createProject(data: ProjectCreate) {
 export async function listProjectsForUser() {
   const res = await get<APIResponse<ProjectReadWithMilestones[]>>(
     projectsApi.all,
-
   );
   return res;
 }

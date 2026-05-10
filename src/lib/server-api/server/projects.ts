@@ -7,13 +7,12 @@ import type {
   ProjectReadWithMilestones,
 } from "@/lib/apis/projects/schema";
 
-export async function fetchProjectsForUser(): Promise<
-  APIResponse<ProjectReadWithMilestones[]> | null
-> {
-  return serverGet<APIResponse<ProjectReadWithMilestones[]>>(
-    "/projects/all",
-    { swallow401: true },
-  );
+export async function fetchProjectsForUser(): Promise<APIResponse<
+  ProjectReadWithMilestones[]
+> | null> {
+  return serverGet<APIResponse<ProjectReadWithMilestones[]>>("/projects/all", {
+    swallow401: true,
+  });
 }
 
 export async function fetchProjectWithMilestones(
