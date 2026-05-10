@@ -11,7 +11,7 @@ import {
   getPasswordValidationError,
 } from "@/lib/utils";
 import { FormField, inputCls } from "@/components/ui/form-field";
-import { login } from "@/lib/apis/auth/auth";
+import { loginAction } from "@/lib/auth/actions";
 
 export function LoginForm() {
   const router = useRouter();
@@ -44,28 +44,24 @@ export function LoginForm() {
     }
 
     setIsSubmitting(true);
-    const response = await login({ email, password });
-    if (response.success) {
-      toast.success("Welcome back...");
-      const token = response.data?.access_token || "";
-      localStorage.setItem("auth:token", token);
-      localStorage.setItem(
-        "auth:user",
-        JSON.stringify(response.data?.user || {}),
-      );
-      document.cookie = `auth:token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
-      window.dispatchEvent(new Event("auth:user-updated"));
-      if (inviteToken) {
-        router.push(`/join-project?token=${encodeURIComponent(inviteToken)}`);
+    try {
+      const response = await loginAction({ email, password });
+      if (response.success) {
+        toast.success("Welcome back...");
+        if (inviteToken) {
+          router.push(`/join-project?token=${encodeURIComponent(inviteToken)}`);
+        } else {
+          router.push("/dashboard");
+        }
+        router.refresh();
       } else {
-        router.push("/dashboard");
+        toast.error(response.message);
       }
-    } else {
-      toast.error(response.message);
+    } finally {
+      setIsSubmitting(false);
+      setErrors({});
+      setHasSubmitted(false);
     }
-    setIsSubmitting(false);
-    setErrors({});
-    setHasSubmitted(false);
   };
 
   return (

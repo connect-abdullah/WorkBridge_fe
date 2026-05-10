@@ -1,6 +1,13 @@
 import { ReactNode } from "react";
-import { DashboardShell } from "@/components/layout/DashboardShell";
 
-export default function MainLayout({ children }: { children: ReactNode }) {
-  return <DashboardShell>{children}</DashboardShell>;
+import { DashboardShell } from "@/components/layout/DashboardShell";
+import { requireSession } from "@/lib/auth/session";
+
+export default async function MainLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const { user } = await requireSession("/auth/login");
+  return <DashboardShell user={user}>{children}</DashboardShell>;
 }

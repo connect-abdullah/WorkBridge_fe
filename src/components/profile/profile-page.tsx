@@ -21,6 +21,7 @@ import { FormField, inputCls } from "@/components/ui/form-field";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import type { UserRead } from "@/lib/apis/auth/schema";
 import { getProfile, updateProfile } from "@/lib/apis/auth/auth";
+import { useSessionUser } from "@/lib/auth/user-context";
 import { handleUpload } from "@/lib/supabase";
 import {
   cn,
@@ -48,19 +49,6 @@ function trimmedAvatarSrc(user: UserRead | null | undefined): string | null {
   if (typeof v !== "string") return null;
   const t = v.trim();
   return t || null;
-}
-
-function readStoredUser(): UserRead | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem("auth:user");
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as unknown;
-    if (!parsed || typeof parsed !== "object") return null;
-    return parsed as UserRead;
-  } catch {
-    return null;
-  }
 }
 
 function formatMemberDate(iso: string | null | undefined) {
@@ -106,13 +94,13 @@ const SectionCard = memo(function SectionCard({
 });
 
 export default function ProfilePage() {
-  const storedUser = readStoredUser();
-  const [user, setUser] = useState<UserRead | null>(storedUser);
+  const sessionUser = useSessionUser();
+  const [user, setUser] = useState<UserRead | null>(sessionUser as UserRead);
   const isMobileLayout = useIsMobile();
 
   const initialValues = useRef<ProfileFormValues>({
-    name: storedUser?.name ?? "",
-    email: storedUser?.email ?? "",
+    name: sessionUser.name ?? "",
+    email: sessionUser.email ?? "",
     password: "",
   });
 
@@ -132,7 +120,6 @@ export default function ProfilePage() {
     queryFn: () => getProfile(),
     staleTime: 60 * 1000,
     gcTime: 5 * 60 * 1000,
-    enabled: typeof window !== "undefined" && !!localStorage.getItem("auth:token"),
   });
 
   const updateMutation = useMutation({
@@ -145,11 +132,6 @@ export default function ProfilePage() {
     if (!res || res.success === false || !res.data) return;
     const me = res.data;
     setUser(me);
-    try {
-      localStorage.setItem("auth:user", JSON.stringify(me));
-    } catch {
-      /* ignore */
-    }
     initialValues.current = { name: me.name, email: me.email, password: "" };
     setForm((prev) => ({
       ...prev,
@@ -210,7 +192,7 @@ export default function ProfilePage() {
     try {
       let avatarUrl: string | undefined;
       if (avatarFile && avatarPreview) {
-        avatarUrl = await handleUpload(avatarFile);
+        avatarUrl = await handleUpload(avatarFile, sessionUser.id);
       }
 
       const payload: Parameters<typeof updateProfile>[0] = {
@@ -228,16 +210,6 @@ export default function ProfilePage() {
       }
       if (res.data) {
         setUser(res.data);
-        try {
-          localStorage.setItem("auth:user", JSON.stringify(res.data));
-        } catch {
-          /* ignore */
-        }
-        try {
-          window.dispatchEvent(new Event("auth:user-updated"));
-        } catch {
-          /* ignore */
-        }
       }
 
       initialValues.current = { ...form, password: "" };

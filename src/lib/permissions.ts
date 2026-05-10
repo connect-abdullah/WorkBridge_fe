@@ -1,7 +1,3 @@
-"use client";
-
-import { useEffect, useMemo, useState } from "react";
-
 export type Role = "freelancer" | "client";
 
 export type Permissions = {
@@ -77,56 +73,8 @@ export function getPermissionsFor(role: Role | null | undefined): Permissions {
   return FREELANCER_PERMISSIONS;
 }
 
-type StoredUser = {
-  id: number;
-  name: string;
-  email: string;
-  role: Role;
-  avatar?: string | null;
-};
-
-function readStoredRole(): Role | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem("auth:user");
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as StoredUser | null;
-    if (!parsed || typeof parsed !== "object") return null;
-    return parsed.role ?? null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Live role from localStorage. Re-reads on `storage` and `auth:user-updated` events.
- * Returns `null` until mounted to avoid SSR/CSR mismatch.
- */
-export function useRole(): Role | null {
-  const [mounted, setMounted] = useState(false);
-  const [role, setRole] = useState<Role | null>(() => readStoredRole());
-
-  useEffect(() => {
-    setMounted(true);
-    const sync = () => setRole(readStoredRole());
-    sync();
-    window.addEventListener("storage", sync);
-    window.addEventListener("auth:user-updated", sync as EventListener);
-    return () => {
-      window.removeEventListener("storage", sync);
-      window.removeEventListener("auth:user-updated", sync as EventListener);
-    };
-  }, []);
-
-  return mounted ? role : null;
-}
-
-/**
- * Single source of truth for role-based UI gating. Defaults to freelancer
- * permissions while the role is unknown to avoid flashing client UI on login.
- */
-export function usePermissions(roleOverride?: Role | null): Permissions {
-  const stored = useRole();
-  const effective = roleOverride ?? stored ?? "freelancer";
-  return useMemo(() => getPermissionsFor(effective), [effective]);
-}
+// `useRole` and `usePermissions` were previously exported from this module
+// and read user state from localStorage. They now live in
+// `@/lib/auth/user-context` and are populated by the server layout. Imports
+// here have been removed; update call sites to use the new module.
+export { useRole, usePermissions } from "@/lib/auth/user-context";

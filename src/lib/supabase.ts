@@ -38,9 +38,17 @@ function sanitizeStorageFileName(name: string): string {
   return `${safeStem || "upload"}${safeExt || ""}`;
 }
 
-// Uploads the selected file to Supabase and returns a public URL.
+/**
+ * Uploads the selected file to Supabase and returns a public URL. The
+ * `userId` is used purely as a path prefix in the storage bucket so each
+ * user's uploads stay isolated; pass the current session user's id from
+ * `useSessionUser()`. Supabase does not enforce auth on this bucket — the
+ * authoritative auth check happens on the FastAPI endpoint that consumes
+ * the returned URL.
+ */
 export const handleUpload = async (
   input: React.ChangeEvent<HTMLInputElement> | File,
+  userId: number | string,
 ): Promise<string> => {
   if (!supabase) {
     throw new Error(
@@ -52,17 +60,9 @@ export const handleUpload = async (
     input instanceof File ? input : (input.target.files && input.target.files[0]);
   if (!file) throw new Error("No file selected.");
 
-  // Parse user from localStorage (assuming a JSON string in 'auth:user')
-  const userStr = localStorage.getItem("auth:user");
-  if (!userStr) throw new Error("User is not authenticated.");
-  let userId: string | undefined;
-  try {
-    const userObj = JSON.parse(userStr);
-    userId = userObj?.id;
-  } catch {
-    throw new Error("Invalid user data in localStorage.");
+  if (userId == null || userId === "" || userId === 0) {
+    throw new Error("User ID not found.");
   }
-  if (!userId) throw new Error("User ID not found.");
 
   const safeName = sanitizeStorageFileName(file.name);
   const filePath = `${userId}/${Date.now()}-${safeName}`;

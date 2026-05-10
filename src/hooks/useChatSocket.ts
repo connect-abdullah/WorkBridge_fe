@@ -15,7 +15,9 @@ interface Options {
 
 /**
  * Opens a WebSocket to the project chat endpoint while `enabled` is true.
- * - Token is read from localStorage (`auth:token`) at connect time.
+ * - Auth comes from the `access_token` HttpOnly cookie (no token in URL).
+ * - The socket is opened on the same origin as the page so cookies flow on
+ *   the upgrade request.
  * - Reconnects with exponential backoff (max 10s) until disabled.
  * - Sends keep-alive pings every 25s; any text frame from the server is fine.
  */
@@ -55,15 +57,10 @@ export function useChatSocket({ enabled, onMessage, onStatusChange }: Options) {
 
     const connect = () => {
       if (cancelled) return;
-      const token = localStorage.getItem("auth:token");
-      if (!token) {
-        setStatus("closed");
-        return;
-      }
 
       let url: string;
       try {
-        url = getChatSocketUrl(token);
+        url = getChatSocketUrl();
       } catch {
         setStatus("closed");
         return;
@@ -96,10 +93,18 @@ export function useChatSocket({ enabled, onMessage, onStatusChange }: Options) {
         }
       });
 
-      socket.addEventListener("close", () => {
+      socket.addEventListener("close", (ev) => {
         clearTimers();
         setStatus("closed");
         if (cancelled) return;
+        // 1008 = policy violation (server rejected auth). Try a one-shot
+        // refresh before reconnecting so a stale cookie can be rotated.
+        if (ev.code === 1008) {
+          fetch("/api/v1/auth/refresh", {
+            method: "POST",
+            credentials: "include",
+          }).catch(() => undefined);
+        }
         attempt += 1;
         const delay = Math.min(10_000, 500 * 2 ** Math.min(attempt, 5));
         reconnectTimer = window.setTimeout(connect, delay);

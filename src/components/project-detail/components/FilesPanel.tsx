@@ -25,10 +25,11 @@ import { queryApi, queryKeys } from "@/lib/queryApi";
 import type { FileCreate, FileRead, FileUpdate } from "@/lib/apis/files/schema";
 import {
   appendProjectFileToCache,
-  getUploadedUserType,
   inferFileType,
+  roleToUploadedUserType,
   uploadProjectFile,
 } from "@/lib/apis/files/upload";
+import { useSessionUser } from "@/lib/auth/user-context";
 import { updateFile } from "@/lib/apis/files/files";
 import { Modal } from "@/components/project-detail/components/Modal";
 import { FilesListSkeleton } from "@/components/skeletons";
@@ -114,6 +115,8 @@ export function FilesPanel({
   const linkTitleId = useId();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const queryClient = useQueryClient();
+  const sessionUser = useSessionUser();
+  const uploadedUserType = roleToUploadedUserType(sessionUser.role);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const previewUrlRef = useRef<string | null>(null);
@@ -136,7 +139,8 @@ export function FilesPanel({
 
   const createFileMutation = useMutation(queryApi.mutations.files.create());
   const uploadFileMutation = useMutation({
-    mutationFn: (file: File) => uploadProjectFile(file, projectId),
+    mutationFn: (file: File) =>
+      uploadProjectFile(file, projectId, uploadedUserType, sessionUser.id),
   });
   const deleteFileMutation = useMutation(queryApi.mutations.files.delete());
   const updateFileMutation = useMutation({
@@ -285,7 +289,7 @@ export function FilesPanel({
         file_name: name,
         file_path: url,
         file_type: "link",
-        uploaded_user: getUploadedUserType(),
+        uploaded_user: uploadedUserType,
         project_id: projectId,
       };
 

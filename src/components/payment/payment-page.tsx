@@ -18,8 +18,8 @@ import {
   type PaymentsListHandlers,
 } from "@/components/payment/PaymentsListView";
 import { getDateValue } from "@/components/payment/payment-page-utils";
-import { getStoredUserId, queryKeys, queryApi } from "@/lib/queryApi";
-import { useRole } from "@/lib/permissions";
+import { queryKeys, queryApi } from "@/lib/queryApi";
+import { useSessionUser, useRole } from "@/lib/auth/user-context";
 import type { PaymentMethod, PaymentRead } from "@/lib/apis/payments/schema";
 import {
   approvePayment,
@@ -28,7 +28,7 @@ import {
   submitPayment,
 } from "@/lib/apis/payments/payments";
 import { uploadPaymentProofOnly } from "@/lib/apis/files/upload";
-import { CURRENCY_OPTIONS } from "@/constants/currencies";
+import { PaymentRequestCurrencyField } from "@/components/payment/PaymentRequestCurrencyField";
 
 const PAYMENT_METHOD_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: "wise", label: "Wise" },
@@ -40,13 +40,13 @@ const PAYMENT_METHOD_OPTIONS: { value: PaymentMethod; label: string }[] = [
 
 export default function PaymentsPage() {
   const [sortBy, setSortBy] = useState<"latest" | "oldest">("latest");
-  const userId = getStoredUserId();
+  const userId = useSessionUser().id;
   const role = useRole();
   const queryClient = useQueryClient();
 
   const invalidatePaymentCaches = useCallback(
     async (payment?: PaymentRead | null) => {
-      if (userId != null && userId > 0) {
+      if (userId > 0) {
         await queryClient.invalidateQueries({
           queryKey: queryKeys.payments.received(userId),
         });
@@ -67,16 +67,15 @@ export default function PaymentsPage() {
   );
 
   const freelancerQuery = useQuery({
-    ...queryApi.payments.received(userId ?? 0),
-    enabled: role === "freelancer" && userId != null && userId > 0,
-    // Keep status fresh while viewing /payments (clients may resubmit at any time).
+    ...queryApi.payments.received(userId),
+    enabled: role === "freelancer" && userId > 0,
     refetchOnMount: "always",
     refetchInterval: 15 * 1000,
   });
 
   const clientQuery = useQuery({
-    ...queryApi.payments.sentRequested(userId ?? 0),
-    enabled: role === "client" && userId != null && userId > 0,
+    ...queryApi.payments.sentRequested(userId),
+    enabled: role === "client" && userId > 0,
     refetchOnMount: "always",
     refetchInterval: 15 * 1000,
   });
@@ -235,39 +234,6 @@ export default function PaymentsPage() {
     );
   }, [sortBy, clientRows]);
 
-  if (role !== "freelancer" && role !== "client") {
-    return (
-      <div className="mx-auto max-w-3xl space-y-6">
-        <header className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Payments
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Sign in as a freelancer or client to manage milestone payments here.
-          </p>
-        </header>
-        <section className="rounded-2xl border border-border/80 bg-card p-8 text-center text-sm text-muted-foreground shadow-sm">
-          Sign in to see payments linked to your account.
-        </section>
-      </div>
-    );
-  }
-
-  if (userId == null || userId <= 0) {
-    return (
-      <div className="mx-auto max-w-3xl space-y-6">
-        <header className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Payments
-          </h1>
-        </header>
-        <section className="rounded-2xl border border-border/80 bg-card p-8 text-center text-sm text-muted-foreground shadow-sm">
-          Sign in to continue.
-        </section>
-      </div>
-    );
-  }
-
   const isFreelancer = role === "freelancer";
   const paymentsQuery = isFreelancer ? freelancerQuery : clientQuery;
   const sortedPayments = isFreelancer ? sortedFreelancer : sortedClient;
@@ -353,17 +319,10 @@ export default function PaymentsPage() {
             />
           </Field>
           <Field label="Currency">
-            <select
-              className={selectCls}
+            <PaymentRequestCurrencyField
               value={reqCurrency}
-              onChange={(e) => setReqCurrency(e.target.value)}
-            >
-              {CURRENCY_OPTIONS.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
+              onChange={setReqCurrency}
+            />
           </Field>
           <div className="flex justify-end gap-2 pt-2">
             <Button
@@ -428,7 +387,7 @@ export default function PaymentsPage() {
                 if (!payFile || payContext == null) return;
                 setPayBusy(true);
                 try {
-                  const up = await uploadPaymentProofOnly(payFile);
+                  const up = await uploadPaymentProofOnly(payFile, userId);
                   if (up.success === false || !up.data?.file_path) {
                     toast.error(up.message || "Upload failed");
                     return;

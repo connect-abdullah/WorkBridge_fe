@@ -4,7 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 
 import type { APIResponse } from "@/lib/apis/apiResponse";
 import type { NotificationCountResponse } from "@/lib/apis/notifications/schema";
-import { getStoredUserId, queryApi } from "@/lib/queryApi";
+import { useSessionUser } from "@/lib/auth/user-context";
+import { queryApi } from "@/lib/queryApi";
 
 function readCount(res: APIResponse<NotificationCountResponse> | undefined) {
   if (!res || res.success === false || !res.data) return 0;
@@ -13,7 +14,7 @@ function readCount(res: APIResponse<NotificationCountResponse> | undefined) {
 }
 
 export function useUnreadNotificationsCount() {
-  const userId = getStoredUserId() ?? 0;
+  const { id: userId } = useSessionUser();
   return useQuery({
     ...queryApi.notifications.unreadCount(userId),
     select: readCount,

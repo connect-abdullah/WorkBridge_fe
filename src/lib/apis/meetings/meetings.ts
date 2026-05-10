@@ -13,7 +13,7 @@ const meetings_api_endpoint = `${API_PREFIX}${ENDPOINT}`;
 
 export async function createMeeting(data: MeetingCreate) {
   const res = await post<APIResponse<MeetingRead>, MeetingCreate>(
-    `${meetings_api_endpoint}/`,
+    `${meetings_api_endpoint}`,
     data,
   );
   return res;

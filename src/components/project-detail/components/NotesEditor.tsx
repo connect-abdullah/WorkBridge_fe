@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { createNote, updateNote } from "@/lib/apis/notes/notes";
 import type { NoteRead } from "@/lib/apis/notes/schema";
 import type { NoteCreate, NoteUpdate } from "@/lib/apis/notes/schema";
-import { getStoredUserId, queryApi, queryKeys } from "@/lib/queryApi";
+import { queryApi, queryKeys } from "@/lib/queryApi";
+import { useSessionUser } from "@/lib/auth/user-context";
 
 export function NotesEditor({
   projectId,
@@ -27,7 +28,7 @@ export function NotesEditor({
   );
 
   const queryClient = useQueryClient();
-  const userId = getStoredUserId() ?? 0;
+  const userId = useSessionUser().id;
 
   const bucket = useMemo(() => {
     if (scope === "meeting") {

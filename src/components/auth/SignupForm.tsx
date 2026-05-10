@@ -13,7 +13,7 @@ import {
   getPasswordValidationError,
 } from "@/lib/utils";
 import { FormField, inputCls } from "@/components/ui/form-field";
-import { signup } from "@/lib/apis/auth/auth";
+import { signupAction } from "@/lib/auth/actions";
 
 type Role = "freelancer" | "client";
 
@@ -84,27 +84,23 @@ export function SignupForm() {
     }
 
     setIsSubmitting(true);
-    const response = await signup({ name, email, password, role });
-    if (response.success) {
-      toast.success("Account created successfully...");
-      const token = response.data?.access_token || "";
-      localStorage.setItem("auth:token", token);
-      localStorage.setItem(
-        "auth:user",
-        JSON.stringify(response.data?.user || {}),
-      );
-      document.cookie = `auth:token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
-      window.dispatchEvent(new Event("auth:user-updated"));
-      if (inviteToken) {
-        router.push(`/join-project?token=${encodeURIComponent(inviteToken)}`);
+    try {
+      const response = await signupAction({ name, email, password, role });
+      if (response.success) {
+        toast.success("Account created successfully...");
+        if (inviteToken) {
+          router.push(`/join-project?token=${encodeURIComponent(inviteToken)}`);
+        } else {
+          router.push("/dashboard");
+        }
+        router.refresh();
       } else {
-        router.push("/dashboard");
+        toast.error(response.message);
       }
-    } else {
-      toast.error(response.message);
+    } finally {
+      setIsSubmitting(false);
+      setHasSubmitted(false);
     }
-    setIsSubmitting(false);
-    setHasSubmitted(false);
   };
 
   return (

@@ -10,7 +10,7 @@ const notes_api_endpoint = `${API_PREFIX}${ENDPOINT}`;
 
 export const createNote = async (note: NoteCreate) => {
   const response = await post<APIResponse<NoteRead>, NoteCreate>(
-    `${notes_api_endpoint}/`,
+    `${notes_api_endpoint}`,
     note,
   );
   return response;

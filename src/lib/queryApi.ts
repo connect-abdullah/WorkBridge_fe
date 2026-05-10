@@ -91,17 +91,15 @@ function cache(config?: CacheConfig): Required<CacheConfig> {
 // Small client helpers (non-API, non-UI)
 // =============================================================================
 
+/**
+ * @deprecated User identity now comes from the SSR session via
+ * `useSessionUser()` (see `@/lib/auth/user-context`). This helper used to
+ * read `auth:user` from localStorage; it is preserved as a noop so older
+ * call sites compile during the migration but always returns null and will
+ * disable any cache key built on it. Migrate call sites to `useSessionUser`.
+ */
 export function getStoredUserId(): number | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem("auth:user");
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as { id?: unknown };
-    const id = typeof parsed?.id === "number" ? parsed.id : Number(parsed?.id);
-    return Number.isFinite(id) ? id : null;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 // =============================================================================
@@ -306,11 +304,7 @@ export const queryApi = {
         ...cache(cacheConfig),
         staleTime: 30 * 1000, // 30 seconds
         gcTime: 5 * 60 * 1000, // 5 minutes
-        enabled:
-          typeof window !== "undefined" &&
-          Number.isFinite(userId) &&
-          userId > 0 &&
-          Boolean(localStorage.getItem("auth:token")),
+        enabled: Number.isFinite(userId) && userId > 0,
       };
     },
 
@@ -325,11 +319,7 @@ export const queryApi = {
       gcTime: 5 * 60 * 1000,
       refetchInterval: 15 * 1000,
       refetchIntervalInBackground: true,
-      enabled:
-        typeof window !== "undefined" &&
-        Number.isFinite(userId) &&
-        userId > 0 &&
-        Boolean(localStorage.getItem("auth:token")),
+      enabled: Number.isFinite(userId) && userId > 0,
     }),
 
     infiniteList: (
@@ -358,11 +348,7 @@ export const queryApi = {
       ...cache(cacheConfig),
       staleTime: 60 * 1000,
       gcTime: 5 * 60 * 1000,
-      enabled:
-        typeof window !== "undefined" &&
-        Number.isFinite(userId) &&
-        userId > 0 &&
-        Boolean(localStorage.getItem("auth:token")),
+      enabled: Number.isFinite(userId) && userId > 0,
     }),
   },
 

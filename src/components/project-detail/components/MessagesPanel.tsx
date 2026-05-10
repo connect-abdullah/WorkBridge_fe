@@ -42,7 +42,8 @@ import type {
   MessageWsEvent,
 } from "@/lib/apis/messages/schema";
 import { useChatSocket } from "@/hooks/useChatSocket";
-import { getStoredUserId, queryKeys } from "@/lib/queryApi";
+import { useSessionUser } from "@/lib/auth/user-context";
+import { queryKeys } from "@/lib/queryApi";
 import { cn } from "@/lib/utils";
 import { MessagesPanelSkeleton } from "@/components/skeletons";
 import { Modal } from "./Modal";
@@ -205,7 +206,8 @@ export function MessagesPanel({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const currentUserId = getStoredUserId() ?? 0;
+  const sessionUser = useSessionUser();
+  const currentUserId = sessionUser.id;
 
   // ── Message state (server-confirmed + locally pending)
   const [messages, setMessages] = useState<MessageRead[]>([]);
@@ -244,7 +246,13 @@ export function MessagesPanel({
   }, []);
 
   const uploadFileMutation = useMutation({
-    mutationFn: (file: File) => uploadProjectFile(file, projectId),
+    mutationFn: (file: File) =>
+      uploadProjectFile(
+        file,
+        projectId,
+        sessionUser.role === "freelancer" ? "freelancer" : "client",
+        sessionUser.id,
+      ),
   });
 
   const cachedFiles = useMemo(() => {

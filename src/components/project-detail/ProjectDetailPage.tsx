@@ -14,8 +14,9 @@ import {
 } from "@/constants/project-detail";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { ProjectSummary, ProjectStatus } from "@/constants/project-detail";
-import { getStoredUserId, queryApi, queryKeys } from "@/lib/queryApi";
+import { queryApi, queryKeys } from "@/lib/queryApi";
 import { getPermissionsFor } from "@/lib/permissions";
+import { useSessionUser } from "@/lib/auth/user-context";
 import type { MilestoneRead } from "@/lib/apis/milestones/schema";
 import type { ProjectRead, ProjectReadWithMilestones } from "@/lib/apis/projects/schema";
 import type { ProjectUpdate } from "@/lib/apis/projects/schema";
@@ -171,6 +172,7 @@ type Tab = (typeof tabs)[number];
 export function ProjectDetailPage({ projectId }: { projectId: string }) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const sessionUser = useSessionUser();
   const initializedProjectRef = useRef<number | null>(null);
 
   // ── Tab state
@@ -232,16 +234,14 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
   }, [projectError, projectRes, isProjectLoading, projectDetail]);
 
   const isProjectFreelancer = useMemo(() => {
-    const uid = getStoredUserId();
-    if (uid == null || !projectDetail) return false;
-    return Number(projectDetail.freelancer_id) === uid;
-  }, [projectDetail]);
+    if (!projectDetail) return false;
+    return Number(projectDetail.freelancer_id) === sessionUser.id;
+  }, [projectDetail, sessionUser.id]);
 
   const isProjectClient = useMemo(() => {
-    const uid = getStoredUserId();
-    if (uid == null || !projectDetail) return false;
-    return Number(projectDetail.client_id) === uid;
-  }, [projectDetail]);
+    if (!projectDetail) return false;
+    return Number(projectDetail.client_id) === sessionUser.id;
+  }, [projectDetail, sessionUser.id]);
 
   const projectPermissions = useMemo(() => {
     if (isProjectClient) return getPermissionsFor("client");
@@ -322,6 +322,10 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       return updateMilestone(vars.milestoneId, vars.data as never);
     },
   });
+
+  useEffect(() => {
+    if (updateMilestoneMutation.isPending) setOpenStatusDropdown(null);
+  }, [updateMilestoneMutation.isPending]);
   const deleteMilestoneMutation = useMutation(
     queryApi.mutations.milestones.delete(),
   );
@@ -608,7 +612,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
   const handleMeetingSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!mtTitle || !mtLink || !mtDateTime) return;
-    const userId = getStoredUserId() ?? 0;
+    const userId = sessionUser.id;
     const startIso = new Date(mtDateTime).toISOString();
     const end = new Date(mtDateTime);
     end.setMinutes(end.getMinutes() + 60);
@@ -801,6 +805,19 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
     if (!projectDetail) return;
 
+    if (
+      milestoneModalMode === "edit" &&
+      updateMilestoneMutation.isPending
+    ) {
+      return;
+    }
+    if (
+      milestoneModalMode === "create" &&
+      createMilestoneMutation.isPending
+    ) {
+      return;
+    }
+
     const payload = {
       title,
       description: msDescription.trim(),
@@ -867,12 +884,23 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
   ) => {
     const current = milestoneState.find((m) => m.id === milestoneId);
     if (current?.status === "paid") return;
+    if (updateMilestoneMutation.isPending) return;
+    const previousStatus = current?.status;
     setMilestoneState((prev) =>
       prev.map((m) => (m.id === milestoneId ? { ...m, status } : m)),
     );
     setOpenStatusDropdown(null);
 
     const milestoneIdNum = Number(milestoneId);
+    const revertStatus = () => {
+      if (previousStatus === undefined) return;
+      setMilestoneState((prev) =>
+        prev.map((m) =>
+          m.id === milestoneId ? { ...m, status: previousStatus } : m,
+        ),
+      );
+    };
+
     updateMilestoneMutation
       .mutateAsync({
         milestoneId: milestoneIdNum,
@@ -881,6 +909,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       .then((res) => {
         if (!res.success) {
           toast.error(res.message || "Failed to update milestone.");
+          revertStatus();
           return;
         }
         if (res.data) patchMilestoneInCache(res.data);
@@ -895,7 +924,9 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
           queryKey: projectDetailQueryKey,
         });
       })
-      .catch(() => {});
+      .catch(() => {
+        revertStatus();
+      });
   };
 
   const handleMilestoneDelete = (milestoneId: string) => {
@@ -909,6 +940,7 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
 
   const handleMilestoneApprove = (milestoneId: string) => {
     if (!projectPermissions.canApproveMilestone) return;
+    if (updateMilestoneMutation.isPending) return;
     const milestoneIdNum = Number(milestoneId);
 
     setMilestoneState((prev) =>
@@ -1387,10 +1419,13 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
             }))
           }
           openStatusDropdown={openStatusDropdown}
-          onStatusDropdownToggle={(id) =>
-            setOpenStatusDropdown(openStatusDropdown === id ? null : id)
-          }
+          onStatusDropdownToggle={(id) => {
+            if (updateMilestoneMutation.isPending) return;
+            setOpenStatusDropdown(openStatusDropdown === id ? null : id);
+          }}
           onStatusChange={handleMilestoneStatusChange}
+          milestoneUpdateBusy={updateMilestoneMutation.isPending}
+          milestoneCreateBusy={createMilestoneMutation.isPending}
           onDelete={handleMilestoneDelete}
           onApprove={handleMilestoneApprove}
           onOpenModal={openMilestoneModal}

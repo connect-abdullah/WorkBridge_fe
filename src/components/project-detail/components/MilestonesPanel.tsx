@@ -38,6 +38,8 @@ export function MilestonesPanel({
   onStatusChange,
   onDelete,
   onApprove,
+  milestoneUpdateBusy,
+  milestoneCreateBusy,
   onOpenModal,
   onOpenTaskModal,
   onEditTask,
@@ -78,6 +80,10 @@ export function MilestonesPanel({
   onStatusChange: (id: string, status: MilestoneStatus) => void;
   onDelete: (id: string) => void;
   onApprove?: (id: string) => void;
+  /** True while a milestone PUT (status, edit form, or client approve) is in flight. */
+  milestoneUpdateBusy: boolean;
+  /** True while creating a milestone from the modal. */
+  milestoneCreateBusy: boolean;
   onOpenModal: (mode: "create" | "edit", ms?: Milestone) => void;
   onOpenTaskModal: (milestoneId: string) => void;
   onEditTask: (milestoneId: string, task: TaskItem) => void;
@@ -159,6 +165,7 @@ export function MilestonesPanel({
           <Button
             className="h-10 w-full shrink-0 sm:w-auto"
             onClick={() => onOpenModal("create")}
+            disabled={milestoneCreateBusy || milestoneUpdateBusy}
           >
             <Plus className="mr-1.5 h-4 w-4" /> Add Milestone
           </Button>
@@ -204,13 +211,18 @@ export function MilestonesPanel({
                       <button
                         type="button"
                         onClick={
-                          permissions.canChangeMilestoneProgress
+                          permissions.canChangeMilestoneProgress &&
+                          !milestoneUpdateBusy
                             ? () => onStatusDropdownToggle(milestone.id)
                             : undefined
                         }
-                        disabled={!permissions.canChangeMilestoneProgress}
+                        disabled={
+                          !permissions.canChangeMilestoneProgress ||
+                          milestoneUpdateBusy
+                        }
                         className={`rounded-full focus:outline-none ${
-                          permissions.canChangeMilestoneProgress
+                          permissions.canChangeMilestoneProgress &&
+                          !milestoneUpdateBusy
                             ? "cursor-pointer"
                             : "cursor-default"
                         }`}
@@ -221,7 +233,8 @@ export function MilestonesPanel({
                       )}
 
                       {isDropdownOpen &&
-                      permissions.canChangeMilestoneProgress ? (
+                      permissions.canChangeMilestoneProgress &&
+                      !milestoneUpdateBusy ? (
                         <div className="absolute left-0 right-0 top-full z-30 mt-1.5 overflow-hidden rounded-lg border border-border bg-card shadow-md sm:left-auto sm:right-0 sm:w-40">
                           {(
                             [
@@ -256,6 +269,7 @@ export function MilestonesPanel({
                       size="sm"
                       className="h-8"
                       onClick={() => onApprove(milestone.id)}
+                      disabled={milestoneUpdateBusy}
                     >
                       <Check className="mr-1 h-3.5 w-3.5" /> Approve
                     </Button>
@@ -265,7 +279,8 @@ export function MilestonesPanel({
                     <button
                       type="button"
                       onClick={() => onOpenModal("edit", milestone)}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                      disabled={milestoneUpdateBusy}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
                       aria-label="Edit milestone"
                     >
                       <Pencil className="h-3.5 w-3.5" />
@@ -276,7 +291,8 @@ export function MilestonesPanel({
                     <button
                       type="button"
                       onClick={() => onDelete(milestone.id)}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition hover:bg-muted hover:text-destructive"
+                      disabled={milestoneUpdateBusy}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-input bg-background text-muted-foreground transition hover:bg-muted hover:text-destructive disabled:pointer-events-none disabled:opacity-40"
                       aria-label="Delete milestone"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -493,13 +509,26 @@ export function MilestonesPanel({
               variant="outline"
               className="h-10"
               onClick={onCloseModal}
+              disabled={milestoneCreateBusy || milestoneUpdateBusy}
             >
               Cancel
             </Button>
-            <Button type="submit" className="h-10">
+            <Button
+              type="submit"
+              className="h-10"
+              disabled={
+                milestoneModalMode === "create"
+                  ? milestoneCreateBusy
+                  : milestoneUpdateBusy
+              }
+            >
               {milestoneModalMode === "create"
-                ? "Create Milestone"
-                : "Save Changes"}
+                ? milestoneCreateBusy
+                  ? "Creating…"
+                  : "Create Milestone"
+                : milestoneUpdateBusy
+                  ? "Saving…"
+                  : "Save Changes"}
             </Button>
           </div>
         </form>

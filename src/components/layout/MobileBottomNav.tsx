@@ -15,8 +15,8 @@ export function MobileBottomNav({ className }: { className?: string }) {
   const router = useRouter();
   const { data: notificationsUnread = 0 } = useUnreadNotificationsCount();
 
-  const handleLogout = () => {
-    forceLogout(false);
+  const handleLogout = async () => {
+    await forceLogout(false);
     router.push("/auth/login");
   };
 

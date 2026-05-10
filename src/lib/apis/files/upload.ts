@@ -35,25 +35,25 @@ export function inferFileType(mimeType: string): FileType {
   return "other";
 }
 
-export function getUploadedUserType(): UploadedUserType {
-  if (typeof window === "undefined") return "client";
-  try {
-    const raw = localStorage.getItem("auth:user");
-    if (!raw) return "client";
-    const parsed = JSON.parse(raw) as { role?: unknown };
-    return parsed.role === "freelancer" ? "freelancer" : "client";
-  } catch {
-    return "client";
-  }
+/** Map a session role to the API's `uploaded_user` enum. */
+export function roleToUploadedUserType(
+  role: string | null | undefined,
+): UploadedUserType {
+  return role === "freelancer" ? "freelancer" : "client";
 }
 
-export async function uploadProjectFile(file: File, projectId: number) {
-  const publicUrl = await handleUpload(file);
+export async function uploadProjectFile(
+  file: File,
+  projectId: number,
+  uploadedUser: UploadedUserType,
+  userId: number,
+) {
+  const publicUrl = await handleUpload(file, userId);
   const payload: FileCreate = {
     file_name: file.name,
     file_path: publicUrl,
     file_type: inferFileType(file.type),
-    uploaded_user: getUploadedUserType(),
+    uploaded_user: uploadedUser,
     project_id: projectId,
   };
 
@@ -66,9 +66,10 @@ export async function uploadProjectFile(file: File, projectId: number) {
  */
 export async function uploadPaymentProofOnly(
   file: File,
+  userId: number,
 ): Promise<APIResponse<{ file_path: string }>> {
   try {
-    const publicUrl = await handleUpload(file);
+    const publicUrl = await handleUpload(file, userId);
     return {
       success: true,
       message: "Proof uploaded.",

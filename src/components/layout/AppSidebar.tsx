@@ -3,37 +3,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { forceLogout } from "@/lib/forceLogout";
 import { useUnreadNotificationsCount } from "@/hooks/useUnreadNotificationsCount";
+import { useSessionUser } from "@/lib/auth/user-context";
 import { NotificationUnreadBadge } from "./NotificationUnreadBadge";
 import { NAV_ITEMS, isNavItemActive } from "./navItems";
-
-type Role = "freelancer" | "client";
-type StoredUser = {
-  id: number;
-  name: string;
-  email: string;
-  role: Role;
-  avatar?: string | null;
-};
-
-function readStoredUser(): StoredUser | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem("auth:user");
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as unknown;
-    if (!parsed || typeof parsed !== "object") return null;
-    return parsed as StoredUser;
-  } catch {
-    return null;
-  }
-}
 
 function getInitials(name?: string | null) {
   const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
@@ -61,41 +40,23 @@ export function AppSidebar({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-
-  const [mounted, setMounted] = useState(false);
-  const [user, setUser] = useState<StoredUser | null>(() => readStoredUser());
-
-  useEffect(() => {
-    setMounted(true);
-    const sync = () => setUser(readStoredUser());
-    sync();
-    window.addEventListener("storage", sync);
-    window.addEventListener("auth:user-updated", sync as EventListener);
-    return () => {
-      window.removeEventListener("storage", sync);
-      window.removeEventListener("auth:user-updated", sync as EventListener);
-    };
-  }, []);
+  const user = useSessionUser();
 
   const roleLabel = useMemo(() => {
-    const role = user?.role;
-    if (role === "freelancer") return "Freelancer";
-    if (role === "client") return "Client";
-    return "";
-  }, [user?.role]);
+    if (user.role === "freelancer") return "Freelancer";
+    if (user.role === "client") return "Client";
+    return "Account";
+  }, [user.role]);
 
   const avatarSrc = useMemo(
-    () => normalizeAvatarSrc(user?.avatar),
-    [user?.avatar],
+    () => normalizeAvatarSrc(user.avatar),
+    [user.avatar],
   );
 
   const { data: notificationsUnread = 0 } = useUnreadNotificationsCount();
 
-  const uiRoleLabel = mounted ? roleLabel || "Account" : "Account";
-  const uiName = mounted ? user?.name || "—" : "—";
-
-  const handleLogout = () => {
-    forceLogout(false);
+  const handleLogout = async () => {
+    await forceLogout(false);
     router.push("/auth/login");
   };
 
@@ -120,7 +81,7 @@ export function AppSidebar({
           />
           <div>
             <h1 className="text-lg font-semibold">WorkBridge</h1>
-            <p className="text-xs text-muted-foreground">{uiRoleLabel}</p>
+            <p className="text-xs text-muted-foreground">{roleLabel}</p>
           </div>
         </div>
       </div>
@@ -165,7 +126,7 @@ export function AppSidebar({
       <div className="border-t border-border px-4 py-4">
         <div className="flex items-center gap-3 rounded-lg bg-muted/60 p-3">
           <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/15 text-sm font-semibold text-primary">
-            {mounted && avatarSrc ? (
+            {avatarSrc ? (
               <Image
                 src={avatarSrc}
                 alt="Profile avatar"
@@ -174,14 +135,12 @@ export function AppSidebar({
                 className="object-cover"
               />
             ) : (
-              getInitials(mounted ? user?.name : null)
+              getInitials(user.name)
             )}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium">{uiName}</p>
-            {mounted && roleLabel ? (
-              <p className="text-xs text-muted-foreground">{roleLabel}</p>
-            ) : null}
+            <p className="truncate text-sm font-medium">{user.name || "—"}</p>
+            <p className="text-xs text-muted-foreground">{roleLabel}</p>
           </div>
         </div>
 

@@ -13,7 +13,7 @@ const milestones_api_endpoint = `${API_PREFIX}${ENDPOINT}`;
 
 export async function createMilestone(data: MilestoneCreate) {
   const res = await post<APIResponse<MilestoneRead>, MilestoneCreate>(
-    `${milestones_api_endpoint}/`,
+    `${milestones_api_endpoint}`,
     data,
   );
   return res;

@@ -27,7 +27,8 @@ import { uploadPaymentProofOnly } from "@/lib/apis/files/upload";
 import { canShowFreelancerPaymentProof } from "@/lib/apis/payments/preview";
 import { InvoicePreviewModal } from "@/components/payment/InvoicePreviewModal";
 import { PaymentsPanelTableSkeleton } from "@/components/skeletons";
-import { getStoredUserId, queryKeys } from "@/lib/queryApi";
+import { queryKeys } from "@/lib/queryApi";
+import { useSessionUser } from "@/lib/auth/user-context";
 import type { Permissions } from "@/lib/permissions";
 import {
   clientCanSubmitPaymentProof,
@@ -35,6 +36,7 @@ import {
   clientPaymentSubmitButtonLabel,
   clientResubmitFreelancerNote,
 } from "@/lib/apis/payments/clientStatus";
+import { PaymentRequestCurrencyField } from "@/components/payment/PaymentRequestCurrencyField";
 
 const PAYMENT_METHOD_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: "wise", label: "Wise" },
@@ -80,7 +82,7 @@ export function PaymentsPanel({
 }) {
   const queryClient = useQueryClient();
   const detailKey = queryKeys.projects.detail(projectId);
-  const userId = getStoredUserId() ?? 0;
+  const userId = useSessionUser().id;
 
   const invalidatePaymentData = async () => {
     await queryClient.invalidateQueries({
@@ -338,7 +340,7 @@ export function PaymentsPanel({
                   if (!payFile || payPaymentId == null) return;
                   setPayBusy(true);
                   try {
-                    const up = await uploadPaymentProofOnly(payFile);
+                    const up = await uploadPaymentProofOnly(payFile, userId);
                     if (up.success === false || !up.data?.file_path) {
                       toast.error(up.message || "Upload failed");
                       return;
@@ -519,12 +521,9 @@ export function PaymentsPanel({
             />
           </Field>
           <Field label="Currency">
-            <input
-              className={inputCls}
-              required
+            <PaymentRequestCurrencyField
               value={reqCurrency}
-              onChange={(e) => setReqCurrency(e.target.value)}
-              placeholder="USD"
+              onChange={setReqCurrency}
             />
           </Field>
           <div className="flex justify-end gap-2 pt-2">

@@ -20,9 +20,9 @@ import {
 import { NotificationsPageSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import type { NotificationRead } from "@/lib/apis/notifications/schema";
-import { useAuthTokenReady } from "@/hooks/useAuthTokenReady";
 import { useNotificationMarkMutations } from "@/hooks/useNotificationMarkMutations";
-import { getStoredUserId, queryKeys, queryApi } from "@/lib/queryApi";
+import { useSessionUser } from "@/lib/auth/user-context";
+import { queryKeys, queryApi } from "@/lib/queryApi";
 
 export default function NotificationsPage() {
   const router = useRouter();
@@ -32,10 +32,9 @@ export default function NotificationsPage() {
     fallbackTitle?: string | null;
   }>({ open: false, token: null });
 
-  const authReady = useAuthTokenReady();
-  const hasToken =
-    authReady === true && Boolean(localStorage.getItem("auth:token"));
-  const userId = getStoredUserId() ?? 0;
+  // Session is guaranteed by the (main)/layout.tsx server gate, so the user
+  // is always available here.
+  const userId = useSessionUser().id;
 
   const notifInfiniteKey = queryKeys.notifications.infiniteList(
     userId,
@@ -120,36 +119,6 @@ export default function NotificationsPage() {
   const handleLoadMore = useCallback(() => {
     void notificationsQuery.fetchNextPage();
   }, [notificationsQuery]);
-
-  if (authReady === null) {
-    return <NotificationsPageSkeleton />;
-  }
-
-  if (!hasToken) {
-    return (
-      <div className="space-y-5 pb-4 md:space-y-6 md:pb-6">
-        <header className="space-y-0.5">
-          <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-            Notifications
-          </h1>
-          <p className="text-xs text-muted-foreground sm:text-sm">
-            Sign in to see updates for your projects and payments.
-          </p>
-        </header>
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/25 px-5 py-12 text-center sm:px-6 sm:py-14">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground sm:h-14 sm:w-14">
-            <Bell className="h-6 w-6 opacity-70 sm:h-7 sm:w-7" aria-hidden />
-          </div>
-          <p className="mt-4 text-sm font-medium text-foreground">
-            You&apos;re signed out
-          </p>
-          <p className="mt-1 max-w-sm text-xs text-muted-foreground sm:text-sm">
-            Log in to view notifications from your workspace.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   if (notificationsQuery.isPending && !firstPage) {
     return <NotificationsPageSkeleton />;
