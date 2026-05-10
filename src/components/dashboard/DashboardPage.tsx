@@ -14,6 +14,7 @@ import {
   formatActivityTimestamp,
   formatMoney,
 } from "@/components/dashboard/components/DashboardProjectCard";
+import { DashboardProjectsEmptyState } from "@/components/dashboard/components/DashboardProjectsEmptyState";
 import { RecentActivityCard } from "@/components/dashboard/components/RecentActivityCard";
 import { StatCard } from "@/components/dashboard/components/StatCard";
 import { fetchDashboardSummary } from "@/lib/server-api/server/dashboard";
@@ -192,35 +193,39 @@ export default async function DashboardPage() {
             </p>
           </div>
           <div className="flex flex-col space-y-3">
-            {projects.map((project) => {
-              const rawId =
-                (project as { id?: unknown }).id ??
-                (project as unknown as { project_id?: unknown }).project_id;
-              const projectId =
-                typeof rawId === "number"
-                  ? rawId
-                  : typeof rawId === "string"
-                    ? Number(rawId)
-                    : NaN;
-              const href = Number.isFinite(projectId)
-                ? `/projects/${projectId}`
-                : undefined;
-              return (
-                <DashboardProjectCard
-                  key={Number.isFinite(projectId) ? projectId : project.title}
-                  title={project.title}
-                  description={project.description}
-                  totalAmount={project.total_amount}
-                  progressPercentage={project.progress_percentage}
-                  dueDate={project.due_date ?? undefined}
-                  href={href}
-                />
-              );
-            })}
+            {projects.length === 0 ? (
+              <DashboardProjectsEmptyState isClient={isClient} />
+            ) : (
+              projects.map((project) => {
+                const rawId =
+                  (project as { id?: unknown }).id ??
+                  (project as unknown as { project_id?: unknown }).project_id;
+                const projectId =
+                  typeof rawId === "number"
+                    ? rawId
+                    : typeof rawId === "string"
+                      ? Number(rawId)
+                      : NaN;
+                const href = Number.isFinite(projectId)
+                  ? `/projects/${projectId}`
+                  : undefined;
+                return (
+                  <DashboardProjectCard
+                    key={Number.isFinite(projectId) ? projectId : project.title}
+                    title={project.title}
+                    description={project.description}
+                    totalAmount={project.total_amount}
+                    progressPercentage={project.progress_percentage}
+                    dueDate={project.due_date ?? undefined}
+                    href={href}
+                  />
+                );
+              })
+            )}
           </div>
         </div>
 
-        <RecentActivityCard items={activities} />
+        <RecentActivityCard items={activities} isClient={isClient} />
       </section>
     </div>
   );
