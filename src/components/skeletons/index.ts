@@ -3,6 +3,7 @@ export { DashboardContentSkeleton } from "./dashboard-skeleton";
 export { ProjectsListSkeleton } from "./projects-skeleton";
 export {
   PaymentsMobileSkeletonList,
+  PaymentsPageSkeleton,
   PaymentsTableSkeletonRows,
   PaymentsPanelTableSkeleton,
 } from "./payments-skeleton";

@@ -46,7 +46,7 @@ export const ProfilePageSkeleton = memo(function ProfilePageSkeleton() {
             </div>
           </section>
         </div>
-        <aside className="space-y-6 lg:col-span-5 xl:col-span-4">
+        {/* <aside className="space-y-6 lg:col-span-5 xl:col-span-4">
           <section className="rounded-2xl border border-border/80 bg-card p-5 shadow-sm sm:p-6">
             <Skeleton className="h-5 w-24" />
             <Skeleton className="mt-2 h-4 w-full" />
@@ -59,7 +59,7 @@ export const ProfilePageSkeleton = memo(function ProfilePageSkeleton() {
               ))}
             </div>
           </section>
-        </aside>
+        </aside> */}
       </div>
     </div>
   );
