@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { ExternalLink } from "lucide-react";
 
 import { Modal } from "@/components/project-detail/components/Modal";
@@ -37,9 +38,12 @@ export function InvoicePreviewModal({
         <p className="text-sm text-muted-foreground">No proof URL available.</p>
       ) : isImage ? (
         <div className="flex justify-center rounded-lg bg-muted/40 p-3">
-          <img
+          <Image
             src={src}
             alt="Payment proof"
+            width={1600}
+            height={1200}
+            unoptimized
             className="max-h-[min(72vh,640px)] w-auto max-w-full rounded-md object-contain shadow-sm"
           />
         </div>

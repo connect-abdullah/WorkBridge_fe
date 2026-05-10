@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   Download,
@@ -620,13 +621,18 @@ export function FilesPanel({
           <div className="flex flex-col gap-3 text-left">
             <div className="flex items-center gap-3 rounded-lg border border-border bg-background/40 p-3">
               {previewUrl ? (
-                <img
-                  src={previewUrl}
-                  alt="Selected file preview"
-                  className="h-12 w-12 rounded-md object-cover border border-border bg-muted"
-                />
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md border border-border bg-muted">
+                  <Image
+                    src={previewUrl}
+                    alt="Selected file preview"
+                    fill
+                    unoptimized
+                    className="object-cover"
+                    sizes="48px"
+                  />
+                </div>
               ) : (
-                <div className="h-12 w-12 rounded-md border border-border bg-muted" />
+                <div className="h-12 w-12 shrink-0 rounded-md border border-border bg-muted" />
               )}
 
               <div className="min-w-0 flex-1">

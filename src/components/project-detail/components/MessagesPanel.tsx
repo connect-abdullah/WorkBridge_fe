@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   ChangeEvent,
   FormEvent,
@@ -879,9 +880,12 @@ export function MessagesPanel({
       >
         {imagePreview ? (
           <div className="flex min-h-[180px] items-center justify-center rounded-lg bg-muted/40 p-3">
-            <img
+            <Image
               src={imagePreview.url}
               alt={imagePreview.name}
+              width={1600}
+              height={1200}
+              unoptimized
               className="max-h-[min(72vh,640px)] w-auto max-w-full rounded-md object-contain shadow-sm"
               onError={() => {
                 toast.error("Could not load this image.");

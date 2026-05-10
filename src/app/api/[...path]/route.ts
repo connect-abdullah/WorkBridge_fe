@@ -99,7 +99,7 @@ async function forward(
   let upstream: Response;
   try {
     upstream = await fetch(targetUrl, init);
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { success: false, message: "Upstream service unavailable" },
       { status: 502 },

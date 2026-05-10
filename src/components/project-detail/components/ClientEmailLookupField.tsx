@@ -154,6 +154,7 @@ export function ClientEmailLookupField({
                     <button
                       type="button"
                       role="option"
+                      aria-selected={false}
                       className="flex w-full flex-col items-start gap-0.5 px-3 py-2.5 text-left text-sm transition hover:bg-muted"
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => {

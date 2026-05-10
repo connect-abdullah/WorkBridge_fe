@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Image as ImageIcon, Upload, X } from "lucide-react";
 import { toast } from "sonner";
@@ -125,10 +126,13 @@ export function PaymentProofDropzone({
           <div className="flex gap-4 p-4">
             <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-lg border border-border bg-muted/50">
               {previewUrl ? (
-                <img
+                <Image
                   src={previewUrl}
                   alt=""
-                  className="h-full w-full object-cover"
+                  fill
+                  unoptimized
+                  className="object-cover"
+                  sizes="112px"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">

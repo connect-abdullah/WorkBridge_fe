@@ -709,16 +709,6 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
       });
   };
 
-  const handleMeetingNotesChange = (
-    id: string,
-    field: "privateNotes" | "sharedNotes",
-    value: string,
-  ) => {
-    setMeetings((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, [field]: value } : m)),
-    );
-  };
-
   // (no local file handlers)
 
   const openMilestoneModal = (mode: "create" | "edit", ms?: Milestone) => {

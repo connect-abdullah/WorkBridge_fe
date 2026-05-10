@@ -30,12 +30,7 @@ import { PaymentsPanelTableSkeleton } from "@/components/skeletons";
 import { queryKeys } from "@/lib/queryApi";
 import { useSessionUser } from "@/lib/auth/user-context";
 import type { Permissions } from "@/lib/permissions";
-import {
-  clientCanSubmitPaymentProof,
-  clientPaymentStatusDisplay,
-  clientPaymentSubmitButtonLabel,
-  clientResubmitFreelancerNote,
-} from "@/lib/apis/payments/clientStatus";
+import { clientPaymentStatusDisplay } from "@/lib/apis/payments/clientStatus";
 import { PaymentRequestCurrencyField } from "@/components/payment/PaymentRequestCurrencyField";
 
 const PAYMENT_METHOD_OPTIONS: { value: PaymentMethod; label: string }[] = [

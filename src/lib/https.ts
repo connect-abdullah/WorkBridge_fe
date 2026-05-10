@@ -201,8 +201,8 @@ export async function del<T = unknown>(
  * the browser sends cookies on its own. Kept as a noop so existing imports
  * don't break during the migration.
  */
-export function setTokenGetter(_fn: () => string | null) {
-  // intentional noop
+export function setTokenGetter(fn: () => string | null) {
+  void fn;
 }
 
 export { http };

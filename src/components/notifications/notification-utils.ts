@@ -1,6 +1,5 @@
 import {
   AlertCircle,
-  Bell,
   BadgeCheck,
   BadgeDollarSign,
   BadgeHelp,

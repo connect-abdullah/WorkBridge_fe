@@ -31,8 +31,6 @@ type StatRow = {
   icon: LucideIcon;
 };
 
-export const dynamic = "force-dynamic";
-
 export default async function DashboardPage() {
   const { user } = await requireSession();
   const isClient = user.role === "client";
