@@ -33,6 +33,16 @@ interface ForgotPasswordSchema {
   email: string;
 }
 
+interface VerifyOtpSchema {
+  email: string;
+  otp: string;
+}
+
+interface ResetPasswordSchema {
+  email: string;
+  new_password: string;
+}
+
 interface UserLoginResponse {
   access_token: string;
   token_type: string | "bearer";
@@ -43,6 +53,8 @@ export type {
   LoginSchema,
   RegisterSchema,
   ForgotPasswordSchema,
+  VerifyOtpSchema,
+  ResetPasswordSchema,
   UserLoginResponse,
   UserRead,
   UpdateProfileSchema,
